@@ -1,0 +1,31 @@
+# Archivos compilados
+target/
+*.class
+
+# Archivos de configuración de IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Node (si usas frontend con npm)
+node_modules/
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.bak
+
+# Documentación
+README.md
+docs/

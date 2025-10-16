@@ -1,0 +1,131 @@
+# ============================================
+# DOCKER COMPOSE PARA E-COMMERCE
+# ============================================
+# Este archivo crea automáticamente:
+# 1. Un contenedor con MySQL
+# 2. Un contenedor con tu aplicación Spring Boot
+# 3. Una red para que se comuniquen entre sí
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # SERVICIO DE BASE DE DATOS MYSQL
+  # ==========================================
+  mysql:
+    # Nombre del contenedor
+    container_name: ecommerce_mysql
+
+    # Imagen de MySQL versión 8
+    image: mysql:8.0
+
+    # Reiniciar automáticamente si falla
+    restart: always
+
+    # Variables de entorno para configurar MySQL
+    environment:
+      # Contraseña del usuario root
+      MYSQL_ROOT_PASSWORD: root123
+
+      # Nombre de la base de datos que se creará automáticamente
+      MYSQL_DATABASE: ecommerce_db
+
+      # Usuario adicional (opcional)
+      MYSQL_USER: ecommerce_user
+
+      # Contraseña del usuario adicional
+      MYSQL_PASSWORD: ecommerce123
+
+    # Puerto donde estará disponible MySQL
+    # formato: puerto_tu_pc:puerto_contenedor
+    ports:
+      - "3306:3306"
+
+    # Volumen para persistir los datos
+    # Aunque borres el contenedor, los datos se mantienen
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Script para inicializar la base de datos (opcional)
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+
+    # Configuración de red
+    networks:
+      - ecommerce_network
+
+    # Verificación de salud del contenedor
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot123" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # SERVICIO DE LA APLICACIÓN SPRING BOOT
+  # ==========================================
+  app:
+    # Nombre del contenedor
+    container_name: ecommerce_app
+
+    # Construir la imagen desde el Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Reiniciar automáticamente si falla
+    restart: always
+
+    # Puerto donde estará disponible la aplicación
+    ports:
+      - "8080:8080"
+
+    # Variables de entorno para la aplicación
+    environment:
+      # Configuración de Spring
+      SPRING_APPLICATION_NAME: ecommerce
+
+      # Configuración de base de datos
+      # Nota: usamos "mysql" (nombre del servicio) en lugar de "localhost"
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecommerce_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root123
+
+      # Configuración de JPA
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+
+      # Token de API Decolecta
+      API_DECOLECTA_TOKEN: sk_9739.xfKEozZkKVg69oje8RACY8preIWY6nwh
+
+    # Depende de MySQL (espera a que MySQL esté listo)
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    # Volúmenes para archivos subidos
+    volumes:
+      - uploads_data:/app/uploads
+
+    # Red
+    networks:
+      - ecommerce_network
+
+# ==========================================
+# VOLÚMENES PERSISTENTES
+# ==========================================
+# Los datos aquí NO se borran aunque elimines los contenedores
+volumes:
+  # Datos de MySQL
+  mysql_data:
+    driver: local
+
+  # Archivos subidos (imágenes, PDFs)
+  uploads_data:
+    driver: local
+
+# ==========================================
+# RED DE COMUNICACIÓN
+# ==========================================
+# Permite que los contenedores se comuniquen entre sí
+networks:
+  ecommerce_network:
+    driver: bridge
