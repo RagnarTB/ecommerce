@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<!-- FRAGMENT: HEADER CON NOTIFICACIONES -->
+
+<nav th:fragment="header" class="main-header navbar navbar-expand navbar-white navbar-light">
+    <!-- Left navbar links -->
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                <i class="fas fa-bars"></i>
+            </a>
+        </li>
+        <li class="nav-item d-none d-sm-inline-block">
+            <a th:href="@{/admin/dashboard}" class="nav-link">
+                <i class="fas fa-home mr-1"></i>
+                Inicio
+            </a>
+        </li>
+        <li class="nav-item d-none d-sm-inline-block">
+            <a href="/" target="_blank" class="nav-link">
+                <i class="fas fa-store mr-1"></i>
+                Catálogo
+            </a>
+        </li>
+    </ul>
+
+    <!-- Right navbar links -->
+    <ul class="navbar-nav ml-auto">
+
+        <!-- ====================================== -->
+        <!-- BÚSQUEDA RÁPIDA -->
+        <!-- ====================================== -->
+        <li class="nav-item">
+            <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                <i class="fas fa-search"></i>
+            </a>
+            <div class="navbar-search-block">
+                <form class="form-inline" th:action="@{/admin/productos}" method="get">
+                    <div class="input-group input-group-sm">
+                        <input class="form-control form-control-navbar" type="search" name="busqueda"
+                            placeholder="Buscar productos..." aria-label="Search">
+                        <div class="input-group-append">
+                            <button class="btn btn-navbar" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <button class="btn btn-navbar" type="button" data-widget="navbar-search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </li>
+
+        <!-- ====================================== -->
+        <!-- NOTIFICACIONES: PEDIDOS PENDIENTES -->
+        <!-- ====================================== -->
+        <li class="nav-item dropdown" sec:authorize="hasAuthority('MODULO_VENTAS')">
+            <a class="nav-link" data-toggle="dropdown" href="#">
+                <i class="far fa-bell"></i>
+                <span class="badge badge-warning navbar-badge" th:text="${pedidosPendientes}"
+                    th:if="${pedidosPendientes != null and pedidosPendientes > 0}">0</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                <span class="dropdown-item dropdown-header">
+                    <span th:text="${pedidosPendientes}">0</span> Pedidos Pendientes
+                </span>
+                <div class="dropdown-divider"></div>
+
+                <a th:href="@{/admin/pedidos}" class="dropdown-item">
+                    <i class="fas fa-shopping-cart mr-2"></i> Ver Pedidos Pendientes
+                </a>
+
+                <div class="dropdown-divider"></div>
+                <a th:href="@{/admin/pedidos}" class="dropdown-item dropdown-footer">Ver Todos</a>
+            </div>
+        </li>
+
+        <!-- ====================================== -->
+        <!-- NOTIFICACIONES: STOCK BAJO -->
+        <!-- ====================================== -->
+        <li class="nav-item dropdown" sec:authorize="hasAuthority('MODULO_PRODUCTOS')">
+            <a class="nav-link" data-toggle="dropdown" href="#">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span class="badge badge-danger navbar-badge" th:text="${productosStockBajo}"
+                    th:if="${productosStockBajo != null and productosStockBajo > 0}">0</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                <span class="dropdown-item dropdown-header">
+                    <span th:text="${productosStockBajo}">0</span> Productos con Stock Bajo
+                </span>
+                <div class="dropdown-divider"></div>
+
+                <a th:href="@{/admin/inventario/stock-bajo}" class="dropdown-item">
+                    <i class="fas fa-box mr-2"></i> Ver Productos
+                </a>
+
+                <div class="dropdown-divider"></div>
+                <a th:href="@{/admin/inventario/stock-bajo}" class="dropdown-item dropdown-footer">Ver Todos</a>
+            </div>
+        </li>
+
+        <!-- ====================================== -->
+        <!-- NOTIFICACIONES: CUOTAS VENCIDAS -->
+        <!-- ====================================== -->
+        <li class="nav-item dropdown" sec:authorize="hasAuthority('MODULO_VENTAS')">
+            <a class="nav-link" data-toggle="dropdown" href="#">
+                <i class="fas fa-calendar-times"></i>
+                <span class="badge badge-danger navbar-badge" th:text="${cuotasVencidas}"
+                    th:if="${cuotasVencidas != null and cuotasVencidas > 0}">0</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                <span class="dropdown-item dropdown-header">
+                    <span th:text="${cuotasVencidas}">0</span> Cuotas Vencidas
+                </span>
+                <div class="dropdown-divider"></div>
+
+                <a th:href="@{/admin/creditos/cuotas-vencidas}" class="dropdown-item">
+                    <i class="fas fa-money-bill-wave mr-2"></i> Ver Cuotas Vencidas
+                </a>
+
+                <div class="dropdown-divider"></div>
+                <a th:href="@{/admin/creditos/cuotas-vencidas}" class="dropdown-item dropdown-footer">Ver Todas</a>
+            </div>
+        </li>
+
+        <!-- ====================================== -->
+        <!-- USUARIO: PERFIL Y LOGOUT -->
+        <!-- ====================================== -->
+        <li class="nav-item dropdown">
+            <a class="nav-link" data-toggle="dropdown" href="#">
+                <i class="far fa-user"></i>
+                <span class="d-none d-md-inline ml-1" sec:authentication="name">Usuario</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right">
+                <a href="#" class="dropdown-item">
+                    <i class="fas fa-user mr-2"></i> Mi Perfil
+                </a>
+                <a href="#" class="dropdown-item">
+                    <i class="fas fa-cog mr-2"></i> Configuración
+                </a>
+                <div class="dropdown-divider"></div>
+                <a th:href="@{/logout}" class="dropdown-item text-danger">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                </a>
+            </div>
+        </li>
+
+        <!-- ====================================== -->
+        <!-- FULLSCREEN -->
+        <!-- ====================================== -->
+        <li class="nav-item">
+            <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+                <i class="fas fa-expand-arrows-alt"></i>
+            </a>
+        </li>
+
+    </ul>
+</nav>
+
+</html>

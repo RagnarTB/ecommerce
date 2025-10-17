@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- FRAGMENT: FOOTER -->
+
+<footer th:fragment="footer" class="main-footer">
+    <strong>
+        Copyright &copy; 2025
+        <a href="/admin">E-Commerce System</a>.
+    </strong>
+    Todos los derechos reservados.
+
+    <div class="float-right d-none d-sm-inline-block">
+        <b>Version</b> 1.0.0
+    </div>
+</footer>
+
+<!-- FRAGMENT: SCRIPTS -->
+<div th:fragment="scripts">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- AdminLTE App -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+
+    <!-- SweetAlert2 (para alertas bonitas) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Scripts comunes -->
+    <script>
+        $(document).ready(function () {
+            // Auto-cerrar alertas después de 5 segundos
+            setTimeout(function () {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            // Confirmar eliminaciones
+            $('.btn-eliminar').on('click', function (e) {
+                if (!confirm('¿Está seguro de eliminar este registro?')) {
+                    e.preventDefault();
+                }
+            });
+
+            // Tooltips de Bootstrap
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+
+        // Función para mostrar alertas con SweetAlert2
+        function mostrarAlerta(tipo, titulo, mensaje) {
+            Swal.fire({
+                icon: tipo,
+                title: titulo,
+                text: mensaje,
+                confirmButtonText: 'OK'
+            });
+        }
+
+        // Función para confirmar acciones
+        function confirmarAccion(mensaje, callback) {
+            Swal.fire({
+                title: '¿Está seguro?',
+                text: mensaje,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, continuar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    callback();
+                }
+            });
+        }
+    </script>
+</div>
+
+</html>

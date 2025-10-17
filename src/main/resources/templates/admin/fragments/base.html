@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es"
+    th:fragment="layout (title, content)">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | E-Commerce'">E-Commerce</title>
+
+    <!-- Google Font -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- AdminLTE -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+
+    <!-- DataTables (para tablas) -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
+
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <!-- Custom CSS -->
+    <style>
+        .card {
+            border-radius: 10px;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .btn {
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- Header -->
+        <div th:replace="~{admin/fragments/header :: header}"></div>
+
+        <!-- Sidebar -->
+        <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0" th:text="${titulo}">Título</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/admin">Inicio</a></li>
+                                <li class="breadcrumb-item active" th:text="${titulo}">Actual</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- Mensajes Flash -->
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="icon fas fa-check"></i>
+                        <span th:text="${success}"></span>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="icon fas fa-ban"></i>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="icon fas fa-exclamation-triangle"></i>
+                        <span th:text="${warning}"></span>
+                    </div>
+
+                    <div th:if="${info}" class="alert alert-info alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="icon fas fa-info"></i>
+                        <span th:text="${info}"></span>
+                    </div>
+
+                    <!-- Contenido específico de cada página -->
+                    <div th:replace="${content}">
+                        <!-- El contenido se insertará aquí -->
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <div th:replace="~{admin/fragments/footer :: footer}"></div>
+
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{admin/fragments/footer :: scripts}"></div>
+
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+
+    <!-- Inicializar DataTables en todas las tablas con clase .datatable -->
+    <script>
+        $(document).ready(function () {
+            $('.datatable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
+                },
+                "pageLength": 10,
+                "order": [[0, "desc"]]
+            });
+        });
+    </script>
+
+</body>
+
+</html>
