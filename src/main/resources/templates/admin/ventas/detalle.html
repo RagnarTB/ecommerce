@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/fragments/base}">
+
+<head>
+    <title th:text="${titulo}">Detalle de Venta</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <!-- Content Header -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            Venta <span th:text="${venta.numeroVenta}">VEN-2025-00001</span>
+                        </h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/admin/ventas}">Ventas</a></li>
+                            <li class="breadcrumb-item active">Detalle</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Botones de acción -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <a th:href="@{/admin/ventas/boleta/{id}(id=${venta.id})}" class="btn btn-success"
+                            target="_blank">
+                            <i class="fas fa-print"></i> Imprimir Boleta
+                        </a>
+                        <button th:if="${venta.estado.name() == 'COMPLETADA'}" type="button" class="btn btn-danger"
+                            th:onclick="'anularVenta(' + ${venta.id} + ')'">
+                            <i class="fas fa-ban"></i> Anular Venta
+                        </button>
+                        <a th:href="@{/admin/ventas}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <!-- Columna Izquierda: Información General -->
+                    <div class="col-md-8">
+
+                        <!-- Información de la Venta -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Información de la Venta</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <dl class="row">
+                                            <dt class="col-sm-5">Número:</dt>
+                                            <dd class="col-sm-7">
+                                                <strong th:text="${venta.numeroVenta}">VEN-2025-00001</strong>
+                                            </dd>
+
+                                            <dt class="col-sm-5">Fecha:</dt>
+                                            <dd class="col-sm-7"
+                                                th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy HH:mm')}">
+                                                01/01/2025 10:30
+                                            </dd>
+
+                                            <dt class="col-sm-5">Estado:</dt>
+                                            <dd class="col-sm-7">
+                                                <span class="badge badge-lg"
+                                                    th:classappend="${venta.estado.classBootstrap}"
+                                                    th:text="${venta.estado.nombre}">
+                                                    Completada
+                                                </span>
+                                            </dd>
+
+                                            <dt class="col-sm-5">Tipo de Pago:</dt>
+                                            <dd class="col-sm-7">
+                                                <span class="badge" th:classappend="${venta.tipoPago.classBootstrap}"
+                                                    th:text="${venta.tipoPago.nombre}">
+                                                    Contado
+                                                </span>
+                                            </dd>
+                                        </dl>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <dl class="row">
+                                            <dt class="col-sm-5">Usuario:</dt>
+                                            <dd class="col-sm-7" th:text="${venta.usuario.nombreCompleto}">
+                                                Admin Sistema
+                                            </dd>
+
+                                            <dt class="col-sm-5" th:if="${venta.pedido != null}">Pedido:</dt>
+                                            <dd class="col-sm-7" th:if="${venta.pedido != null}">
+                                                <a th:href="@{/admin/pedidos/ver/{id}(id=${venta.pedido.id})}"
+                                                    th:text="${venta.pedido.numeroPedido}">
+                                                    PED-2025-00001
+                                                </a>
+                                            </dd>
+
+                                            <dt class="col-sm-5" th:if="${venta.tipoEntrega != null}">Tipo Entrega:</dt>
+                                            <dd class="col-sm-7" th:if="${venta.tipoEntrega != null}">
+                                                <span class="badge badge-info" th:text="${venta.tipoEntrega.nombre}">
+                                                    Delivery
+                                                </span>
+                                            </dd>
+
+                                            <dt class="col-sm-5" th:if="${venta.direccionEntrega != null}">Dirección:
+                                            </dt>
+                                            <dd class="col-sm-7" th:if="${venta.direccionEntrega != null}"
+                                                th:text="${venta.direccionEntrega}">
+                                                Av. Principal 123
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Productos Vendidos -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Productos Vendidos</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th width="80" class="text-center">Cantidad</th>
+                                            <th width="120" class="text-right">P. Unitario</th>
+                                            <th width="120" class="text-right">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="detalle : ${venta.detalles}">
+                                            <td>
+                                                <strong th:text="${detalle.nombreProducto}">Laptop HP</strong>
+                                                <br>
+                                                <small class="text-muted">
+                                                    SKU: <span th:text="${detalle.producto.codigoSku}">SKU-001</span>
+                                                </small>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-primary" th:text="${detalle.cantidad}">2</span>
+                                            </td>
+                                            <td class="text-right">
+                                                S/ <span th:text="${detalle.precioUnitario}">1000.00</span>
+                                            </td>
+                                            <td class="text-right">
+                                                <strong>S/ <span th:text="${detalle.subtotal}">2000.00</span></strong>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Pagos Realizados (si no es crédito) -->
+                        <div th:if="${venta.tipoPago.name() == 'CONTADO' and venta.pagos != null and !venta.pagos.isEmpty()}"
+                            class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Pagos Realizados</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Método</th>
+                                            <th>Referencia</th>
+                                            <th width="120" class="text-right">Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="pago : ${venta.pagos}">
+                                            <td th:text="${#temporals.format(pago.fechaPago, 'dd/MM/yyyy HH:mm')}">
+                                                01/01/2025 10:30
+                                            </td>
+                                            <td>
+                                                <span class="badge" th:classappend="${pago.metodoPago.classBootstrap}"
+                                                    th:text="${pago.metodoPago.nombre}">
+                                                    Efectivo
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small th:text="${pago.referencia ?: '-'}">-</small>
+                                            </td>
+                                            <td class="text-right">
+                                                <strong>S/ <span th:text="${pago.monto}">100.00</span></strong>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Información de Crédito -->
+                        <div th:if="${venta.tipoPago.name() == 'CREDITO' and venta.credito != null}"
+                            class="card card-warning">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-credit-card"></i> Información del Crédito
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <dl class="row">
+                                            <dt class="col-sm-6">Monto Total:</dt>
+                                            <dd class="col-sm-6">
+                                                <strong>S/ <span
+                                                        th:text="${venta.credito.montoTotal}">1200.00</span></strong>
+                                            </dd>
+
+                                            <dt class="col-sm-6">Monto Pendiente:</dt>
+                                            <dd class="col-sm-6">
+                                                <strong class="text-danger">
+                                                    S/ <span th:text="${venta.credito.montoPendiente}">800.00</span>
+                                                </strong>
+                                            </dd>
+
+                                            <dt class="col-sm-6">Número de Cuotas:</dt>
+                                            <dd class="col-sm-6" th:text="${venta.credito.numCuotas}">12</dd>
+                                        </dl>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <dl class="row">
+                                            <dt class="col-sm-6">Monto por Cuota:</dt>
+                                            <dd class="col-sm-6">
+                                                S/ <span th:text="${venta.credito.montoCuota}">100.00</span>
+                                            </dd>
+
+                                            <dt class="col-sm-6">Estado:</dt>
+                                            <dd class="col-sm-6">
+                                                <span class="badge"
+                                                    th:classappend="${venta.credito.estado.classBootstrap}"
+                                                    th:text="${venta.credito.estado.nombre}">
+                                                    Activo
+                                                </span>
+                                            </dd>
+
+                                            <dt class="col-sm-6">Fecha Inicio:</dt>
+                                            <dd class="col-sm-6"
+                                                th:text="${#temporals.format(venta.credito.fechaInicio, 'dd/MM/yyyy')}">
+                                                01/01/2025
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                </div>
+
+                                <div class="text-center mt-2">
+                                    <a th:href="@{/admin/creditos/ver/{id}(id=${venta.credito.id})}"
+                                        class="btn btn-sm btn-warning">
+                                        <i class="fas fa-eye"></i> Ver Detalle del Crédito
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Columna Derecha: Cliente y Totales -->
+                    <div class="col-md-4">
+
+                        <!-- Información del Cliente -->
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-user"></i> Cliente
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <dl>
+                                    <dt>Nombre Completo:</dt>
+                                    <dd>
+                                        <strong th:text="${venta.cliente.nombreCompleto}">
+                                            Juan Pérez García
+                                        </strong>
+                                    </dd>
+
+                                    <dt>Documento:</dt>
+                                    <dd>
+                                        <span class="badge badge-info"
+                                            th:text="${venta.cliente.tipoDocumento}">DNI</span>
+                                        <span th:text="${venta.cliente.numeroDocumento}">12345678</span>
+                                    </dd>
+
+                                    <dt th:if="${venta.cliente.telefono != null}">Teléfono:</dt>
+                                    <dd th:if="${venta.cliente.telefono != null}" th:text="${venta.cliente.telefono}">
+                                        999888777
+                                    </dd>
+
+                                    <dt th:if="${venta.cliente.email != null}">Email:</dt>
+                                    <dd th:if="${venta.cliente.email != null}" th:text="${venta.cliente.email}">
+                                        cliente@email.com
+                                    </dd>
+
+                                    <dt th:if="${venta.cliente.direccion != null}">Dirección:</dt>
+                                    <dd th:if="${venta.cliente.direccion != null}" th:text="${venta.cliente.direccion}">
+                                        Av. Principal 123
+                                    </dd>
+                                </dl>
+
+                                <div class="text-center">
+                                    <a th:href="@{/admin/clientes/ver/{id}(id=${venta.cliente.id})}"
+                                        class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> Ver Perfil Completo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Totales -->
+                        <div class="card card-success">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-calculator"></i> Totales
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row mb-0">
+                                    <dt class="col-7">Subtotal:</dt>
+                                    <dd class="col-5 text-right">
+                                        S/ <span th:text="${venta.subtotal}">2000.00</span>
+                                    </dd>
+
+                                    <dt class="col-7" th:if="${venta.descuento != null and venta.descuento > 0}">
+                                        Descuento:
+                                    </dt>
+                                    <dd class="col-5 text-right text-danger"
+                                        th:if="${venta.descuento != null and venta.descuento > 0}">
+                                        - S/ <span th:text="${venta.descuento}">50.00</span>
+                                    </dd>
+
+                                    <dt class="col-7" th:if="${venta.costoEnvio != null and venta.costoEnvio > 0}">
+                                        Envío:
+                                    </dt>
+                                    <dd class="col-5 text-right"
+                                        th:if="${venta.costoEnvio != null and venta.costoEnvio > 0}">
+                                        + S/ <span th:text="${venta.costoEnvio}">10.00</span>
+                                    </dd>
+
+                                    <dt class="col-7">IGV (18%):</dt>
+                                    <dd class="col-5 text-right">
+                                        S/ <span th:text="${venta.igv}">342.00</span>
+                                    </dd>
+                                </dl>
+
+                                <hr class="my-2">
+
+                                <dl class="row mb-0">
+                                    <dt class="col-7">
+                                        <h4>TOTAL:</h4>
+                                    </dt>
+                                    <dd class="col-5 text-right">
+                                        <h3 class="text-success mb-0">
+                                            S/ <span th:text="${venta.total}">2300.00</span>
+                                        </h3>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <!-- Acciones Rápidas -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Acciones Rápidas</h3>
+                            </div>
+                            <div class="card-body">
+                                <a th:href="@{/admin/ventas/boleta/{id}(id=${venta.id})}"
+                                    class="btn btn-success btn-block" target="_blank">
+                                    <i class="fas fa-print"></i> Imprimir Boleta
+                                </a>
+
+                                <a th:href="@{/admin/ventas/ticket/{id}(id=${venta.id})}" class="btn btn-info btn-block"
+                                    target="_blank">
+                                    <i class="fas fa-receipt"></i> Imprimir Ticket
+                                </a>
+
+                                <button th:if="${venta.tipoPago.name() == 'CREDITO'}" type="button"
+                                    class="btn btn-warning btn-block"
+                                    th:onclick="'location.href=\'/admin/creditos/ver/' + ${venta.credito.id} + '\''">
+                                    <i class="fas fa-credit-card"></i> Gestionar Crédito
+                                </button>
+
+                                <button type="button" class="btn btn-secondary btn-block" onclick="window.print()">
+                                    <i class="fas fa-print"></i> Imprimir Página
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts adicionales -->
+    <th:block layout:fragment="scripts">
+        <script>
+            // Anular venta
+            function anularVenta(ventaId) {
+                Swal.fire({
+                    title: '¿Anular esta venta?',
+                    html: `
+            <p>Esta acción:</p>
+            <ul style="text-align: left;">
+                <li>Devolverá el stock de los productos</li>
+                <li>Registrará movimientos de inventario</li>
+                <li>Anulará el crédito si existe</li>
+                <li>No se puede deshacer</li>
+            </ul>
+        `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, anular',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/admin/ventas/anular/' + ventaId,
+                            method: 'POST',
+                            success: function (response) {
+                                Swal.fire(
+                                    '¡Anulada!',
+                                    'La venta ha sido anulada correctamente.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function (xhr) {
+                                let mensaje = 'No se pudo anular la venta';
+                                if (xhr.responseJSON && xhr.responseJSON.error) {
+                                    mensaje = xhr.responseJSON.error;
+                                }
+                                Swal.fire('Error', mensaje, 'error');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Estilos para impresión
+            window.onbeforeprint = function () {
+                $('.card-tools').hide();
+                $('.btn-group').hide();
+                $('.breadcrumb').hide();
+            };
+
+            window.onafterprint = function () {
+                $('.card-tools').show();
+                $('.btn-group').show();
+                $('.breadcrumb').show();
+            };
+        </script>
+    </th:block>
+</body>
+
+</html>

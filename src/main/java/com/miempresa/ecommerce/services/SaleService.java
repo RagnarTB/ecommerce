@@ -28,7 +28,6 @@ import com.miempresa.ecommerce.repositories.PaymentRepository;
 import com.miempresa.ecommerce.repositories.ProductRepository;
 import com.miempresa.ecommerce.repositories.SaleDetailRepository;
 import com.miempresa.ecommerce.repositories.SaleRepository;
-import com.miempresa.ecommerce.repositories.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,26 +51,32 @@ public class SaleService {
     private final CreditRepository creditRepository;
     private final ProductRepository productRepository;
     private final InventoryMovementRepository inventoryMovementRepository;
-    private final UserRepository userRepository;
 
     // ========================================
-    // CREAR VENTA
+    // CREAR VENTA - ✅ CORREGIDO
     // ========================================
 
     /**
      * Crea una nueva venta
      * 
-     * Pasos:
-     * 1. Genera número de venta
-     * 2. Calcula totales
-     * 3. Descuenta stock
-     * 4. Registra movimientos de inventario
-     * 5. Si es crédito, crea cuotas
-     * 6. Registra pagos
+     * @param venta     Venta a crear
+     * @param detalles  Lista de productos vendidos
+     * @param pagos     Lista de pagos realizados
+     * @param usuario   Usuario que registra la venta
+     * @param numCuotas Número de cuotas (obligatorio si es a crédito)
+     * @return Venta creada
      */
+    @Transactional(rollbackFor = Exception.class) // ✅ AGREGADO
     public Sale crearVenta(Sale venta, List<SaleDetail> detalles,
-            List<Payment> pagos, User usuario) {
+            List<Payment> pagos, User usuario, Integer numCuotas) { // ✅ PARÁMETRO AGREGADO
         log.info("Creando nueva venta");
+
+        // ✅ VALIDACIÓN AGREGADA
+        if (venta.getTipoPago() == TipoPago.CREDITO) {
+            if (numCuotas == null || numCuotas < 1 || numCuotas > 24) {
+                throw new RuntimeException("Para ventas a crédito debe especificar entre 1 y 24 cuotas");
+            }
+        }
 
         // 1. Generar número de venta
         venta.setNumeroVenta(generarNumeroVenta());
@@ -100,15 +105,15 @@ public class SaleService {
             // 4. Registrar movimiento de inventario
             registrarMovimientoInventario(producto, detalle.getCantidad(),
                     TipoMovimiento.SALIDA, MotivoMovimiento.VENTA,
-                    venta.getId(), usuario);
+                    null, usuario); // El ID de venta se actualizará después
         }
 
-        // Guardar venta
+        // Guardar venta primero para obtener el ID
         Sale ventaGuardada = saleRepository.save(venta);
 
         // 5. Si es crédito, crear cuotas
         if (venta.getTipoPago() == TipoPago.CREDITO) {
-            crearCredito(ventaGuardada, pagos.isEmpty() ? null : pagos.get(0));
+            crearCredito(ventaGuardada, pagos.isEmpty() ? null : pagos.get(0), numCuotas); // ✅ PARÁMETRO AGREGADO
         }
 
         // 6. Registrar pagos
@@ -120,25 +125,27 @@ public class SaleService {
 
         saleRepository.save(ventaGuardada);
 
+        // 7. Actualizar referencias en movimientos de inventario
+        for (SaleDetail detalle : ventaGuardada.getDetalles()) {
+            actualizarReferenciaMovimiento(detalle.getProducto(), ventaGuardada.getId());
+        }
+
         log.info("Venta creada: {}", ventaGuardada.getNumeroVenta());
         return ventaGuardada;
     }
 
     /**
-     * Crea un crédito con cuotas
+     * Crea un crédito con cuotas - ✅ CORREGIDO
      */
-    private Credit crearCredito(Sale venta, Payment pagoInicial) {
-        log.info("Creando crédito para venta: {}", venta.getNumeroVenta());
-
-        // Determinar número de cuotas (default 12 si no está especificado)
-        int numCuotas = 12; // Esto debería venir como parámetro
+    private Credit crearCredito(Sale venta, Payment pagoInicial, int numCuotas) { // ✅ PARÁMETRO AGREGADO
+        log.info("Creando crédito para venta: {} con {} cuotas", venta.getNumeroVenta(), numCuotas);
 
         Credit credito = Credit.builder()
                 .venta(venta)
                 .cliente(venta.getCliente())
                 .montoTotal(venta.getTotal())
                 .montoPendiente(venta.getTotal())
-                .numCuotas(numCuotas)
+                .numCuotas(numCuotas) // ✅ AHORA USA EL PARÁMETRO
                 .fechaInicio(LocalDate.now())
                 .estado(EstadoCredito.ACTIVO)
                 .build();
@@ -158,7 +165,7 @@ public class SaleService {
     }
 
     // ========================================
-    // ANULAR VENTA
+    // ANULAR VENTA - ✅ MEJORADO
     // ========================================
 
     /**
@@ -170,6 +177,7 @@ public class SaleService {
      * 3. Registrar movimientos de inventario
      * 4. Si es crédito, anular crédito
      */
+    @Transactional(rollbackFor = Exception.class) // ✅ AGREGADO
     public void anularVenta(Long ventaId, User usuario) {
         log.info("Anulando venta ID: {}", ventaId);
 
@@ -317,7 +325,7 @@ public class SaleService {
     }
 
     // ========================================
-    // UTILIDADES PRIVADAS
+    // UTILIDADES PRIVADAS - ✅ MEJORADAS
     // ========================================
 
     /**
@@ -334,16 +342,17 @@ public class SaleService {
     }
 
     /**
-     * Registra un movimiento de inventario
+     * Registra un movimiento de inventario - ✅ MEJORADO
      */
     private void registrarMovimientoInventario(Product producto, Integer cantidad,
             TipoMovimiento tipo, MotivoMovimiento motivo,
             Long referenciaId, User usuario) {
 
-        Integer stockAnterior = producto.getStockActual();
-        Integer stockNuevo = tipo == TipoMovimiento.ENTRADA
-                ? stockAnterior + cantidad
-                : stockAnterior - cantidad;
+        Integer stockAnterior = tipo == TipoMovimiento.ENTRADA
+                ? producto.getStockActual() - cantidad
+                : producto.getStockActual() + cantidad;
+
+        Integer stockNuevo = producto.getStockActual();
 
         InventoryMovement movimiento = InventoryMovement.builder()
                 .producto(producto)
@@ -359,34 +368,21 @@ public class SaleService {
 
         inventoryMovementRepository.save(movimiento);
     }
-}
 
-/**
- * EXPLICACIÓN DEL PROCESO DE VENTA:
- * 
- * 1. Flujo de Venta al CONTADO:
- * - Cliente compra productos
- * - Se descuenta stock inmediatamente
- * - Se registran pagos (puede ser multipago)
- * - Se genera PDF de boleta
- * 
- * 2. Flujo de Venta a CRÉDITO:
- * - Cliente compra productos
- * - Se descuenta stock inmediatamente
- * - Se crea crédito con N cuotas
- * - Cuotas con vencimiento cada 30 días
- * - Cliente puede abonar cuando quiera
- * - Abonos se distribuyen proporcionalmente
- * 
- * 3. Anulación de Venta:
- * - Solo si no tiene pagos (crédito sin abonos)
- * - Devuelve stock automáticamente
- * - Registra movimientos de inventario
- * - Marca venta como ANULADA
- * 
- * 4. Movimientos de Inventario:
- * - VENTA → SALIDA
- * - DEVOLUCIÓN → ENTRADA
- * - Guarda stock anterior y nuevo
- * - Trazabilidad total
- */
+    /**
+     * Actualiza la referencia en movimientos de inventario - ✅ NUEVO
+     */
+    private void actualizarReferenciaMovimiento(Product producto, Long ventaId) {
+        List<InventoryMovement> movimientos = inventoryMovementRepository
+                .findByProductoIdOrderByFechaMovimientoDesc(producto.getId());
+
+        // Actualizar el último movimiento sin referencia
+        movimientos.stream()
+                .filter(m -> m.getReferenciaId() == null && m.getMotivo() == MotivoMovimiento.VENTA)
+                .findFirst()
+                .ifPresent(m -> {
+                    m.setReferenciaId(ventaId);
+                    inventoryMovementRepository.save(m);
+                });
+    }
+}

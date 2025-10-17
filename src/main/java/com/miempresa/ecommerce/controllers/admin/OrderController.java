@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.miempresa.ecommerce.models.enums.EstadoPedido;
+import com.miempresa.ecommerce.models.enums.TipoPago;
 import com.miempresa.ecommerce.security.SecurityUtils;
 import com.miempresa.ecommerce.services.OrderService;
 import com.miempresa.ecommerce.services.UserService;
@@ -98,12 +99,16 @@ public class OrderController {
     }
 
     // ========================================
-    // CONVERTIR A VENTA
+    // CONVERTIR A VENTA - ✅ CORREGIDO
     // ========================================
 
     @PostMapping("/convertir-venta/{id}")
-    public String convertirAVenta(@PathVariable Long id,
+    public String convertirAVenta(
+            @PathVariable Long id,
+            @RequestParam TipoPago tipoPago, // ✅ AGREGADO
+            @RequestParam(required = false) Integer numCuotas, // ✅ AGREGADO
             RedirectAttributes redirectAttributes) {
+
         log.info("Convirtiendo pedido ID: {} a venta", id);
 
         try {
@@ -111,7 +116,16 @@ public class OrderController {
             var usuario = userService.buscarPorUsername(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            var venta = orderService.convertirAVenta(id, usuario);
+            // ✅ Validar que si es crédito tenga número de cuotas
+            if (tipoPago == com.miempresa.ecommerce.models.enums.TipoPago.CREDITO) {
+                if (numCuotas == null || numCuotas < 1) {
+                    redirectAttributes.addFlashAttribute("error",
+                            "Debe especificar el número de cuotas");
+                    return "redirect:/admin/pedidos/ver/" + id;
+                }
+            }
+
+            var venta = orderService.convertirAVenta(id, usuario, tipoPago, numCuotas); // ✅ PARÁMETROS AGREGADOS
 
             redirectAttributes.addFlashAttribute("success",
                     "Pedido convertido a venta: " + venta.getNumeroVenta());

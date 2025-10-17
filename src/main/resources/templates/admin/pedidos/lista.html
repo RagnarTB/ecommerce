@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/fragments/base}">
+
+<head>
+    <title th:text="${titulo}">Lista de Pedidos</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1><i class="fas fa-shopping-bag"></i> Gestión de Pedidos</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Pedidos</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Mensajes -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <i class="icon fas fa-check"></i> <span th:text="${success}"></span>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <i class="icon fas fa-ban"></i> <span th:text="${error}"></span>
+                </div>
+
+                <!-- Filtro por Estado -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="btn-group" role="group">
+                            <a th:href="@{/admin/pedidos}" class="btn"
+                                th:classappend="${estadoSeleccionado == null} ? 'btn-primary' : 'btn-outline-primary'">
+                                <i class="fas fa-list"></i> Todos
+                            </a>
+                            <a th:href="@{/admin/pedidos(estado='PENDIENTE')}" class="btn"
+                                th:classappend="${estadoSeleccionado?.name() == 'PENDIENTE'} ? 'btn-warning' : 'btn-outline-warning'">
+                                <i class="fas fa-clock"></i> Pendientes
+                            </a>
+                            <a th:href="@{/admin/pedidos(estado='CONFIRMADO')}" class="btn"
+                                th:classappend="${estadoSeleccionado?.name() == 'CONFIRMADO'} ? 'btn-success' : 'btn-outline-success'">
+                                <i class="fas fa-check"></i> Confirmados
+                            </a>
+                            <a th:href="@{/admin/pedidos(estado='CANCELADO')}" class="btn"
+                                th:classappend="${estadoSeleccionado?.name() == 'CANCELADO'} ? 'btn-danger' : 'btn-outline-danger'">
+                                <i class="fas fa-times"></i> Cancelados
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjetas de Resumen -->
+                <div class="row mb-3">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3 th:text="${pedidosPendientes ?: 0}">0</h3>
+                                <p>Pedidos Pendientes</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3 th:text="${pedidosConfirmados ?: 0}">0</h3>
+                                <p>Pedidos Confirmados</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3 th:text="${pedidosHoy ?: 0}">0</h3>
+                                <p>Pedidos de Hoy</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3 th:text="${pedidosCancelados ?: 0}">0</h3>
+                                <p>Pedidos Cancelados</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-ban"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Pedidos -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Lista de Pedidos</h3>
+                    </div>
+                    <div class="card-body">
+                        <table id="tablaPedidos" class="table table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="130">N° Pedido</th>
+                                    <th width="150">Fecha</th>
+                                    <th>Cliente</th>
+                                    <th width="100">Tipo Entrega</th>
+                                    <th width="100" class="text-right">Total</th>
+                                    <th width="100">Estado</th>
+                                    <th width="180">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pedido : ${pedidos}">
+                                    <td>
+                                        <strong th:text="${pedido.numeroPedido}">PED-2025-00001</strong>
+                                    </td>
+                                    <td th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">
+                                        01/01/2025 10:30
+                                    </td>
+                                    <td>
+                                        <strong th:text="${pedido.cliente.nombreCompleto}">Juan Pérez</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            <span th:text="${pedido.cliente.tipoDocumento}">DNI</span>:
+                                            <span th:text="${pedido.cliente.numeroDocumento}">12345678</span>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span th:if="${pedido.tipoEntrega != null}" class="badge badge-info"
+                                            th:text="${pedido.tipoEntrega.nombre}">
+                                            Delivery
+                                        </span>
+                                        <span th:unless="${pedido.tipoEntrega != null}" class="text-muted">
+                                            No especificado
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong>S/ <span th:text="${pedido.total}">100.00</span></strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge" th:classappend="${pedido.estado.classBootstrap}"
+                                            th:text="${pedido.estado.nombre}">
+                                            Pendiente
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a th:href="@{/admin/pedidos/ver/{id}(id=${pedido.id})}"
+                                                class="btn btn-info" title="Ver Detalle">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+
+                                            <button th:if="${pedido.estado.name() == 'PENDIENTE'}" type="button"
+                                                class="btn btn-success"
+                                                th:onclick="'confirmarPedido(' + ${pedido.id} + ')'"
+                                                title="Confirmar Pedido">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+
+                                            <button th:if="${pedido.estado.name() == 'CONFIRMADO'}" type="button"
+                                                class="btn btn-primary"
+                                                th:onclick="'convertirAVenta(' + ${pedido.id} + ')'"
+                                                title="Convertir a Venta">
+                                                <i class="fas fa-cash-register"></i>
+                                            </button>
+
+                                            <button th:if="${pedido.estado.name() != 'CANCELADO'}" type="button"
+                                                class="btn btn-danger"
+                                                th:onclick="'cancelarPedido(' + ${pedido.id} + ')'"
+                                                title="Cancelar Pedido">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>N° Pedido</th>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Tipo Entrega</th>
+                                    <th class="text-right">Total</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            $(document).ready(function () {
+                $('#tablaPedidos').DataTable({
+                    "responsive": true,
+                    "lengthChange": true,
+                    "autoWidth": false,
+                    "order": [[1, "desc"]],
+                    "pageLength": 25,
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json"
+                    }
+                });
+            });
+
+            // Confirmar pedido
+            function confirmarPedido(pedidoId) {
+                Swal.fire({
+                    title: '¿Confirmar este pedido?',
+                    text: "El pedido quedará listo para convertirse en venta",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, confirmar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/admin/pedidos/confirmar/' + pedidoId,
+                            method: 'POST',
+                            success: function () {
+                                Swal.fire(
+                                    '¡Confirmado!',
+                                    'El pedido ha sido confirmado.',
+                                    'success'
+                                ).then(() => location.reload());
+                            },
+                            error: function (xhr) {
+                                Swal.fire('Error', 'No se pudo confirmar el pedido', 'error');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Convertir a venta
+            function convertirAVenta(pedidoId) {
+                Swal.fire({
+                    title: '¿Convertir a venta?',
+                    html: `
+            <p>Esta acción:</p>
+            <ul style="text-align: left;">
+                <li>Creará una venta en el sistema</li>
+                <li>Descontará el stock de los productos</li>
+                <li>Generará el comprobante</li>
+            </ul>
+            <p><strong>¿Está seguro?</strong></p>
+        `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#007bff',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, convertir',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/admin/pedidos/convertir-venta/' + pedidoId,
+                            method: 'POST',
+                            success: function (response) {
+                                Swal.fire(
+                                    '¡Convertido!',
+                                    'El pedido se ha convertido en venta exitosamente.',
+                                    'success'
+                                ).then(() => location.reload());
+                            },
+                            error: function (xhr) {
+                                let mensaje = 'No se pudo convertir el pedido';
+                                if (xhr.responseJSON && xhr.responseJSON.error) {
+                                    mensaje = xhr.responseJSON.error;
+                                }
+                                Swal.fire('Error', mensaje, 'error');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Cancelar pedido
+            function cancelarPedido(pedidoId) {
+                Swal.fire({
+                    title: '¿Cancelar este pedido?',
+                    text: "Esta acción no se puede deshacer",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, cancelar',
+                    cancelButtonText: 'No'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/admin/pedidos/cancelar/' + pedidoId,
+                            method: 'POST',
+                            success: function () {
+                                Swal.fire(
+                                    '¡Cancelado!',
+                                    'El pedido ha sido cancelado.',
+                                    'success'
+                                ).then(() => location.reload());
+                            },
+                            error: function (xhr) {
+                                Swal.fire('Error', 'No se pudo cancelar el pedido', 'error');
+                            }
+                        });
+                    }
+                });
+            }
+        </script>
+    </th:block>
+</body>
+
+</html>

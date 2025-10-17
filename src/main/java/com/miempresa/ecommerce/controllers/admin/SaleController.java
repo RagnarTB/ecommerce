@@ -1,7 +1,8 @@
 package com.miempresa.ecommerce.controllers.admin;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.miempresa.ecommerce.models.Customer;
 import com.miempresa.ecommerce.models.Payment;
+import com.miempresa.ecommerce.models.Product;
 import com.miempresa.ecommerce.models.Sale;
 import com.miempresa.ecommerce.models.SaleDetail;
 import com.miempresa.ecommerce.models.User;
@@ -72,6 +75,148 @@ public class SaleController {
         return "admin/ventas/pos";
     }
 
+    // DTOs internos (puedes mover a clases propias si prefieres)
+    /* DTOs con JsonAlias para tolerar variantes desde el frontend */
+    public static class VentaPosRequest {
+        private Long clienteId;
+        private String clienteDocumento;
+        private List<VentaProducto> productos;
+        private BigDecimal subtotal;
+        private BigDecimal descuento;
+        private BigDecimal costoEnvio;
+        private BigDecimal total;
+        private String tipoPago;
+        private List<PagoRequest> pagos;
+
+        public Long getClienteId() {
+            return clienteId;
+        }
+
+        public void setClienteId(Long clienteId) {
+            this.clienteId = clienteId;
+        }
+
+        public String getClienteDocumento() {
+            return clienteDocumento;
+        }
+
+        public void setClienteDocumento(String clienteDocumento) {
+            this.clienteDocumento = clienteDocumento;
+        }
+
+        public List<VentaProducto> getProductos() {
+            return productos;
+        }
+
+        public void setProductos(List<VentaProducto> productos) {
+            this.productos = productos;
+        }
+
+        public BigDecimal getSubtotal() {
+            return subtotal;
+        }
+
+        public void setSubtotal(BigDecimal subtotal) {
+            this.subtotal = subtotal;
+        }
+
+        public BigDecimal getDescuento() {
+            return descuento;
+        }
+
+        public void setDescuento(BigDecimal descuento) {
+            this.descuento = descuento;
+        }
+
+        public BigDecimal getCostoEnvio() {
+            return costoEnvio;
+        }
+
+        public void setCostoEnvio(BigDecimal costoEnvio) {
+            this.costoEnvio = costoEnvio;
+        }
+
+        public BigDecimal getTotal() {
+            return total;
+        }
+
+        public void setTotal(BigDecimal total) {
+            this.total = total;
+        }
+
+        public String getTipoPago() {
+            return tipoPago;
+        }
+
+        public void setTipoPago(String tipoPago) {
+            this.tipoPago = tipoPago;
+        }
+
+        public List<PagoRequest> getPagos() {
+            return pagos;
+        }
+
+        public void setPagos(List<PagoRequest> pagos) {
+            this.pagos = pagos;
+        }
+
+    }
+
+    public static class VentaProducto {
+        @JsonAlias({ "id", "productoId" })
+        private Long id;
+        private Integer cantidad;
+        private BigDecimal precio;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public Integer getCantidad() {
+            return cantidad;
+        }
+
+        public void setCantidad(Integer cantidad) {
+            this.cantidad = cantidad;
+        }
+
+        public BigDecimal getPrecio() {
+            return precio;
+        }
+
+        public void setPrecio(BigDecimal precio) {
+            this.precio = precio;
+        }
+
+    }
+
+    public static class PagoRequest {
+        @JsonAlias({ "metodo", "metodoPago" })
+        private String metodoPago;
+        private BigDecimal monto;
+
+        public String getMetodoPago() {
+            return metodoPago;
+        }
+
+        public void setMetodoPago(String metodoPago) {
+            this.metodoPago = metodoPago;
+        }
+
+        public BigDecimal getMonto() {
+            return monto;
+        }
+
+        public void setMonto(BigDecimal monto) {
+            this.monto = monto;
+        }
+
+    }
+
     /**
      * Procesa una venta desde el POS
      * 
@@ -84,48 +229,201 @@ public class SaleController {
      */
     @PostMapping("/pos/registrar")
     @ResponseBody
-    public String registrarVentaPOS(
+    public org.springframework.http.ResponseEntity<Map<String, Object>> registrarVentaPOS(
             @RequestParam String clienteDocumento,
             @RequestParam String productosJson,
             @RequestParam TipoPago tipoPago,
             @RequestParam(required = false) Integer numCuotas,
-            @RequestParam String pagosJson,
-            RedirectAttributes redirectAttributes) {
+            @RequestParam String pagosJson) {
 
         log.info("Registrando venta desde POS para cliente: {}", clienteDocumento);
 
+        Map<String, Object> response = new java.util.HashMap<>();
+
         try {
-            // Obtener o crear cliente
+            // ========================================
+            // 1. VALIDACIONES INICIALES
+            // ========================================
+
+            if (tipoPago == TipoPago.CREDITO && (numCuotas == null || numCuotas < 1)) {
+                response.put("success", false);
+                response.put("error", "Debe especificar el número de cuotas");
+                return org.springframework.http.ResponseEntity.badRequest().body(response);
+            }
+
+            // ========================================
+            // 2. OBTENER O CREAR CLIENTE
+            // ========================================
+
             Customer cliente = customerService.obtenerOCrearDesdeApi(clienteDocumento);
 
-            // Obtener usuario actual
+            // ========================================
+            // 3. OBTENER USUARIO ACTUAL
+            // ========================================
+
             String username = SecurityUtils.getCurrentUsername();
             User usuario = userService.buscarPorUsername(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            // Parsear productos y crear detalles
-            // (Aquí iría la lógica de parseo del JSON)
-            List<SaleDetail> detalles = new ArrayList<>();
+            // ========================================
+            // 4. PARSEAR PRODUCTOS
+            // ========================================
 
-            // Parsear pagos
-            List<Payment> pagos = new ArrayList<>();
+            com.google.gson.JsonArray productosArray = com.google.gson.JsonParser
+                    .parseString(productosJson)
+                    .getAsJsonArray();
 
-            // Crear venta
+            List<SaleDetail> detalles = new java.util.ArrayList<>();
+
+            for (com.google.gson.JsonElement elemento : productosArray) {
+                com.google.gson.JsonObject productoJson = elemento.getAsJsonObject();
+
+                // Extraer datos del producto
+                Long productoId = productoJson.get("id").getAsLong();
+                Integer cantidad = productoJson.get("cantidad").getAsInt();
+
+                // Buscar producto en BD
+                Product producto = productService.buscarPorId(productoId)
+                        .orElseThrow(() -> new RuntimeException("Producto no encontrado: ID " + productoId));
+
+                // Validar stock disponible
+                if (!producto.hayStock() || producto.getStockActual() < cantidad) {
+                    response.put("success", false);
+                    response.put("error", "Stock insuficiente para: " + producto.getNombre());
+                    return org.springframework.http.ResponseEntity.badRequest().body(response);
+                }
+
+                // Crear detalle de venta
+                SaleDetail detalle = SaleDetail.builder()
+                        .producto(producto)
+                        .cantidad(cantidad)
+                        .build();
+
+                detalle.establecerDatosProducto();
+                detalle.calcularSubtotal();
+                detalles.add(detalle);
+            }
+
+            // Validar que haya al menos un producto
+            if (detalles.isEmpty()) {
+                response.put("success", false);
+                response.put("error", "Debe agregar al menos un producto");
+                return org.springframework.http.ResponseEntity.badRequest().body(response);
+            }
+
+            // ========================================
+            // 5. PARSEAR PAGOS
+            // ========================================
+
+            com.google.gson.JsonArray pagosArray = com.google.gson.JsonParser
+                    .parseString(pagosJson)
+                    .getAsJsonArray();
+
+            List<Payment> pagos = new java.util.ArrayList<>();
+            BigDecimal totalPagado = BigDecimal.ZERO;
+
+            for (com.google.gson.JsonElement elemento : pagosArray) {
+                com.google.gson.JsonObject pagoJson = elemento.getAsJsonObject();
+
+                // Extraer datos del pago
+                MetodoPago metodo = MetodoPago.valueOf(pagoJson.get("metodo").getAsString());
+                BigDecimal monto = new BigDecimal(pagoJson.get("monto").getAsString());
+                String referencia = pagoJson.has("referencia")
+                        ? pagoJson.get("referencia").getAsString()
+                        : null;
+
+                // Validar monto positivo
+                if (monto.compareTo(BigDecimal.ZERO) <= 0) {
+                    response.put("success", false);
+                    response.put("error", "El monto del pago debe ser mayor a cero");
+                    return org.springframework.http.ResponseEntity.badRequest().body(response);
+                }
+
+                Payment pago = Payment.builder()
+                        .metodoPago(metodo)
+                        .monto(monto)
+                        .referencia(referencia)
+                        .usuario(usuario)
+                        .build();
+
+                pagos.add(pago);
+                totalPagado = totalPagado.add(monto);
+            }
+
+            // ========================================
+            // 6. CALCULAR TOTAL DE LA VENTA
+            // ========================================
+
+            BigDecimal totalVenta = detalles.stream()
+                    .map(SaleDetail::getSubtotal)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            // ========================================
+            // 7. VALIDAR PAGOS
+            // ========================================
+
+            if (tipoPago == TipoPago.CONTADO) {
+                // En contado, el total pagado debe ser igual o mayor al total
+                if (totalPagado.compareTo(totalVenta) < 0) {
+                    response.put("success", false);
+                    response.put("error", String.format(
+                            "Pago insuficiente. Total: S/ %.2f, Pagado: S/ %.2f",
+                            totalVenta, totalPagado));
+                    return org.springframework.http.ResponseEntity.badRequest().body(response);
+                }
+            } else {
+                // En crédito, puede haber pago inicial o no
+                if (totalPagado.compareTo(totalVenta) > 0) {
+                    response.put("success", false);
+                    response.put("error", "El pago inicial no puede ser mayor al total");
+                    return org.springframework.http.ResponseEntity.badRequest().body(response);
+                }
+            }
+
+            // ========================================
+            // 8. CREAR VENTA
+            // ========================================
+
             Sale venta = Sale.builder()
                     .cliente(cliente)
                     .tipoPago(tipoPago)
                     .build();
 
-            Sale ventaGuardada = saleService.crearVenta(venta, detalles, pagos, usuario);
+            Sale ventaGuardada = saleService.crearVenta(venta, detalles, pagos, usuario, numCuotas);
 
-            log.info("Venta registrada: {}", ventaGuardada.getNumeroVenta());
+            log.info("Venta registrada desde POS: {}", ventaGuardada.getNumeroVenta());
 
-            return "{\"success\": true, \"mensaje\": \"Venta registrada\", " +
-                    "\"numeroVenta\": \"" + ventaGuardada.getNumeroVenta() + "\"}";
+            // ========================================
+            // 9. PREPARAR RESPUESTA EXITOSA
+            // ========================================
+
+            response.put("success", true);
+            response.put("mensaje", "Venta registrada correctamente");
+            response.put("numeroVenta", ventaGuardada.getNumeroVenta());
+            response.put("ventaId", ventaGuardada.getId());
+            response.put("total", ventaGuardada.getTotal());
+
+            // Calcular vuelto si es contado
+            if (tipoPago == TipoPago.CONTADO) {
+                BigDecimal vuelto = totalPagado.subtract(totalVenta);
+                response.put("vuelto", vuelto);
+            }
+
+            return org.springframework.http.ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            log.error("Error de negocio al registrar venta: {}", e.getMessage());
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return org.springframework.http.ResponseEntity.badRequest().body(response);
 
         } catch (Exception e) {
-            log.error("Error al registrar venta: {}", e.getMessage(), e);
-            return "{\"success\": false, \"error\": \"" + e.getMessage() + "\"}";
+            log.error("Error inesperado al registrar venta: {}", e.getMessage(), e);
+            response.put("success", false);
+            response.put("error", "Error interno del servidor. Contacte al administrador.");
+            return org.springframework.http.ResponseEntity
+                    .status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(response);
         }
     }
 

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/fragments/base}">
+
+<head>
+    <title th:text="${titulo}">Formulario de Usuario</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 th:text="${titulo}">Nuevo Usuario</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/admin/usuarios}">Usuarios</a></li>
+                            <li class="breadcrumb-item active">Formulario</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title" th:text="${esNuevo} ? 'Crear Nuevo Usuario' : 'Editar Usuario'">
+                                    Formulario de Usuario
+                                </h3>
+                            </div>
+
+                            <form
+                                th:action="${esNuevo} ? @{/admin/usuarios/guardar} : @{/admin/usuarios/actualizar/{id}(id=${usuario.id})}"
+                                method="post" th:object="${usuario}">
+
+                                <div class="card-body">
+
+                                    <!-- Mensajes de error -->
+                                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger alert-dismissible">
+                                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                        <h5><i class="icon fas fa-ban"></i> Errores de validación</h5>
+                                        <ul>
+                                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Datos Personales -->
+                                    <h5 class="mb-3">
+                                        <i class="fas fa-user"></i> Datos Personales
+                                    </h5>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="nombre">Nombre <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="nombre" th:field="*{nombre}"
+                                                    placeholder="Ingrese el nombre" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="apellido">Apellido <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="apellido"
+                                                    th:field="*{apellido}" placeholder="Ingrese el apellido" required>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="email">Email <span class="text-danger">*</span></label>
+                                                <input type="email" class="form-control" id="email" th:field="*{email}"
+                                                    placeholder="ejemplo@correo.com" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="perfil">Perfil/Rol <span
+                                                        class="text-danger">*</span></label>
+                                                <select class="form-control select2" id="perfil" th:field="*{perfil}"
+                                                    required>
+                                                    <option value="">-- Seleccione un perfil --</option>
+                                                    <option th:each="p : ${perfiles}" th:value="${p.id}"
+                                                        th:text="${p.nombre}">
+                                                    </option>
+                                                </select>
+                                                <small class="form-text text-muted">
+                                                    Define los permisos del usuario
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+
+                                    <!-- Credenciales de Acceso -->
+                                    <h5 class="mb-3">
+                                        <i class="fas fa-key"></i> Credenciales de Acceso
+                                    </h5>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="username">Username <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="username"
+                                                    th:field="*{username}" placeholder="Nombre de usuario único"
+                                                    th:readonly="${!esNuevo}" required>
+                                                <small class="form-text text-muted">
+                                                    <span th:if="${esNuevo}">Será usado para iniciar sesión</span>
+                                                    <span th:unless="${esNuevo}">No se puede modificar</span>
+                                                </small>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6" th:if="${esNuevo}">
+                                            <div class="form-group">
+                                                <label for="password">Contraseña <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="password" class="form-control" id="password"
+                                                    name="password" placeholder="Mínimo 6 caracteres" minlength="6"
+                                                    required>
+                                                <small class="form-text text-muted">
+                                                    Mínimo 6 caracteres
+                                                </small>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6" th:unless="${esNuevo}">
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle"></i>
+                                                Para cambiar la contraseña, el usuario debe hacerlo desde su perfil.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+
+                                    <!-- Estado -->
+                                    <h5 class="mb-3">
+                                        <i class="fas fa-toggle-on"></i> Estado
+                                    </h5>
+
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch custom-switch-on-success">
+                                            <input type="checkbox" class="custom-control-input" id="activo"
+                                                th:field="*{activo}">
+                                            <label class="custom-control-label" for="activo">
+                                                Usuario Activo
+                                            </label>
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Solo usuarios activos pueden iniciar sesión
+                                        </small>
+                                    </div>
+
+                                </div>
+
+                                <div class="card-footer">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Guardar Usuario
+                                    </button>
+                                    <a th:href="@{/admin/usuarios}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="card card-info" th:if="${esNuevo}">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-info-circle"></i> Información Importante
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    <li>El <strong>username</strong> debe ser único y no se podrá cambiar después.</li>
+                                    <li>La <strong>contraseña</strong> se encriptará automáticamente antes de guardarla.
+                                    </li>
+                                    <li>El <strong>perfil</strong> determina qué módulos puede acceder el usuario.</li>
+                                    <li>Los usuarios <strong>inactivos</strong> no pueden iniciar sesión en el sistema.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            $(document).ready(function () {
+                // Inicializar Select2
+                $('.select2').select2({
+                    theme: 'bootstrap4',
+                    placeholder: '-- Seleccione --'
+                });
+
+                // Variable Thymeleaf segura
+                var esNuevo = /*[[${esNuevo}]]*/ false;
+
+                // Validación del formulario
+                $('form').on('submit', function (e) {
+                    var username = $('#username').val().trim();
+                    var password = $('#password').val();
+
+                    // Validar username
+                    if (username.length < 4) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'El username debe tener al menos 4 caracteres'
+                        });
+                        return false;
+                    }
+
+                    // Validar contraseña solo si es nuevo usuario
+                    if (esNuevo && password.length < 6) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'La contraseña debe tener al menos 6 caracteres'
+                        });
+                        return false;
+                    }
+                });
+
+                // Generar username automático basado en nombre y apellido
+                $('#nombre, #apellido').on('blur', function () {
+                    if ($('#username').val() === '' && esNuevo) {
+                        var nombre = $('#nombre').val().trim().toLowerCase();
+                        var apellido = $('#apellido').val().trim().toLowerCase();
+
+                        if (nombre && apellido) {
+                            var username = nombre.charAt(0) + apellido.replace(/\s+/g, '');
+                            $('#username').val(username);
+                        }
+                    }
+                });
+            });
+        </script>
+    </th:block>
+
+</body>
+
+</html>

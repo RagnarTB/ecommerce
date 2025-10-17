@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/fragments/base}">
+
+<head>
+    <title th:text="${titulo}">Lista de Perfiles</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1><i class="fas fa-user-tag"></i> Gestión de Perfiles</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Perfiles</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Mensajes -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <i class="icon fas fa-check"></i> <span th:text="${success}"></span>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <i class="icon fas fa-ban"></i> <span th:text="${error}"></span>
+                </div>
+
+                <!-- Información -->
+                <div class="alert alert-info">
+                    <h5><i class="icon fas fa-info-circle"></i> ¿Qué son los Perfiles?</h5>
+                    Los perfiles (o roles) definen qué módulos y funcionalidades puede acceder cada usuario del sistema.
+                    Cada usuario debe tener asignado un perfil.
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <a th:href="@{/admin/perfiles/nuevo}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Nuevo Perfil
+                        </a>
+                        <a th:href="@{/admin/usuarios}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver a Usuarios
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tarjetas de Perfiles -->
+                <div class="row">
+                    <div th:each="perfil : ${perfiles}" class="col-md-6 col-lg-4">
+                        <div class="card card-outline"
+                            th:classappend="${perfil.nombre == 'ADMINISTRADOR'} ? 'card-danger' : 'card-primary'">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-user-tag"></i>
+                                    <strong th:text="${perfil.nombre}">ADMINISTRADOR</strong>
+                                </h3>
+                                <div class="card-tools">
+                                    <span th:if="${perfil.activo}" class="badge badge-success">Activo</span>
+                                    <span th:unless="${perfil.activo}" class="badge badge-danger">Inactivo</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted" th:text="${perfil.descripcion}">
+                                    Descripción del perfil
+                                </p>
+
+                                <hr>
+
+                                <h6><i class="fas fa-key"></i> Permisos:</h6>
+                                <div class="mb-2">
+                                    <span th:each="permiso : ${perfil.permisos}" class="badge badge-info mr-1 mb-1">
+                                        <i th:class="${permiso.icono}"></i>
+                                        <span th:text="${permiso.nombre}">Módulo</span>
+                                    </span>
+                                    <span th:if="${perfil.permisos == null or perfil.permisos.isEmpty()}"
+                                        class="text-muted">
+                                        Sin permisos asignados
+                                    </span>
+                                </div>
+
+                                <hr>
+
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">
+                                            <i class="fas fa-users"></i>
+                                            <span th:text="${perfil.cantidadUsuarios ?: 0}">0</span> usuarios
+                                        </small>
+                                    </div>
+                                    <div class="col-6 text-right">
+                                        <small class="text-muted">
+                                            <i class="fas fa-key"></i>
+                                            <span
+                                                th:text="${perfil.permisos != null ? perfil.permisos.size() : 0}">0</span>
+                                            permisos
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="btn-group btn-block">
+                                    <a th:href="@{/admin/perfiles/editar/{id}(id=${perfil.id})}"
+                                        class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                                    <a th:href="@{/admin/perfiles/permisos/{id}(id=${perfil.id})}"
+                                        class="btn btn-sm btn-warning">
+                                        <i class="fas fa-key"></i> Permisos
+                                    </a>
+                                    <button th:if="${perfil.nombre != 'ADMINISTRADOR'}" type="button"
+                                        class="btn btn-sm btn-danger"
+                                        th:onclick="'eliminarPerfil(' + ${perfil.id} + ')'">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Perfiles (alternativa) -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Lista Detallada de Perfiles</h3>
+                    </div>
+                    <div class="card-body">
+                        <table id="tablaPerfiles" class="table table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="80">#</th>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th width="100" class="text-center">Permisos</th>
+                                    <th width="100" class="text-center">Usuarios</th>
+                                    <th width="100">Estado</th>
+                                    <th width="200">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="perfil, iterStat : ${perfiles}">
+                                    <td class="text-center" th:text="${iterStat.count}">1</td>
+                                    <td>
+                                        <strong th:text="${perfil.nombre}">ADMINISTRADOR</strong>
+                                    </td>
+                                    <td>
+                                        <small th:text="${perfil.descripcion}">Descripción</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-info"
+                                            th:text="${perfil.permisos != null ? perfil.permisos.size() : 0}">
+                                            0
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-success" th:text="${perfil.cantidadUsuarios ?: 0}">
+                                            0
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${perfil.activo}" class="badge badge-success">Activo</span>
+                                        <span th:unless="${perfil.activo}" class="badge badge-danger">Inactivo</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a th:href="@{/admin/perfiles/editar/{id}(id=${perfil.id})}"
+                                                class="btn btn-primary" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a th:href="@{/admin/perfiles/permisos/{id}(id=${perfil.id})}"
+                                                class="btn btn-warning" title="Gestionar Permisos">
+                                                <i class="fas fa-key"></i>
+                                            </a>
+                                            <button th:if="${perfil.nombre != 'ADMINISTRADOR'}" type="button"
+                                                class="btn btn-danger"
+                                                th:onclick="'eliminarPerfil(' + ${perfil.id} + ')'" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            $(document).ready(function () {
+                $('#tablaPerfiles').DataTable({
+                    "responsive": true,
+                    "lengthChange": false,
+                    "autoWidth": false,
+                    "order": [[1, "asc"]],
+                    "pageLength": 10,
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json"
+                    }
+                });
+            });
+
+            function eliminarPerfil(perfilId) {
+                Swal.fire({
+                    title: '¿Eliminar este perfil?',
+                    html: `
+            <p>Esta acción:</p>
+            <ul style="text-align: left;">
+                <li>Marcará el perfil como inactivo</li>
+                <li>Los usuarios con este perfil no podrán acceder</li>
+                <li>No se puede deshacer</li>
+            </ul>
+        `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/admin/perfiles/eliminar/' + perfilId;
+                    }
+                });
+            }
+        </script>
+    </th:block>
+</body>
+
+</html>

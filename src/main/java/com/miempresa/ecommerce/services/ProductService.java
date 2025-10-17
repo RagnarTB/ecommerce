@@ -1,23 +1,27 @@
 package com.miempresa.ecommerce.services;
 
-import com.miempresa.ecommerce.models.Product;
-import com.miempresa.ecommerce.models.ProductImage;
-import com.miempresa.ecommerce.repositories.ProductImageRepository;
-import com.miempresa.ecommerce.repositories.ProductRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.miempresa.ecommerce.models.Product;
+import com.miempresa.ecommerce.models.ProductImage;
+import com.miempresa.ecommerce.repositories.ProductImageRepository;
+import com.miempresa.ecommerce.repositories.ProductRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * SERVICE: PRODUCTO
@@ -35,7 +39,8 @@ public class ProductService {
     private final ProductImageRepository productImageRepository;
 
     // Directorio donde se guardan las imágenes
-    private static final String UPLOAD_DIR = "uploads/productos/";
+    @Value("${app.upload.dir:uploads/productos/}")
+    private String uploadDir;
 
     // ========================================
     // OPERACIONES CRUD
@@ -231,7 +236,7 @@ public class ProductService {
             // Crear registro de imagen
             ProductImage imagen = ProductImage.builder()
                     .producto(product)
-                    .url("productos/" + nombreArchivo)
+                    .url("/productos/" + nombreArchivo)
                     .orden(product.getImagenes().size() + 1)
                     .esPrincipal(seraPrincipal)
                     .build();
@@ -299,19 +304,21 @@ public class ProductService {
      * Guarda un archivo en el servidor
      */
     private String guardarArchivo(MultipartFile file) throws IOException {
-        // Crear directorio si no existe
-        Path uploadPath = Paths.get(UPLOAD_DIR);
+        if (file == null || file.getOriginalFilename() == null) {
+            throw new IOException("Archivo inválido");
+        }
+
+        Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
 
-        // Generar nombre único
         String extension = obtenerExtension(file.getOriginalFilename());
         String nombreArchivo = UUID.randomUUID().toString() + extension;
 
-        // Guardar archivo
         Path filePath = uploadPath.resolve(nombreArchivo);
-        Files.copy(file.getInputStream(), filePath);
+        // copy con REPLACE_EXISTING por seguridad (aunque UUID evita colisiones)
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         return nombreArchivo;
     }
@@ -321,16 +328,22 @@ public class ProductService {
      */
     private void eliminarArchivo(String url) {
         try {
-            // Extraer nombre del archivo de la URL
+            if (url == null || url.isBlank())
+                return;
+
+            // Si tu url se guarda como "/uploads/productos/<file>" o
+            // "uploads/productos/<file>"
             String nombreArchivo = url.substring(url.lastIndexOf("/") + 1);
-            Path filePath = Paths.get(UPLOAD_DIR + nombreArchivo);
+            Path filePath = Paths.get(uploadDir).resolve(nombreArchivo);
 
             if (Files.exists(filePath)) {
                 Files.delete(filePath);
                 log.info("Archivo eliminado: {}", nombreArchivo);
+            } else {
+                log.warn("Archivo a eliminar no encontrado: {}", filePath.toString());
             }
         } catch (IOException e) {
-            log.error("Error al eliminar archivo: {}", e.getMessage());
+            log.error("Error al eliminar archivo: {}", e.getMessage(), e);
         }
     }
 

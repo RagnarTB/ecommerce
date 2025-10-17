@@ -1,20 +1,28 @@
 package com.miempresa.ecommerce.controllers.admin;
 
-import com.miempresa.ecommerce.models.Product;
-import com.miempresa.ecommerce.services.CategoryService;
-import com.miempresa.ecommerce.services.BrandService;
-import com.miempresa.ecommerce.services.ProductService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.miempresa.ecommerce.models.Product;
+import com.miempresa.ecommerce.services.BrandService;
+import com.miempresa.ecommerce.services.CategoryService;
+import com.miempresa.ecommerce.services.ProductService;
+
 import jakarta.validation.Valid;
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * CONTROLLER: PRODUCTOS
@@ -104,16 +112,84 @@ public class ProductController {
         }
 
         try {
-            // Guardar producto
+            // ========================================
+            // ✅ VALIDAR IMÁGENES
+            // ========================================
+
+            if (imagenes != null && imagenes.length > 0) {
+                // Validar máximo 5 imágenes
+                if (imagenes.length > 5) {
+                    model.addAttribute("error", "Solo se permiten máximo 5 imágenes");
+                    model.addAttribute("categorias", categoryService.obtenerActivas());
+                    model.addAttribute("marcas", brandService.obtenerActivas());
+                    return "admin/productos/form";
+                }
+
+                for (MultipartFile imagen : imagenes) {
+                    if (!imagen.isEmpty()) {
+                        // ✅ Validar que sea una imagen
+                        String contentType = imagen.getContentType();
+                        if (contentType == null || !contentType.startsWith("image/")) {
+                            model.addAttribute("error",
+                                    "Solo se permiten archivos de imagen (JPG, PNG, etc.)");
+                            model.addAttribute("categorias", categoryService.obtenerActivas());
+                            model.addAttribute("marcas", brandService.obtenerActivas());
+                            return "admin/productos/form";
+                        }
+
+                        // ✅ Validar tamaño máximo (5MB)
+                        long maxSize = 5 * 1024 * 1024; // 5MB en bytes
+                        if (imagen.getSize() > maxSize) {
+                            model.addAttribute("error",
+                                    "Cada imagen no puede superar 5MB de tamaño");
+                            model.addAttribute("categorias", categoryService.obtenerActivas());
+                            model.addAttribute("marcas", brandService.obtenerActivas());
+                            return "admin/productos/form";
+                        }
+
+                        // ✅ Validar extensiones permitidas
+                        String filename = imagen.getOriginalFilename();
+                        if (filename != null) {
+                            String extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+                            if (!List.of("jpg", "jpeg", "png", "gif", "webp").contains(extension)) {
+                                model.addAttribute("error",
+                                        "Extensión no permitida. Use: JPG, PNG, GIF o WEBP");
+                                model.addAttribute("categorias", categoryService.obtenerActivas());
+                                model.addAttribute("marcas", brandService.obtenerActivas());
+                                return "admin/productos/form";
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ========================================
+            // GUARDAR PRODUCTO
+            // ========================================
+
             Product productoGuardado = productService.guardar(producto);
 
-            // Subir imágenes si las hay
+            // ========================================
+            // SUBIR IMÁGENES
+            // ========================================
+
             if (imagenes != null && imagenes.length > 0) {
+                int imagenesSubidas = 0;
                 for (int i = 0; i < imagenes.length && i < 5; i++) {
                     if (!imagenes[i].isEmpty()) {
-                        boolean esPrincipal = (i == 0); // Primera imagen es principal
-                        productService.subirImagen(productoGuardado.getId(), imagenes[i], esPrincipal);
+                        try {
+                            boolean esPrincipal = (i == 0); // Primera imagen es principal
+                            productService.subirImagen(productoGuardado.getId(), imagenes[i], esPrincipal);
+                            imagenesSubidas++;
+                        } catch (Exception e) {
+                            log.error("Error al subir imagen {}: {}", i, e.getMessage());
+                            // Continuar con las demás imágenes
+                        }
                     }
+                }
+
+                if (imagenesSubidas > 0) {
+                    log.info("Se subieron {} imágenes correctamente", imagenesSubidas);
                 }
             }
 
@@ -121,15 +197,17 @@ public class ProductController {
                     "Producto creado correctamente");
             log.info("Producto guardado con ID: {}", productoGuardado.getId());
 
+        } catch (RuntimeException e) {
+            log.error("Error de negocio al guardar producto: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
-            log.error("Error al guardar producto: {}", e.getMessage(), e);
+            log.error("Error inesperado al guardar producto: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error",
-                    "Error al guardar el producto: " + e.getMessage());
+                    "Error al guardar el producto. Intente nuevamente.");
         }
 
         return "redirect:/admin/productos";
     }
-
     // ========================================
     // EDITAR PRODUCTO
     // ========================================

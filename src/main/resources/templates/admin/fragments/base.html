@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es"
-    th:fragment="layout (title, content)">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="es">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${title} + ' | E-Commerce'">E-Commerce</title>
+
+    <!-- CSRF token para AJAX -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 
     <!-- Google Font -->
     <link rel="stylesheet"
@@ -37,6 +41,19 @@
             border-radius: 5px;
         }
     </style>
+
+    <script>
+        (function () {
+            var token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+            var header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+            if (token && header && window.jQuery) {
+                $(document).ajaxSend(function (e, xhr) {
+                    xhr.setRequestHeader(header, token);
+                });
+            }
+        })();
+    </script>
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -97,8 +114,8 @@
                     </div>
 
                     <!-- Contenido específico de cada página -->
-                    <div th:replace="${content}">
-                        <!-- El contenido se insertará aquí -->
+                    <div layout:fragment="content">
+                        <!-- Aquí se insertará el contenido de las vistas hijas -->
                     </div>
 
                 </div>
@@ -107,7 +124,6 @@
 
         <!-- Footer -->
         <div th:replace="~{admin/fragments/footer :: footer}"></div>
-
     </div>
 
     <!-- Scripts -->
@@ -129,6 +145,9 @@
             });
         });
     </script>
+
+    <!-- Bloque opcional para JS de páginas hijas -->
+    <th:block layout:fragment="scripts"></th:block>
 
 </body>
 

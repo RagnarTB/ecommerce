@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/fragments/base}">
+
+<head>
+    <title th:text="${titulo}">Configuración del Sistema</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1><i class="fas fa-cog"></i> Configuración del Sistema</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Configuración</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Mensajes -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <i class="icon fas fa-check"></i> <span th:text="${success}"></span>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <i class="icon fas fa-ban"></i> <span th:text="${error}"></span>
+                </div>
+
+                <form th:action="@{/admin/configuracion/guardar}" method="post" enctype="multipart/form-data">
+
+                    <!-- Tabs de Configuración -->
+                    <div class="card card-primary card-outline card-outline-tabs">
+                        <div class="card-header p-0 border-bottom-0">
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="pill" href="#tab_general">
+                                        <i class="fas fa-building"></i> General
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="pill" href="#tab_branding">
+                                        <i class="fas fa-palette"></i> Branding
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="pill" href="#tab_slider">
+                                        <i class="fas fa-images"></i> Slider
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="pill" href="#tab_contacto">
+                                        <i class="fas fa-address-card"></i> Contacto
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="pill" href="#tab_redes">
+                                        <i class="fas fa-share-alt"></i> Redes Sociales
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content">
+
+                                <!-- Tab General -->
+                                <div class="tab-pane fade show active" id="tab_general">
+                                    <h4 class="mb-3">Información General</h4>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Nombre de la Empresa</label>
+                                                <input type="text" class="form-control" name="nombre_empresa"
+                                                    th:value="${config.nombre_empresa}" placeholder="Mi E-commerce">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Horario de Atención</label>
+                                                <input type="text" class="form-control" name="horario_atencion"
+                                                    th:value="${config.horario_atencion}" placeholder="Lun-Vie 9am-6pm">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Texto de Bienvenida</label>
+                                        <textarea class="form-control" name="texto_bienvenida" rows="3"
+                                            th:text="${config.texto_bienvenida}"
+                                            placeholder="Bienvenido a nuestra tienda online"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Tab Branding -->
+                                <div class="tab-pane fade" id="tab_branding">
+                                    <h4 class="mb-3">Logo y Colores</h4>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Logo de la Empresa</label>
+                                                <div class="custom-file">
+                                                    <input type="file" class="custom-file-input" name="logo"
+                                                        accept="image/*" onchange="previewImage(this, 'logoPreview')">
+                                                    <label class="custom-file-label">Seleccionar logo</label>
+                                                </div>
+                                                <small class="form-text text-muted">
+                                                    Formatos: PNG, JPG. Tamaño recomendado: 200x80px
+                                                </small>
+                                                <div class="mt-2" th:if="${config.logo}">
+                                                    <img id="logoPreview" th:src="@{'/uploads/' + ${config.logo}}"
+                                                        class="img-thumbnail" style="max-height: 100px;">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Color Primario</label>
+                                                <input type="color" class="form-control" name="color_primario"
+                                                    th:value="${config.color_primario}" style="height: 45px;">
+                                                <small class="form-text text-muted">
+                                                    Color principal del sitio
+                                                </small>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Color Secundario</label>
+                                                <input type="color" class="form-control" name="color_secundario"
+                                                    th:value="${config.color_secundario}" style="height: 45px;">
+                                                <small class="form-text text-muted">
+                                                    Color de acentos
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tab Slider -->
+                                <div class="tab-pane fade" id="tab_slider">
+                                    <h4 class="mb-3">Slider Principal (4 Banners)</h4>
+
+                                    <div th:each="i : ${#numbers.sequence(1, 4)}" class="card mb-3">
+                                        <div class="card-header">
+                                            <h5 class="card-title">
+                                                <i class="fas fa-image"></i> Banner [[${i}]]
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label>Imagen</label>
+                                                        <div class="custom-file">
+                                                            <input type="file" class="custom-file-input"
+                                                                th:name="'slider_' + ${i} + '_imagen'" accept="image/*"
+                                                                th:onchange="'previewImage(this, \'sliderPreview' + ${i} + '\')'">
+                                                            <label class="custom-file-label">Seleccionar imagen</label>
+                                                        </div>
+                                                        <small class="form-text text-muted">
+                                                            Tamaño recomendado: 1920x600px
+                                                        </small>
+                                                        <div class="mt-2" th:if="${config['slider_' + i + '_imagen']}">
+                                                            <img th:id="'sliderPreview' + ${i}"
+                                                                th:src="@{'/uploads/' + ${config['slider_' + i + '_imagen']}}"
+                                                                class="img-thumbnail" style="max-height: 150px;">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label>Título</label>
+                                                        <input type="text" class="form-control"
+                                                            th:name="'slider_' + ${i} + '_titulo'"
+                                                            th:value="${config['slider_' + i + '_titulo']}"
+                                                            placeholder="Título del banner">
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <label>Subtítulo</label>
+                                                        <input type="text" class="form-control"
+                                                            th:name="'slider_' + ${i} + '_subtitulo'"
+                                                            th:value="${config['slider_' + i + '_subtitulo']}"
+                                                            placeholder="Subtítulo o descripción">
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <label>Enlace (opcional)</label>
+                                                        <input type="url" class="form-control"
+                                                            th:name="'slider_' + ${i} + '_enlace'"
+                                                            th:value="${config['slider_' + i + '_enlace']}"
+                                                            placeholder="https://...">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tab Contacto -->
+                                <div class="tab-pane fade" id="tab_contacto">
+                                    <h4 class="mb-3">Datos de Contacto</h4>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label><i class="fas fa-map-marker-alt"></i> Dirección</label>
+                                                <input type="text" class="form-control" name="direccion"
+                                                    th:value="${config.direccion}"
+                                                    placeholder="Av. Principal 123, Lima">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label><i class="fas fa-phone"></i> Teléfono</label>
+                                                <input type="text" class="form-control" name="telefono"
+                                                    th:value="${config.telefono}" placeholder="+51 999 888 777">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label><i class="fas fa-envelope"></i> Email</label>
+                                                <input type="email" class="form-control" name="email"
+                                                    th:value="${config.email}" placeholder="ventas@miempresa.com">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-whatsapp"></i> WhatsApp</label>
+                                                <input type="text" class="form-control" name="whatsapp"
+                                                    th:value="${config.whatsapp}" placeholder="51999888777">
+                                                <small class="form-text text-muted">
+                                                    Solo números, sin espacios ni signos
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tab Redes Sociales -->
+                                <div class="tab-pane fade" id="tab_redes">
+                                    <h4 class="mb-3">Redes Sociales</h4>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-facebook"></i> Facebook</label>
+                                                <input type="url" class="form-control" name="facebook_url"
+                                                    th:value="${config.facebook_url}"
+                                                    placeholder="https://facebook.com/tu-pagina">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-instagram"></i> Instagram</label>
+                                                <input type="url" class="form-control" name="instagram_url"
+                                                    th:value="${config.instagram_url}"
+                                                    placeholder="https://instagram.com/tu-cuenta">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-twitter"></i> Twitter / X</label>
+                                                <input type="url" class="form-control" name="twitter_url"
+                                                    th:value="${config.twitter_url}"
+                                                    placeholder="https://x.com/tu-cuenta">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-youtube"></i> YouTube</label>
+                                                <input type="url" class="form-control" name="youtube_url"
+                                                    th:value="${config.youtube_url}"
+                                                    placeholder="https://youtube.com/@tu-canal">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save"></i> Guardar Configuración
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-lg" onclick="location.reload()">
+                                <i class="fas fa-redo"></i> Restablecer
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+        </section>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function previewImage(input, previewId) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#' + previewId).attr('src', e.target.result).show();
+                    };
+                    reader.readAsDataURL(input.files[0]);
+
+                    // Actualizar label del input file
+                    var fileName = input.files[0].name;
+                    $(input).next('.custom-file-label').html(fileName);
+                }
+            }
+
+            // Actualizar labels de los inputs file
+            $('.custom-file-input').on('change', function () {
+                let fileName = $(this).val().split('\\').pop();
+                $(this).next('.custom-file-label').addClass("selected").html(fileName);
+            });
+        </script>
+    </th:block>
+</body>
+
+</html>

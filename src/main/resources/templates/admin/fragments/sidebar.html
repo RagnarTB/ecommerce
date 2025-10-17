@@ -42,7 +42,7 @@
                 <!-- ====================================== -->
                 <li class="nav-item">
                     <a th:href="@{/admin/dashboard}" class="nav-link"
-                        th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/dashboard')} ? 'active' : ''">
+                        th:classappend="${#strings.contains(#request.requestURI, '/dashboard') ? 'active' : ''}"
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
                     </a>

@@ -1,23 +1,32 @@
 package com.miempresa.ecommerce.services;
 
-import com.miempresa.ecommerce.models.*;
-import com.miempresa.ecommerce.models.enums.EstadoPedido;
-import com.miempresa.ecommerce.repositories.OrderRepository;
-import com.miempresa.ecommerce.repositories.ProductRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.miempresa.ecommerce.models.Order;
+import com.miempresa.ecommerce.models.OrderDetail;
+import com.miempresa.ecommerce.models.Payment;
+import com.miempresa.ecommerce.models.Product;
+import com.miempresa.ecommerce.models.Sale;
+import com.miempresa.ecommerce.models.SaleDetail;
+import com.miempresa.ecommerce.models.User;
+import com.miempresa.ecommerce.models.enums.EstadoPedido;
+import com.miempresa.ecommerce.models.enums.TipoPago;
+import com.miempresa.ecommerce.repositories.OrderRepository;
+import com.miempresa.ecommerce.repositories.ProductRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * SERVICE: PEDIDO
  * 
  * Gestiona los pedidos creados desde la web.
- * Los pedidos NO descontam stock hasta que se convierten en venta.
+ * Los pedidos NO descuentan stock hasta que se convierten en venta.
  */
 
 @Service
@@ -37,6 +46,7 @@ public class OrderService {
     /**
      * Crea un nuevo pedido desde la web
      */
+    @Transactional(rollbackFor = Exception.class) // ✅ AGREGADO
     public Order crearPedido(Order pedido, List<OrderDetail> detalles) {
         log.info("Creando nuevo pedido para cliente: {}", pedido.getCliente().getNombreCompleto());
 
@@ -100,11 +110,23 @@ public class OrderService {
         return orderRepository.save(pedido);
     }
 
+    // ========================================
+    // CONVERTIR A VENTA - ✅ CORREGIDO
+    // ========================================
+
     /**
      * Convierte un pedido en venta
      * Este método llama a SaleService para crear la venta
+     * 
+     * @param pedidoId  ID del pedido a convertir
+     * @param usuario   Usuario que realiza la conversión
+     * @param tipoPago  Tipo de pago (CONTADO o CREDITO) - ✅ AGREGADO
+     * @param numCuotas Número de cuotas (obligatorio si es CREDITO) - ✅ AGREGADO
+     * @return Venta creada
      */
-    public Sale convertirAVenta(Long pedidoId, User usuario) {
+    @Transactional(rollbackFor = Exception.class) // ✅ AGREGADO
+    public Sale convertirAVenta(Long pedidoId, User usuario, TipoPago tipoPago, Integer numCuotas) { // ✅ PARÁMETROS
+                                                                                                     // AGREGADOS
         log.info("Convirtiendo pedido ID: {} a venta", pedidoId);
 
         Optional<Order> pedidoOpt = buscarPorId(pedidoId);
@@ -119,6 +141,13 @@ public class OrderService {
             throw new RuntimeException("El pedido debe estar confirmado primero");
         }
 
+        // ✅ VALIDACIÓN AGREGADA
+        if (tipoPago == TipoPago.CREDITO) {
+            if (numCuotas == null || numCuotas < 1 || numCuotas > 24) {
+                throw new RuntimeException("Para ventas a crédito debe especificar entre 1 y 24 cuotas");
+            }
+        }
+
         // Crear venta desde el pedido
         Sale venta = Sale.builder()
                 .cliente(pedido.getCliente())
@@ -127,6 +156,7 @@ public class OrderService {
                 .subtotal(pedido.getSubtotal())
                 .costoEnvio(pedido.getCostoEnvio())
                 .total(pedido.getTotal())
+                .tipoPago(tipoPago) // ✅ AGREGADO
                 .build();
 
         // Convertir detalles de pedido a detalles de venta
@@ -143,8 +173,8 @@ public class OrderService {
         // Crear pagos vacíos (se registrarán después)
         List<Payment> pagos = List.of();
 
-        // Crear venta
-        return saleService.crearVenta(venta, ventaDetalles, pagos, usuario);
+        // Crear venta con el parámetro numCuotas - ✅ CORREGIDO
+        return saleService.crearVenta(venta, ventaDetalles, pagos, usuario, numCuotas);
     }
 
     // ========================================
@@ -191,7 +221,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<Order> obtenerTodos() {
-        return orderRepository.findAll();
+        return orderRepository.findAllByOrderByFechaPedidoDesc();
     }
 
     @Transactional(readOnly = true)
@@ -231,27 +261,3 @@ public class OrderService {
         return String.format("%s%05d", prefijo, siguiente);
     }
 }
-
-/**
- * EXPLICACIÓN DEL FLUJO DE PEDIDOS:
- * 
- * 1. Cliente crea pedido desde la web:
- * - Estado: PENDIENTE
- * - NO descuenta stock
- * - Se guarda en tabla pedidos
- * 
- * 2. Admin revisa pedido:
- * - Verifica stock
- * - Verifica datos del cliente
- * - Confirma → Estado: CONFIRMADO
- * 
- * 3. Admin convierte a venta:
- * - Crea registro en tabla ventas
- * - SÍ descuenta stock
- * - Genera boleta
- * - Registra pagos
- * 
- * 4. Si el cliente cancela:
- * - Estado: CANCELADO
- * - No afecta stock (nunca lo descontó)
- */

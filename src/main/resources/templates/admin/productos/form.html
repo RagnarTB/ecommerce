@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/fragments/base}">
+
+<head>
+    <title th:text="${titulo}">Producto</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <!-- Content Header -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 th:text="${titulo}">Producto</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/admin/productos}">Productos</a></li>
+                            <li class="breadcrumb-item active" th:text="${titulo}">Formulario</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title" th:text="${esNuevo} ? 'Nuevo Producto' : 'Editar Producto'">
+                                    Formulario</h3>
+                            </div>
+
+                            <!-- Formulario -->
+                            <form
+                                th:action="${esNuevo} ? @{/admin/productos/guardar} : @{/admin/productos/actualizar/{id}(id=${producto.id})}"
+                                method="post" enctype="multipart/form-data" th:object="${producto}">
+
+                                <div class="card-body">
+
+                                    <!-- Mensajes de error/éxito -->
+                                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger alert-dismissible">
+                                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                        <h5><i class="icon fas fa-ban"></i> Errores de validación</h5>
+                                        <ul>
+                                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- ROW 1: Información Básica -->
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <!-- Nombre -->
+                                            <div class="form-group">
+                                                <label for="nombre">Nombre del Producto <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="nombre" th:field="*{nombre}"
+                                                    placeholder="Ingrese el nombre del producto" required>
+                                                <span th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"
+                                                    class="text-danger"></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <!-- Código SKU -->
+                                            <div class="form-group">
+                                                <label for="codigoSku">Código SKU</label>
+                                                <input type="text" class="form-control" id="codigoSku"
+                                                    th:field="*{codigoSku}" placeholder="Se genera automáticamente">
+                                                <small class="form-text text-muted">Dejar vacío para generar
+                                                    automáticamente</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ROW 2: Descripción -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label for="descripcion">Descripción</label>
+                                                <textarea class="form-control" id="descripcion"
+                                                    th:field="*{descripcion}" rows="4"
+                                                    placeholder="Descripción detallada del producto"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ROW 3: Categoría y Marca -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <!-- Categoría -->
+                                            <div class="form-group">
+                                                <label for="categoria">Categoría <span
+                                                        class="text-danger">*</span></label>
+                                                <select class="form-control select2" id="categoria"
+                                                    th:field="*{categoria}" required>
+                                                    <option value="">-- Seleccione una categoría --</option>
+                                                    <option th:each="cat : ${categorias}" th:value="${cat.id}"
+                                                        th:text="${cat.nombre}"></option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <!-- Marca -->
+                                            <div class="form-group">
+                                                <label for="marca">Marca <span class="text-danger">*</span></label>
+                                                <select class="form-control select2" id="marca" th:field="*{marca}"
+                                                    required>
+                                                    <option value="">-- Seleccione una marca --</option>
+                                                    <option th:each="m : ${marcas}" th:value="${m.id}"
+                                                        th:text="${m.nombre}"></option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ROW 4: Precios -->
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <!-- Precio Base -->
+                                            <div class="form-group">
+                                                <label for="precioBase">Precio Base <span
+                                                        class="text-danger">*</span></label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">S/</span>
+                                                    </div>
+                                                    <input type="number" class="form-control" id="precioBase"
+                                                        th:field="*{precioBase}" step="0.01" min="0" placeholder="0.00"
+                                                        required>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <!-- Precio Oferta -->
+                                            <div class="form-group">
+                                                <label for="precioOferta">Precio Oferta</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">S/</span>
+                                                    </div>
+                                                    <input type="number" class="form-control" id="precioOferta"
+                                                        th:field="*{precioOferta}" step="0.01" min="0"
+                                                        placeholder="0.00">
+                                                </div>
+                                                <small class="form-text text-muted">Dejar vacío si no hay oferta</small>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <!-- Descuento calculado -->
+                                            <div class="form-group">
+                                                <label>Descuento</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="descuentoCalculado"
+                                                        readonly placeholder="0%">
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text">%</span>
+                                                    </div>
+                                                </div>
+                                                <small class="form-text text-muted">Se calcula automáticamente</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ROW 5: Stock -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <!-- Stock Actual -->
+                                            <div class="form-group">
+                                                <label for="stockActual">Stock Actual <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="number" class="form-control" id="stockActual"
+                                                    th:field="*{stockActual}" min="0" placeholder="0" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <!-- Stock Mínimo -->
+                                            <div class="form-group">
+                                                <label for="stockMinimo">Stock Mínimo <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="number" class="form-control" id="stockMinimo"
+                                                    th:field="*{stockMinimo}" min="0" placeholder="0" required>
+                                                <small class="form-text text-muted">Alerta cuando el stock baje de este
+                                                    valor</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ROW 6: Imágenes -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Imágenes del Producto (Máximo 5)</label>
+                                                <div class="custom-file">
+                                                    <input type="file" class="custom-file-input" id="imagenes"
+                                                        name="imagenes" accept="image/*" multiple
+                                                        onchange="previewImages(event)">
+                                                    <label class="custom-file-label" for="imagenes">Seleccionar
+                                                        imágenes</label>
+                                                </div>
+                                                <small class="form-text text-muted">
+                                                    Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB por imagen. La primera
+                                                    imagen será la principal.
+                                                </small>
+                                            </div>
+
+                                            <!-- Preview de imágenes -->
+                                            <div id="imagePreview" class="row mt-3"></div>
+
+                                            <!-- Imágenes existentes (solo en edición) -->
+                                            <div th:if="${!esNuevo and producto.imagenes != null and !producto.imagenes.isEmpty()}"
+                                                class="mt-3">
+                                                <label>Imágenes actuales:</label>
+                                                <div class="row">
+                                                    <div th:each="img : ${producto.imagenes}" class="col-md-2 mb-3">
+                                                        <div class="card">
+                                                            <img th:src="@{'/uploads/' + ${img.url}}"
+                                                                class="card-img-top" alt="Imagen">
+                                                            <div class="card-body p-2">
+                                                                <span th:if="${img.esPrincipal}"
+                                                                    class="badge badge-primary">Principal</span>
+                                                                <button type="button"
+                                                                    class="btn btn-danger btn-sm btn-block"
+                                                                    th:onclick="'eliminarImagen(' + ${img.id} + ')'">
+                                                                    <i class="fas fa-trash"></i> Eliminar
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ROW 7: Opciones -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="esDestacado"
+                                                        th:field="*{esDestacado}">
+                                                    <label class="custom-control-label" for="esDestacado">
+                                                        Producto Destacado
+                                                    </label>
+                                                </div>
+                                                <small class="form-text text-muted">Se mostrará en la página
+                                                    principal</small>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="activo"
+                                                        th:field="*{activo}">
+                                                    <label class="custom-control-label" for="activo">
+                                                        Producto Activo
+                                                    </label>
+                                                </div>
+                                                <small class="form-text text-muted">Solo productos activos se muestran
+                                                    en el catálogo</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- Card Footer -->
+                                <div class="card-footer">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Guardar
+                                    </button>
+                                    <a th:href="@{/admin/productos}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts adicionales -->
+    <th:block layout:fragment="scripts">
+        <script>
+            $(document).ready(function () {
+                // Initialize Select2
+                $('.select2').select2({
+                    theme: 'bootstrap4',
+                    placeholder: '-- Seleccione --'
+                });
+
+                // Calcular descuento automáticamente
+                $('#precioBase, #precioOferta').on('input', function () {
+                    calcularDescuento();
+                });
+
+                // Calcular al cargar si hay valores
+                calcularDescuento();
+
+                // Validar número máximo de imágenes
+                $('#imagenes').on('change', function (e) {
+                    if (this.files.length > 5) {
+                        alert('Solo puedes subir máximo 5 imágenes');
+                        this.value = '';
+                        $('#imagePreview').html('');
+                    }
+                });
+            });
+
+            // Calcular porcentaje de descuento
+            function calcularDescuento() {
+                let precioBase = parseFloat($('#precioBase').val()) || 0;
+                let precioOferta = parseFloat($('#precioOferta').val()) || 0;
+
+                if (precioBase > 0 && precioOferta > 0 && precioOferta < precioBase) {
+                    let descuento = ((precioBase - precioOferta) / precioBase) * 100;
+                    $('#descuentoCalculado').val(descuento.toFixed(2));
+                } else {
+                    $('#descuentoCalculado').val('0');
+                }
+            }
+
+            // Preview de imágenes
+            function previewImages(event) {
+                let files = event.target.files;
+                let preview = $('#imagePreview');
+                preview.html('');
+
+                if (files.length > 5) {
+                    alert('Máximo 5 imágenes permitidas');
+                    event.target.value = '';
+                    return;
+                }
+
+                Array.from(files).forEach((file, index) => {
+                    if (file.type.match('image.*')) {
+                        let reader = new FileReader();
+
+                        reader.onload = function (e) {
+                            let badge = index === 0 ? '<span class="badge badge-primary">Principal</span>' : '';
+                            let col = $('<div class="col-md-2 mb-3"></div>');
+                            let card = `
+                    <div class="card">
+                        <img src="${e.target.result}" class="card-img-top" alt="Preview">
+                        <div class="card-body p-2 text-center">
+                            ${badge}
+                            <small class="d-block text-muted">${file.name}</small>
+                        </div>
+                    </div>
+                `;
+                            col.html(card);
+                            preview.append(col);
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Eliminar imagen existente
+            function eliminarImagen(imagenId) {
+                if (confirm('¿Estás seguro de eliminar esta imagen?')) {
+                    $.ajax({
+                        url: '/admin/productos/imagen/eliminar/' + imagenId,
+                        type: 'POST',
+                        success: function () {
+                            location.reload();
+                        },
+                        error: function () {
+                            alert('Error al eliminar la imagen');
+                        }
+                    });
+                }
+            }
+        </script>
+    </th:block>
+</body>
+
+</html>

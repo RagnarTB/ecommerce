@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/fragments/base}">
+
+<head>
+    <title>Punto de Venta (POS)</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1><i class="fas fa-cash-register"></i> Punto de Venta</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                            <li class="breadcrumb-item active">POS</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+
+                    <!-- COLUMNA IZQUIERDA: Búsqueda de Productos -->
+                    <div class="col-md-7">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Buscar Productos</h3>
+                            </div>
+                            <div class="card-body">
+                                <!-- Búsqueda -->
+                                <div class="input-group mb-3">
+                                    <input type="text" id="buscarProducto" class="form-control form-control-lg"
+                                        placeholder="Buscar por nombre o código..." autofocus>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="button">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Lista de Productos -->
+                                <div id="listaProductos" style="max-height: 500px; overflow-y: auto;">
+                                    <div th:each="producto : ${productos}"
+                                        class="producto-item mb-2 p-2 border rounded cursor-pointer" th:attr="data-id=${producto.id},
+                                              data-nombre=${producto.nombre},
+                                              data-precio=${producto.getPrecioActual()},
+                                              data-stock=${producto.stockActual}" onclick="agregarProducto(this)">
+                                        <div class="row align-items-center">
+                                            <div class="col-2">
+                                                <img th:if="${producto.imagenPrincipal != null}"
+                                                    th:src="@{'/uploads/' + ${producto.imagenPrincipal.url}}"
+                                                    class="img-thumbnail" style="max-width: 60px;">
+                                                <img th:unless="${producto.imagenPrincipal != null}"
+                                                    src="/img/no-image.png" class="img-thumbnail"
+                                                    style="max-width: 60px;">
+                                            </div>
+                                            <div class="col-7">
+                                                <strong th:text="${producto.nombre}">Producto</strong>
+                                                <br>
+                                                <small class="text-muted"
+                                                    th:text="${producto.codigoSku}">SKU-001</small>
+                                                <br>
+                                                <span th:if="${producto.tieneStockBajo()}"
+                                                    class="badge badge-warning">Stock Bajo</span>
+                                                <span th:unless="${producto.hayStock()}" class="badge badge-danger">Sin
+                                                    Stock</span>
+                                            </div>
+                                            <div class="col-3 text-right">
+                                                <strong class="text-success">
+                                                    S/ <span th:text="${producto.getPrecioActual()}">0.00</span>
+                                                </strong>
+                                                <br>
+                                                <small>Stock: <span th:text="${producto.stockActual}">0</span></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COLUMNA DERECHA: Carrito y Resumen -->
+                    <div class="col-md-5">
+
+                        <!-- Cliente -->
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Cliente</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>DNI / RUC</label>
+                                    <div class="input-group">
+                                        <input type="text" id="clienteDocumento" class="form-control"
+                                            placeholder="Ingrese DNI o RUC" maxlength="11">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-info" type="button" onclick="buscarCliente()">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Presione Enter o click en buscar
+                                    </small>
+                                </div>
+
+                                <div id="clienteInfo" style="display: none;">
+                                    <div class="alert alert-success">
+                                        <strong><i class="fas fa-user"></i> <span id="clienteNombre"></span></strong>
+                                        <br>
+                                        <small>Documento: <span id="clienteDoc"></span></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Carrito -->
+                        <div class="card card-warning">
+                            <div class="card-header">
+                                <h3 class="card-title">Carrito de Compra</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool btn-sm" onclick="limpiarCarrito()">
+                                        <i class="fas fa-trash"></i> Limpiar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th width="80">Cant.</th>
+                                            <th width="100">Precio</th>
+                                            <th width="100">Subtotal</th>
+                                            <th width="40"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="carritoItems">
+                                        <tr class="text-center text-muted">
+                                            <td colspan="5">
+                                                <i class="fas fa-shopping-cart fa-3x mb-2"></i>
+                                                <p>Carrito vacío</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Resumen de Venta -->
+                        <div class="card card-success">
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-6"><strong>Subtotal:</strong></div>
+                                    <div class="col-6 text-right">
+                                        S/ <span id="subtotal">0.00</span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-6">
+                                        <label class="mb-0">Descuento:</label>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" id="descuento" class="form-control text-right"
+                                                value="0" step="0.01" min="0" onchange="calcularTotal()">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-6">
+                                        <label class="mb-0">Envío:</label>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" id="costoEnvio" class="form-control text-right"
+                                                value="0" step="0.01" min="0" onchange="calcularTotal()">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <h4>TOTAL:</h4>
+                                    </div>
+                                    <div class="col-6 text-right">
+                                        <h3 class="text-success">
+                                            S/ <span id="total">0.00</span>
+                                        </h3>
+                                    </div>
+                                </div>
+
+                                <!-- Tipo de Pago -->
+                                <div class="form-group">
+                                    <label>Tipo de Pago</label>
+                                    <select id="tipoPago" class="form-control" onchange="cambiarTipoPago()">
+                                        <option value="CONTADO">Contado</option>
+                                        <option value="CREDITO">Crédito</option>
+                                    </select>
+                                </div>
+
+                                <!-- Opciones de Crédito -->
+                                <div id="opcionesCredito" style="display: none;">
+                                    <div class="form-group">
+                                        <label>Número de Cuotas</label>
+                                        <select id="numCuotas" class="form-control">
+                                            <option value="3">3 cuotas</option>
+                                            <option value="6">6 cuotas</option>
+                                            <option value="12" selected>12 cuotas</option>
+                                            <option value="18">18 cuotas</option>
+                                            <option value="24">24 cuotas</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Método de Pago -->
+                                <div id="metodoPagoSection">
+                                    <div class="form-group">
+                                        <label>Método de Pago</label>
+                                        <select id="metodoPago" class="form-control">
+                                            <option value="EFECTIVO">Efectivo</option>
+                                            <option value="TARJETA">Tarjeta</option>
+                                            <option value="TRANSFERENCIA">Transferencia</option>
+                                            <option value="YAPE">Yape/Plin</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-check mb-2">
+                                        <input type="checkbox" class="form-check-input" id="multipago"
+                                            onchange="toggleMultipago()">
+                                        <label class="form-check-label" for="multipago">
+                                            Multipago (varios métodos)
+                                        </label>
+                                    </div>
+
+                                    <!-- Multipagos -->
+                                    <div id="multipagosSection" style="display: none;">
+                                        <div id="multipagosLista"></div>
+                                        <button type="button" class="btn btn-sm btn-info btn-block"
+                                            onclick="agregarPago()">
+                                            <i class="fas fa-plus"></i> Agregar Pago
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Botón Procesar Venta -->
+                                <button type="button" class="btn btn-success btn-lg btn-block mt-3"
+                                    onclick="procesarVenta()">
+                                    <i class="fas fa-check"></i> PROCESAR VENTA
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            let carrito = [];
+            let clienteActual = null;
+            let totalGeneral = 0;
+
+            $(document).ready(function () {
+                // Búsqueda de productos
+                $('#buscarProducto').on('keyup', function () {
+                    let busqueda = $(this).val().toLowerCase();
+                    $('.producto-item').each(function () {
+                        let texto = $(this).text().toLowerCase();
+                        $(this).toggle(texto.indexOf(busqueda) > -1);
+                    });
+                });
+
+                // Enter en documento de cliente
+                $('#clienteDocumento').on('keypress', function (e) {
+                    if (e.which === 13) {
+                        buscarCliente();
+                    }
+                });
+            });
+
+            // Buscar cliente por DNI/RUC
+            function buscarCliente() {
+                let documento = $('#clienteDocumento').val().trim();
+
+                if (documento === '') {
+                    alert('Ingrese un documento');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/admin/clientes/buscar',
+                    method: 'GET',
+                    data: { documento: documento },
+                    success: function (response) {
+                        let data = JSON.parse(response);
+                        if (data.success) {
+                            clienteActual = data.cliente;
+                            $('#clienteNombre').text(data.cliente.nombre);
+                            $('#clienteDoc').text(documento);
+                            $('#clienteInfo').show();
+                            toastr.success('Cliente encontrado');
+                        } else {
+                            toastr.error(data.error);
+                        }
+                    },
+                    error: function () {
+                        toastr.error('Error al buscar cliente');
+                    }
+                });
+            }
+
+            // Agregar producto al carrito
+            function agregarProducto(elemento) {
+                let id = $(elemento).data('id');
+                let nombre = $(elemento).data('nombre');
+                let precio = parseFloat($(elemento).data('precio'));
+                let stock = parseInt($(elemento).data('stock'));
+
+                if (stock <= 0) {
+                    toastr.error('Producto sin stock');
+                    return;
+                }
+
+                // Buscar si ya existe en el carrito
+                let existe = carrito.find(item => item.id === id);
+
+                if (existe) {
+                    if (existe.cantidad >= stock) {
+                        toastr.warning('Stock insuficiente');
+                        return;
+                    }
+                    existe.cantidad++;
+                    existe.subtotal = existe.cantidad * existe.precio;
+                } else {
+                    carrito.push({
+                        id: id,
+                        nombre: nombre,
+                        precio: precio,
+                        cantidad: 1,
+                        subtotal: precio,
+                        stock: stock
+                    });
+                }
+
+                actualizarCarrito();
+                toastr.success('Producto agregado');
+            }
+
+            // Actualizar vista del carrito
+            function actualizarCarrito() {
+                let html = '';
+                let subtotal = 0;
+
+                if (carrito.length === 0) {
+                    html = `
+            <tr class="text-center text-muted">
+                <td colspan="5">
+                    <i class="fas fa-shopping-cart fa-3x mb-2"></i>
+                    <p>Carrito vacío</p>
+                </td>
+            </tr>
+        `;
+                } else {
+                    carrito.forEach((item, index) => {
+                        subtotal += item.subtotal;
+                        html += `
+                <tr>
+                    <td>
+                        <small>${item.nombre}</small><br>
+                        <span class="badge badge-info">S/ ${item.precio.toFixed(2)}</span>
+                    </td>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-prepend">
+                                <button class="btn btn-sm btn-outline-secondary" 
+                                        onclick="cambiarCantidad(${index}, -1)">-</button>
+                            </div>
+                            <input type="number" 
+                                   class="form-control text-center" 
+                                   value="${item.cantidad}"
+                                   min="1"
+                                   max="${item.stock}"
+                                   onchange="actualizarCantidad(${index}, this.value)">
+                            <div class="input-group-append">
+                                <button class="btn btn-sm btn-outline-secondary" 
+                                        onclick="cambiarCantidad(${index}, 1)">+</button>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-right">S/ ${item.precio.toFixed(2)}</td>
+                    <td class="text-right"><strong>S/ ${item.subtotal.toFixed(2)}</strong></td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" 
+                                onclick="eliminarItem(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+                    });
+                }
+
+                $('#carritoItems').html(html);
+                $('#subtotal').text(subtotal.toFixed(2));
+                calcularTotal();
+            }
+
+            // Cambiar cantidad
+            function cambiarCantidad(index, cambio) {
+                let item = carrito[index];
+                let nuevaCantidad = item.cantidad + cambio;
+
+                if (nuevaCantidad < 1) {
+                    eliminarItem(index);
+                    return;
+                }
+
+                if (nuevaCantidad > item.stock) {
+                    toastr.warning('Stock insuficiente');
+                    return;
+                }
+
+                item.cantidad = nuevaCantidad;
+                item.subtotal = item.cantidad * item.precio;
+                actualizarCarrito();
+            }
+
+            // Actualizar cantidad directamente
+            function actualizarCantidad(index, valor) {
+                let cantidad = parseInt(valor);
+                let item = carrito[index];
+
+                if (cantidad < 1) {
+                    eliminarItem(index);
+                    return;
+                }
+
+                if (cantidad > item.stock) {
+                    toastr.warning('Stock insuficiente');
+                    cantidad = item.stock;
+                }
+
+                item.cantidad = cantidad;
+                item.subtotal = item.cantidad * item.precio;
+                actualizarCarrito();
+            }
+
+            // Eliminar item del carrito
+            function eliminarItem(index) {
+                carrito.splice(index, 1);
+                actualizarCarrito();
+                toastr.info('Producto eliminado');
+            }
+
+            // Limpiar carrito
+            function limpiarCarrito() {
+                if (confirm('¿Limpiar todo el carrito?')) {
+                    carrito = [];
+                    actualizarCarrito();
+                    toastr.info('Carrito limpiado');
+                }
+            }
+
+            // Calcular total
+            function calcularTotal() {
+                let subtotal = parseFloat($('#subtotal').text());
+                let descuento = parseFloat($('#descuento').val()) || 0;
+                let envio = parseFloat($('#costoEnvio').val()) || 0;
+
+                totalGeneral = subtotal - descuento + envio;
+                $('#total').text(totalGeneral.toFixed(2));
+            }
+
+            // Cambiar tipo de pago
+            function cambiarTipoPago() {
+                let tipo = $('#tipoPago').val();
+
+                if (tipo === 'CREDITO') {
+                    $('#opcionesCredito').show();
+                    $('#metodoPagoSection').hide();
+                } else {
+                    $('#opcionesCredito').hide();
+                    $('#metodoPagoSection').show();
+                }
+            }
+
+            // Toggle multipago
+            function toggleMultipago() {
+                if ($('#multipago').is(':checked')) {
+                    $('#multipagosSection').show();
+                    $('#metodoPago').closest('.form-group').hide();
+                    agregarPago(); // Agregar primer pago
+                } else {
+                    $('#multipagosSection').hide();
+                    $('#multipagosLista').html('');
+                    $('#metodoPago').closest('.form-group').show();
+                }
+            }
+
+            // Agregar pago en multipago
+            let contadorPagos = 0;
+            function agregarPago() {
+                contadorPagos++;
+                let html = `
+        <div class="card mb-2" id="pago_${contadorPagos}">
+            <div class="card-body p-2">
+                <div class="row">
+                    <div class="col-6">
+                        <select class="form-control form-control-sm pago-metodo">
+                            <option value="EFECTIVO">Efectivo</option>
+                            <option value="TARJETA">Tarjeta</option>
+                            <option value="TRANSFERENCIA">Transferencia</option>
+                            <option value="YAPE">Yape/Plin</option>
+                        </select>
+                    </div>
+                    <div class="col-5">
+                        <input type="number" 
+                               class="form-control form-control-sm pago-monto text-right" 
+                               placeholder="Monto"
+                               step="0.01"
+                               min="0">
+                    </div>
+                    <div class="col-1">
+                        <button type="button" 
+                                class="btn btn-sm btn-danger" 
+                                onclick="$('#pago_${contadorPagos}').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+                $('#multipagosLista').append(html);
+            }
+
+            // Procesar venta
+            function procesarVenta() {
+                // Validaciones
+                if (carrito.length === 0) {
+                    toastr.error('El carrito está vacío');
+                    return;
+                }
+
+                if (!clienteActual) {
+                    toastr.error('Debe seleccionar un cliente');
+                    $('#clienteDocumento').focus();
+                    return;
+                }
+
+                if (totalGeneral <= 0) {
+                    toastr.error('El total debe ser mayor a 0');
+                    return;
+                }
+
+                // Preparar datos
+                let tipoPago = $('#tipoPago').val();
+                let datos = {
+                    clienteId: clienteActual.id,
+                    productos: carrito,
+                    subtotal: parseFloat($('#subtotal').text()),
+                    descuento: parseFloat($('#descuento').val()) || 0,
+                    costoEnvio: parseFloat($('#costoEnvio').val()) || 0,
+                    total: totalGeneral,
+                    tipoPago: tipoPago
+                };
+
+                // Agregar datos según tipo de pago
+                if (tipoPago === 'CREDITO') {
+                    datos.numCuotas = parseInt($('#numCuotas').val());
+                } else {
+                    // Pagos
+                    if ($('#multipago').is(':checked')) {
+                        // Multipago
+                        datos.pagos = [];
+                        $('.pago-metodo').each(function (index) {
+                            let monto = parseFloat($('.pago-monto').eq(index).val()) || 0;
+                            if (monto > 0) {
+                                datos.pagos.push({
+                                    metodoPago: $(this).val(),
+                                    monto: monto
+                                });
+                            }
+                        });
+
+                        // Validar que la suma coincida
+                        let sumaPagos = datos.pagos.reduce((sum, p) => sum + p.monto, 0);
+                        if (Math.abs(sumaPagos - totalGeneral) > 0.01) {
+                            toastr.error('La suma de pagos debe ser igual al total');
+                            return;
+                        }
+                    } else {
+                        // Pago único
+                        datos.pagos = [{
+                            metodoPago: $('#metodoPago').val(),
+                            monto: totalGeneral
+                        }];
+                    }
+                }
+
+                // Enviar al servidor
+                $.ajax({
+                    url: '/admin/ventas/pos/registrar',
+                    method: 'POST',
+                    data: JSON.stringify(datos),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        toastr.success('Venta registrada exitosamente');
+
+                        // Limpiar formulario
+                        carrito = [];
+                        clienteActual = null;
+                        actualizarCarrito();
+                        $('#clienteDocumento').val('');
+                        $('#clienteInfo').hide();
+                        $('#descuento').val(0);
+                        $('#costoEnvio').val(0);
+
+                        // Preguntar si desea imprimir
+                        if (confirm('¿Desea imprimir la boleta?')) {
+                            window.open('/admin/ventas/boleta/' + response.ventaId, '_blank');
+                        }
+                    },
+                    error: function (xhr) {
+                        toastr.error('Error al procesar la venta');
+                    }
+                });
+            }
+        </script>
+    </th:block>
+</body>
+
+</html>

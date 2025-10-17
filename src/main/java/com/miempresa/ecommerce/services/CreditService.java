@@ -175,6 +175,7 @@ public class CreditService {
     /**
      * Registra un abono a un crédito
      */
+    @Transactional(rollbackFor = Exception.class) // ✅ AGREGADO
     public Payment registrarAbono(Long creditoId, BigDecimal monto,
             MetodoPago metodoPago,
             String referencia, User usuario) {
@@ -194,9 +195,16 @@ public class CreditService {
             throw new RuntimeException("El crédito no está activo");
         }
 
+        // ✅ Validar monto positivo
+        if (monto.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("El monto debe ser mayor a cero");
+        }
+
         // Validar monto
         if (monto.compareTo(credito.getMontoPendiente()) > 0) {
-            throw new RuntimeException("El monto supera la deuda pendiente");
+            throw new RuntimeException(String.format(
+                    "El monto (S/ %.2f) supera la deuda pendiente (S/ %.2f)",
+                    monto, credito.getMontoPendiente()));
         }
 
         // Crear pago
@@ -215,7 +223,7 @@ public class CreditService {
         credito.aplicarPago(monto);
         creditRepository.save(credito);
 
-        log.info("Abono registrado exitosamente");
+        log.info("Abono registrado exitosamente. Nuevo saldo: S/ {}", credito.getMontoPendiente());
         return pago;
     }
 

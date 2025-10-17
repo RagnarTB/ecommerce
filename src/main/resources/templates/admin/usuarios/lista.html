@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/fragments/base}">
+
+<head>
+    <title th:text="${titulo}">Lista de Usuarios</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1><i class="fas fa-user-shield"></i> Gestión de Usuarios</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Usuarios</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Mensajes -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <i class="icon fas fa-check"></i> <span th:text="${success}"></span>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <i class="icon fas fa-ban"></i> <span th:text="${error}"></span>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <a th:href="@{/admin/usuarios/nuevo}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Nuevo Usuario
+                        </a>
+                        <a th:href="@{/admin/perfiles}" class="btn btn-info">
+                            <i class="fas fa-user-tag"></i> Gestionar Perfiles
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tarjetas de Resumen -->
+                <div class="row mb-3">
+                    <div class="col-lg-4 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3 th:text="${totalUsuarios ?: 0}">0</h3>
+                                <p>Total Usuarios</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3 th:text="${usuariosActivos ?: 0}">0</h3>
+                                <p>Usuarios Activos</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3 th:text="${administradores ?: 0}">0</h3>
+                                <p>Administradores</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Usuarios -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Lista de Usuarios del Sistema</h3>
+                    </div>
+                    <div class="card-body">
+                        <table id="tablaUsuarios" class="table table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="80">#</th>
+                                    <th>Nombre Completo</th>
+                                    <th width="150">Username</th>
+                                    <th width="200">Email</th>
+                                    <th width="130">Perfil</th>
+                                    <th width="100">Estado</th>
+                                    <th width="180">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="usuario, iterStat : ${usuarios}">
+                                    <td class="text-center" th:text="${iterStat.count}">1</td>
+                                    <td>
+                                        <strong th:text="${usuario.nombreCompleto}">Juan Pérez</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-secondary" th:text="${usuario.username}">
+                                            admin
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small th:text="${usuario.email}">admin@example.com</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge"
+                                            th:classappend="${usuario.perfil.nombre == 'ADMINISTRADOR'} ? 'badge-danger' : 'badge-primary'"
+                                            th:text="${usuario.perfil.nombre}">
+                                            ADMINISTRADOR
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${usuario.activo}" class="badge badge-success">Activo</span>
+                                        <span th:unless="${usuario.activo}" class="badge badge-danger">Inactivo</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a th:href="@{/admin/usuarios/editar/{id}(id=${usuario.id})}"
+                                                class="btn btn-primary" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+
+                                            <button th:if="${usuario.activo}" type="button" class="btn btn-warning"
+                                                th:onclick="'cambiarEstado(' + ${usuario.id} + ', false)'"
+                                                title="Desactivar">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+
+                                            <button th:unless="${usuario.activo}" type="button" class="btn btn-success"
+                                                th:onclick="'cambiarEstado(' + ${usuario.id} + ', true)'"
+                                                title="Activar">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+
+                                            <button type="button" class="btn btn-info"
+                                                th:onclick="'mostrarPermisos(' + ${usuario.id} + ')'"
+                                                title="Ver Permisos">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Perfil</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Modal Ver Permisos -->
+        <div class="modal fade" id="modalPermisos" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-info">
+                        <h5 class="modal-title">
+                            <i class="fas fa-key"></i> Permisos del Usuario
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="permisosContent">
+                        <!-- Se carga dinámicamente -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            $(document).ready(function () {
+                $('#tablaUsuarios').DataTable({
+                    "responsive": true,
+                    "lengthChange": true,
+                    "autoWidth": false,
+                    "order": [[1, "asc"]], // Ordenar por nombre
+                    "pageLength": 25,
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json"
+                    }
+                });
+            });
+
+            function cambiarEstado(usuarioId, activar) {
+                var accion = activar ? 'activar' : 'desactivar';
+                var titulo = activar ? '¿Activar usuario?' : '¿Desactivar usuario?';
+                var mensaje = activar
+                    ? 'El usuario podrá iniciar sesión nuevamente'
+                    : 'El usuario no podrá iniciar sesión';
+
+                Swal.fire({
+                    title: titulo,
+                    text: mensaje,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: activar ? '#28a745' : '#ffc107',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, ' + accion,
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/admin/usuarios/cambiar-estado/' + usuarioId + '?activo=' + activar;
+                    }
+                });
+            }
+
+            function mostrarPermisos(usuarioId) {
+                // Buscar el usuario en la tabla
+                var fila = $('button[onclick*="mostrarPermisos(' + usuarioId + ')"]').closest('tr');
+                var nombreUsuario = fila.find('td:eq(1)').text().trim();
+                var perfil = fila.find('td:eq(4)').text().trim();
+
+                // Aquí deberías hacer una petición AJAX para obtener los permisos reales
+                // Por ahora mostraremos un ejemplo estático
+                var html = `
+        <div class="alert alert-info">
+            <strong>Usuario:</strong> ${nombreUsuario}<br>
+            <strong>Perfil:</strong> ${perfil}
+        </div>
+        <h5>Módulos con Acceso:</h5>
+        <ul class="list-group">
+            <li class="list-group-item">
+                <i class="fas fa-boxes text-primary"></i> Gestión de Productos
+            </li>
+            <li class="list-group-item">
+                <i class="fas fa-cash-register text-success"></i> Gestión de Ventas
+            </li>
+            <li class="list-group-item">
+                <i class="fas fa-users text-info"></i> Gestión de Clientes
+            </li>
+            <li class="list-group-item">
+                <i class="fas fa-chart-bar text-warning"></i> Reportes y Estadísticas
+            </li>
+        </ul>
+        <p class="mt-3 text-muted">
+            <small>Para cambiar los permisos, edite el perfil del usuario.</small>
+        </p>
+    `;
+
+                $('#permisosContent').html(html);
+                $('#modalPermisos').modal('show');
+            }
+        </script>
+    </th:block>
+</body>
+
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/fragments/base}">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Productos | E-Commerce</title>
+
+    <!-- Google Font -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
+    <!-- AdminLTE -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+
+    <style>
+        .product-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .badge-custom {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+    </style>
+</head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+
+        <!-- Header -->
+        <div th:replace="~{admin/fragments/header :: header}"></div>
+
+        <!-- Sidebar -->
+        <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>
+                                <i class="fas fa-boxes mr-2"></i>
+                                Gestión de Productos
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/admin/dashboard">Inicio</a></li>
+                                <li class="breadcrumb-item active">Productos</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- Mensajes Flash -->
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="icon fas fa-check"></i>
+                        <span th:text="${success}"></span>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="icon fas fa-ban"></i>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <!-- Card Principal -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list mr-2"></i>
+                                Lista de Productos
+                            </h3>
+                            <div class="card-tools">
+                                <a th:href="@{/admin/productos/nuevo}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-plus mr-1"></i>
+                                    Nuevo Producto
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <table id="productosTable" class="table table-bordered table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Imagen</th>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th>Marca</th>
+                                        <th>SKU</th>
+                                        <th>Precio</th>
+                                        <th>Stock</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="producto : ${productos}">
+                                        <!-- Imagen -->
+                                        <td class="text-center">
+                                            <img th:if="${producto.imagenPrincipal != null}"
+                                                th:src="@{'/uploads/' + ${producto.imagenPrincipal.url}}" alt="Producto"
+                                                class="product-img" onerror="this.src='https://via.placeholder.com/60'">
+                                            <img th:if="${producto.imagenPrincipal == null}"
+                                                src="https://via.placeholder.com/60" alt="Sin imagen"
+                                                class="product-img">
+                                        </td>
+
+                                        <!-- Nombre con badges -->
+                                        <td>
+                                            <strong th:text="${producto.nombre}">Producto</strong>
+                                            <br>
+                                            <!-- Badge Destacado -->
+                                            <span th:if="${producto.esDestacado}"
+                                                class="badge badge-warning badge-custom">
+                                                <i class="fas fa-star"></i> Destacado
+                                            </span>
+                                            <!-- Badge Oferta -->
+                                            <span th:if="${producto.tieneOferta()}"
+                                                class="badge badge-danger badge-custom">
+                                                <i class="fas fa-tag"></i>
+                                                <span th:text="${producto.porcentajeDescuento + '% OFF'}"></span>
+                                            </span>
+                                        </td>
+
+                                        <!-- Categoría -->
+                                        <td>
+                                            <span class="badge badge-info"
+                                                th:text="${producto.categoria.nombre}">Categoría</span>
+                                        </td>
+
+                                        <!-- Marca -->
+                                        <td>
+                                            <span th:if="${producto.marca != null}" class="badge badge-secondary"
+                                                th:text="${producto.marca.nombre}">Marca</span>
+                                            <span th:if="${producto.marca == null}" class="text-muted">Sin marca</span>
+                                        </td>
+
+                                        <!-- SKU -->
+                                        <td>
+                                            <small class="text-muted" th:text="${producto.codigoSku}">SKU-001</small>
+                                        </td>
+
+                                        <!-- Precio -->
+                                        <td>
+                                            <!-- Precio con oferta -->
+                                            <div th:if="${producto.tieneOferta()}">
+                                                <span class="text-muted" style="text-decoration: line-through;">
+                                                    S/ <span
+                                                        th:text="${#numbers.formatDecimal(producto.precioBase, 1, 2)}">0.00</span>
+                                                </span>
+                                                <br>
+                                                <strong class="text-danger">
+                                                    S/ <span
+                                                        th:text="${#numbers.formatDecimal(producto.precioOferta, 1, 2)}">0.00</span>
+                                                </strong>
+                                            </div>
+                                            <!-- Precio sin oferta -->
+                                            <strong th:if="${!producto.tieneOferta()}">
+                                                S/ <span
+                                                    th:text="${#numbers.formatDecimal(producto.precioBase, 1, 2)}">0.00</span>
+                                            </strong>
+                                        </td>
+
+                                        <!-- Stock con alertas -->
+                                        <td class="text-center">
+                                            <!-- Stock normal -->
+                                            <span th:if="${!producto.stockBajoMinimo()}"
+                                                class="badge badge-success badge-custom">
+                                                <i class="fas fa-check"></i>
+                                                <span th:text="${producto.stockActual}">0</span>
+                                            </span>
+                                            <!-- Stock bajo -->
+                                            <span th:if="${producto.stockBajoMinimo() and producto.stockActual > 0}"
+                                                class="badge badge-warning badge-custom">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                <span th:text="${producto.stockActual}">0</span>
+                                            </span>
+                                            <!-- Sin stock -->
+                                            <span th:if="${producto.stockActual == 0}"
+                                                class="badge badge-danger badge-custom">
+                                                <i class="fas fa-times"></i> Agotado
+                                            </span>
+                                            <br>
+                                            <small class="text-muted">
+                                                Mín: <span th:text="${producto.stockMinimo}">0</span>
+                                            </small>
+                                        </td>
+
+                                        <!-- Estado -->
+                                        <td class="text-center">
+                                            <span th:if="${producto.activo}" class="badge badge-success">
+                                                <i class="fas fa-check"></i> Activo
+                                            </span>
+                                            <span th:if="${!producto.activo}" class="badge badge-secondary">
+                                                <i class="fas fa-ban"></i> Inactivo
+                                            </span>
+                                        </td>
+
+                                        <!-- Acciones -->
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <!-- Ver -->
+                                                <a th:href="@{/admin/productos/ver/{id}(id=${producto.id})}"
+                                                    class="btn btn-info btn-sm" title="Ver detalle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <!-- Editar -->
+                                                <a th:href="@{/admin/productos/editar/{id}(id=${producto.id})}"
+                                                    class="btn btn-primary btn-sm" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <!-- Eliminar -->
+                                                <a th:href="@{/admin/productos/eliminar/{id}(id=${producto.id})}"
+                                                    class="btn btn-danger btn-sm btn-eliminar" title="Eliminar"
+                                                    onclick="return confirm('¿Está seguro de eliminar este producto?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="text-muted">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Total de productos: <strong th:text="${#lists.size(productos)}">0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <div th:replace="~{admin/fragments/footer :: footer}"></div>
+
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{admin/fragments/footer :: scripts}"></div>
+
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Inicializar DataTable con configuración en español
+            $('#productosTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
+                },
+                "pageLength": 10,
+                "order": [[1, "asc"]], // Ordenar por nombre
+                "columnDefs": [
+                    { "orderable": false, "targets": [0, 8] } // Imagen y acciones no ordenables
+                ],
+                "responsive": true
+            });
+
+            // Auto-cerrar alertas
+            setTimeout(function () {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+        });
+    </script>
+</body>
+
+</html>

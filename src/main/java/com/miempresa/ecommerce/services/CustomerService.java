@@ -1,10 +1,9 @@
 package com.miempresa.ecommerce.services;
 
-import com.miempresa.ecommerce.models.Customer;
-import com.miempresa.ecommerce.models.enums.TipoDocumento;
-
 import java.util.List;
 import java.util.Optional;
+
+import com.miempresa.ecommerce.models.Customer;
 
 /**
  * SERVICE INTERFACE: CLIENTE

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/fragments/base}">
+
+<head>
+    <title th:text="${titulo}">Detalle del Cliente</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>
+                            <i class="fas fa-user"></i>
+                            <span th:text="${cliente.nombreCompleto}">Cliente</span>
+                        </h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/admin/clientes}">Clientes</a></li>
+                            <li class="breadcrumb-item active">Detalle</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Botones de acción -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <a th:href="@{/admin/ventas/pos?clienteId={id}(id=${cliente.id})}" class="btn btn-success">
+                            <i class="fas fa-cash-register"></i> Nueva Venta
+                        </a>
+                        <a th:href="@{/admin/clientes}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <!-- Columna Izquierda -->
+                    <div class="col-md-4">
+
+                        <!-- Información Personal -->
+                        <div class="card card-primary card-outline">
+                            <div class="card-body box-profile">
+                                <div class="text-center">
+                                    <i class="fas fa-user-circle fa-5x text-primary mb-3"></i>
+                                </div>
+
+                                <h3 class="profile-username text-center" th:text="${cliente.nombreCompleto}">
+                                    Juan Pérez García
+                                </h3>
+
+                                <p class="text-muted text-center">
+                                    <span class="badge badge-lg"
+                                        th:classappend="${cliente.tipoDocumento.name() == 'DNI'} ? 'badge-primary' : 'badge-info'"
+                                        th:text="${cliente.tipoDocumento}">DNI</span>
+                                    <br>
+                                    <strong th:text="${cliente.numeroDocumento}">12345678</strong>
+                                </p>
+
+                                <ul class="list-group list-group-unbordered mb-3">
+                                    <li class="list-group-item">
+                                        <b>Total Compras</b>
+                                        <a class="float-right">
+                                            <span class="badge badge-success" th:text="${totalCompras ?: 0}">0</span>
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <b>Monto Total</b>
+                                        <a class="float-right text-success">
+                                            <strong>S/ <span th:text="${montoTotalCompras ?: 0}">0.00</span></strong>
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <b>Deuda Actual</b>
+                                        <a class="float-right"
+                                            th:classappend="${deudaActual > 0} ? 'text-danger' : 'text-muted'">
+                                            <strong>S/ <span th:text="${deudaActual ?: 0}">0.00</span></strong>
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <b>Estado</b>
+                                        <a class="float-right">
+                                            <span th:if="${cliente.activo}" class="badge badge-success">Activo</span>
+                                            <span th:unless="${cliente.activo}"
+                                                class="badge badge-danger">Inactivo</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Datos de Contacto -->
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h3 class="card-title">Datos de Contacto</h3>
+                            </div>
+                            <div class="card-body">
+                                <strong><i class="fas fa-phone mr-1"></i> Teléfono</strong>
+                                <p class="text-muted" th:text="${cliente.telefono ?: 'No registrado'}">
+                                    999888777
+                                </p>
+
+                                <hr>
+
+                                <strong><i class="fas fa-envelope mr-1"></i> Email</strong>
+                                <p class="text-muted" th:text="${cliente.email ?: 'No registrado'}">
+                                    cliente@email.com
+                                </p>
+
+                                <hr>
+
+                                <strong><i class="fas fa-map-marker-alt mr-1"></i> Dirección</strong>
+                                <p class="text-muted" th:text="${cliente.direccion ?: 'No registrada'}">
+                                    Av. Principal 123
+                                </p>
+
+                                <div
+                                    th:if="${cliente.distrito != null or cliente.provincia != null or cliente.departamento != null}">
+                                    <small class="text-muted">
+                                        <span th:text="${cliente.distrito}">Distrito</span>,
+                                        <span th:text="${cliente.provincia}">Provincia</span>,
+                                        <span th:text="${cliente.departamento}">Departamento</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Columna Derecha -->
+                    <div class="col-md-8">
+
+                        <!-- Tabs -->
+                        <div class="card">
+                            <div class="card-header p-2">
+                                <ul class="nav nav-pills">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" href="#compras" data-toggle="tab">
+                                            <i class="fas fa-shopping-cart"></i> Historial de Compras
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="#creditos" data-toggle="tab">
+                                            <i class="fas fa-credit-card"></i> Créditos
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="#estadisticas" data-toggle="tab">
+                                            <i class="fas fa-chart-bar"></i> Estadísticas
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-body">
+                                <div class="tab-content">
+
+                                    <!-- Tab Compras -->
+                                    <div class="active tab-pane" id="compras">
+                                        <table class="table table-sm table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>N° Venta</th>
+                                                    <th>Fecha</th>
+                                                    <th>Tipo Pago</th>
+                                                    <th class="text-right">Total</th>
+                                                    <th>Estado</th>
+                                                    <th width="80">Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr th:each="venta : ${ventas}">
+                                                    <td>
+                                                        <strong th:text="${venta.numeroVenta}">VEN-2025-00001</strong>
+                                                    </td>
+                                                    <td th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy')}">
+                                                        01/01/2025
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge"
+                                                            th:classappend="${venta.tipoPago.classBootstrap}"
+                                                            th:text="${venta.tipoPago.nombre}">
+                                                            Contado
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <strong>S/ <span th:text="${venta.total}">100.00</span></strong>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge"
+                                                            th:classappend="${venta.estado.classBootstrap}"
+                                                            th:text="${venta.estado.nombre}">
+                                                            Completada
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <a th:href="@{/admin/ventas/ver/{id}(id=${venta.id})}"
+                                                            class="btn btn-sm btn-info">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <tr th:if="${ventas == null or ventas.isEmpty()}">
+                                                    <td colspan="6" class="text-center text-muted">
+                                                        No hay compras registradas
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Tab Créditos -->
+                                    <div class="tab-pane" id="creditos">
+                                        <div th:if="${creditos != null and !creditos.isEmpty()}">
+                                            <div th:each="credito : ${creditos}" class="card mb-2">
+                                                <div class="card-body p-2">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <strong>Venta: </strong>
+                                                            <a th:href="@{/admin/ventas/ver/{id}(id=${credito.venta.id})}"
+                                                                th:text="${credito.venta.numeroVenta}">
+                                                                VEN-2025-00001
+                                                            </a>
+                                                            <br>
+                                                            <small class="text-muted">
+                                                                Fecha: <span
+                                                                    th:text="${#temporals.format(credito.fechaInicio, 'dd/MM/yyyy')}">01/01/2025</span>
+                                                            </small>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <strong>Total: </strong>S/ <span
+                                                                th:text="${credito.montoTotal}">1200.00</span>
+                                                            <br>
+                                                            <strong class="text-danger">Pendiente: </strong>
+                                                            S/ <span th:text="${credito.montoPendiente}">800.00</span>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <span class="badge"
+                                                                th:classappend="${credito.estado.classBootstrap}"
+                                                                th:text="${credito.estado.nombre}">
+                                                                Activo
+                                                            </span>
+                                                            <br>
+                                                            <small><span th:text="${credito.numCuotas}">12</span>
+                                                                cuotas</small>
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <a th:href="@{/admin/creditos/ver/{id}(id=${credito.id})}"
+                                                                class="btn btn-sm btn-warning">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div th:if="${creditos == null or creditos.isEmpty()}"
+                                            class="text-center text-muted">
+                                            <p>No hay créditos activos</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tab Estadísticas -->
+                                    <div class="tab-pane" id="estadisticas">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="info-box bg-light">
+                                                    <span class="info-box-icon">
+                                                        <i class="fas fa-calendar"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Primera Compra</span>
+                                                        <span class="info-box-number"
+                                                            th:text="${#temporals.format(fechaPrimeraCompra, 'dd/MM/yyyy')}">
+                                                            01/01/2025
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="info-box bg-light">
+                                                    <span class="info-box-icon">
+                                                        <i class="fas fa-calendar-check"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Última Compra</span>
+                                                        <span class="info-box-number"
+                                                            th:text="${#temporals.format(fechaUltimaCompra, 'dd/MM/yyyy')}">
+                                                            15/01/2025
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="info-box bg-success">
+                                                    <span class="info-box-icon">
+                                                        <i class="fas fa-shopping-cart"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Total de Compras</span>
+                                                        <span class="info-box-number" th:text="${totalCompras}">5</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="info-box bg-info">
+                                                    <span class="info-box-icon">
+                                                        <i class="fas fa-dollar-sign"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Ticket Promedio</span>
+                                                        <span class="info-box-number">
+                                                            S/ <span th:text="${ticketPromedio ?: 0}">250.00</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-12">
+                                                <div class="info-box bg-warning">
+                                                    <span class="info-box-icon">
+                                                        <i class="fas fa-chart-line"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Monto Total de Compras</span>
+                                                        <span class="info-box-number">
+                                                            S/ <span th:text="${montoTotalCompras ?: 0}">1250.00</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr>
+
+                                        <h5>Productos Más Comprados</h5>
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th width="100" class="text-center">Cantidad</th>
+                                                    <th width="120" class="text-right">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr th:each="producto : ${productosMasComprados}">
+                                                    <td th:text="${producto.nombre}">Laptop HP</td>
+                                                    <td class="text-center">
+                                                        <span class="badge badge-primary"
+                                                            th:text="${producto.cantidad}">3</span>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        S/ <span th:text="${producto.total}">3000.00</span>
+                                                    </td>
+                                                </tr>
+                                                <tr
+                                                    th:if="${productosMasComprados == null or productosMasComprados.isEmpty()}">
+                                                    <td colspan="3" class="text-center text-muted">
+                                                        No hay datos disponibles
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            $(document).ready(function () {
+                // Activar tooltips si es necesario
+                $('[data-toggle="tooltip"]').tooltip();
+            });
+        </script>
+    </th:block>
+</body>
+
+</html>

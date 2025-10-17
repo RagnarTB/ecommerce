@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/fragments/base}">
+
+<head>
+    <title th:text="${titulo}">Detalle del Crédito</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>
+                            <i class="fas fa-credit-card"></i>
+                            Crédito - <span th:text="${credito.venta.numeroVenta}">VEN-2025-00001</span>
+                        </h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/admin/creditos}">Créditos</a></li>
+                            <li class="breadcrumb-item active">Detalle</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Botones de acción -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <button th:if="${credito.estado.name() == 'ACTIVO'}" type="button" class="btn btn-success"
+                            onclick="mostrarModalAbono()">
+                            <i class="fas fa-dollar-sign"></i> Registrar Abono
+                        </button>
+                        <a th:href="@{/admin/ventas/ver/{id}(id=${credito.venta.id})}" class="btn btn-info">
+                            <i class="fas fa-file-invoice"></i> Ver Venta
+                        </a>
+                        <a th:href="@{/admin/creditos}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <!-- Columna Izquierda -->
+                    <div class="col-md-4">
+
+                        <!-- Información del Crédito -->
+                        <div class="card card-warning card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Información del Crédito</h3>
+                            </div>
+                            <div class="card-body">
+                                <dl>
+                                    <dt>Estado:</dt>
+                                    <dd>
+                                        <span class="badge badge-lg" th:classappend="${credito.estado.classBootstrap}"
+                                            th:text="${credito.estado.nombre}">
+                                            Activo
+                                        </span>
+                                    </dd>
+
+                                    <dt>Venta Asociada:</dt>
+                                    <dd>
+                                        <a th:href="@{/admin/ventas/ver/{id}(id=${credito.venta.id})}"
+                                            th:text="${credito.venta.numeroVenta}">
+                                            VEN-2025-00001
+                                        </a>
+                                    </dd>
+
+                                    <dt>Fecha de Inicio:</dt>
+                                    <dd th:text="${#temporals.format(credito.fechaInicio, 'dd/MM/yyyy')}">
+                                        01/01/2025
+                                    </dd>
+
+                                    <dt>Número de Cuotas:</dt>
+                                    <dd>
+                                        <span class="badge badge-info" th:text="${credito.numCuotas}">12</span> cuotas
+                                    </dd>
+
+                                    <dt>Monto por Cuota:</dt>
+                                    <dd>
+                                        <strong>S/ <span th:text="${credito.montoCuota}">100.00</span></strong>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <!-- Cliente -->
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-user"></i> Cliente
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <dl>
+                                    <dt>Nombre:</dt>
+                                    <dd>
+                                        <strong th:text="${credito.cliente.nombreCompleto}">Juan Pérez</strong>
+                                    </dd>
+
+                                    <dt>Documento:</dt>
+                                    <dd>
+                                        <span class="badge badge-info"
+                                            th:text="${credito.cliente.tipoDocumento}">DNI</span>
+                                        <span th:text="${credito.cliente.numeroDocumento}">12345678</span>
+                                    </dd>
+
+                                    <dt th:if="${credito.cliente.telefono != null}">Teléfono:</dt>
+                                    <dd th:if="${credito.cliente.telefono != null}"
+                                        th:text="${credito.cliente.telefono}">
+                                        999888777
+                                    </dd>
+                                </dl>
+
+                                <div class="text-center">
+                                    <a th:href="@{/admin/clientes/ver/{id}(id=${credito.cliente.id})}"
+                                        class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> Ver Cliente
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumen Financiero -->
+                        <div class="card card-success card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-calculator"></i> Resumen
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row mb-0">
+                                    <dt class="col-7">Monto Total:</dt>
+                                    <dd class="col-5 text-right">
+                                        <strong>S/ <span th:text="${credito.montoTotal}">1200.00</span></strong>
+                                    </dd>
+
+                                    <dt class="col-7 text-success">Monto Pagado:</dt>
+                                    <dd class="col-5 text-right text-success">
+                                        <strong>S/ <span th:text="${credito.montoPagado}">400.00</span></strong>
+                                    </dd>
+
+                                    <dt class="col-7 text-danger">Monto Pendiente:</dt>
+                                    <dd class="col-5 text-right text-danger">
+                                        <strong>S/ <span th:text="${credito.montoPendiente}">800.00</span></strong>
+                                    </dd>
+                                </dl>
+
+                                <hr class="my-2">
+
+                                <!-- Barra de Progreso -->
+                                <div class="progress mb-2">
+                                    <div class="progress-bar bg-success"
+                                        th:style="'width: ' + ${credito.getPorcentajePagado()} + '%'"
+                                        th:text="${credito.getPorcentajePagado()} + '%'">
+                                        33%
+                                    </div>
+                                </div>
+                                <small class="text-muted">Progreso de pago</small>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Columna Derecha -->
+                    <div class="col-md-8">
+
+                        <!-- Cuotas -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-list"></i> Detalle de Cuotas
+                                </h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th width="60">#</th>
+                                            <th width="120" class="text-right">Monto</th>
+                                            <th width="120" class="text-right">Pagado</th>
+                                            <th width="120" class="text-right">Pendiente</th>
+                                            <th width="130">Vencimiento</th>
+                                            <th width="100">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="cuota : ${cuotas}">
+                                            <td class="text-center">
+                                                <strong th:text="${cuota.numeroCuota}">1</strong>
+                                            </td>
+                                            <td class="text-right">
+                                                S/ <span th:text="${cuota.monto}">100.00</span>
+                                            </td>
+                                            <td class="text-right text-success">
+                                                <strong>S/ <span
+                                                        th:text="${cuota.montoPagado ?: 0}">0.00</span></strong>
+                                            </td>
+                                            <td class="text-right text-danger">
+                                                <strong>S/ <span
+                                                        th:text="${cuota.montoPendiente}">100.00</span></strong>
+                                            </td>
+                                            <td th:text="${#temporals.format(cuota.fechaVencimiento, 'dd/MM/yyyy')}">
+                                                01/02/2025
+                                            </td>
+                                            <td>
+                                                <span class="badge" th:classappend="${cuota.estado.classBootstrap}"
+                                                    th:text="${cuota.estado.nombre}">
+                                                    Pendiente
+                                                </span>
+                                                <span th:if="${cuota.estaVencida()}" class="badge badge-danger ml-1">
+                                                    <i class="fas fa-exclamation-triangle"></i> Vencida
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Historial de Pagos -->
+                        <div th:if="${pagos != null and !pagos.isEmpty()}" class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-history"></i> Historial de Pagos
+                                </h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Método</th>
+                                            <th>Referencia</th>
+                                            <th width="120" class="text-right">Monto</th>
+                                            <th>Usuario</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="pago : ${pagos}">
+                                            <td th:text="${#temporals.format(pago.fechaPago, 'dd/MM/yyyy HH:mm')}">
+                                                01/01/2025 10:30
+                                            </td>
+                                            <td>
+                                                <span class="badge" th:classappend="${pago.metodoPago.classBootstrap}"
+                                                    th:text="${pago.metodoPago.nombre}">
+                                                    Efectivo
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small th:text="${pago.referencia ?: '-'}">-</small>
+                                            </td>
+                                            <td class="text-right">
+                                                <strong class="text-success">
+                                                    S/ <span th:text="${pago.monto}">100.00</span>
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                <small th:text="${pago.usuario.nombre}">Admin</small>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Modal Registrar Abono -->
+        <div class="modal fade" id="modalAbono" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-success">
+                        <h5 class="modal-title">
+                            <i class="fas fa-dollar-sign"></i> Registrar Abono
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <form th:action="@{/admin/creditos/registrar-abono}" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" name="creditoId" th:value="${credito.id}">
+
+                            <div class="alert alert-info">
+                                <strong>Monto Pendiente:</strong>
+                                S/ <span th:text="${credito.montoPendiente}">800.00</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Monto a Abonar <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">S/</span>
+                                    </div>
+                                    <input type="number" class="form-control" name="monto" step="0.01" min="0.01"
+                                        th:max="${credito.montoPendiente}" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Método de Pago <span class="text-danger">*</span></label>
+                                <select class="form-control" name="metodoPago" required>
+                                    <option value="EFECTIVO">Efectivo</option>
+                                    <option value="TARJETA">Tarjeta</option>
+                                    <option value="TRANSFERENCIA">Transferencia</option>
+                                    <option value="YAPE">Yape/Plin</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Referencia</label>
+                                <input type="text" class="form-control" name="referencia"
+                                    placeholder="N° de operación, comprobante, etc.">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Registrar Abono
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function mostrarModalAbono() {
+                $('#modalAbono').modal('show');
+            }
+        </script>
+    </th:block>
+</body>
+
+</html>
