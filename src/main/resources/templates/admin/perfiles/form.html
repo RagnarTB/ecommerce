@@ -1,191 +1,57 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{admin/fragments/base}">
+<html xmlns:th="http://www.thymeleaf.org">
 
-<head>
-    <title th:text="${titulo}">Formulario de Perfil</title>
-</head>
+<head th:replace="fragments/head :: head('Perfil')"></head>
 
-<body>
-    <div layout:fragment="content">
-        <section class="content-header">
-            <div class="container-fluid">
-                <div class="row mb-2">
-                    <div class="col-sm-6">
-                        <h1 th:text="${titulo}">Nuevo Perfil</h1>
-                    </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
-                            <li class="breadcrumb-item"><a th:href="@{/admin/perfiles}">Perfiles</a></li>
-                            <li class="breadcrumb-item active">Formulario</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </section>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <div th:replace="fragments/header :: header"></div>
+        <div th:replace="fragments/sidebar :: sidebar"></div>
 
-        <section class="content">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-8 offset-md-2">
-                        <div class="card card-primary">
-                            <div class="card-header">
-                                <h3 class="card-title">
-                                    <i class="fas fa-user-tag"></i>
-                                    <span th:text="${esNuevo} ? 'Crear Nuevo Perfil' : 'Editar Perfil'">
-                                        Formulario de Perfil
-                                    </span>
-                                </h3>
-                            </div>
-
-                            <form
-                                th:action="${esNuevo} ? @{/admin/perfiles/guardar} : @{/admin/perfiles/actualizar/{id}(id=${perfil.id})}"
-                                method="post" th:object="${perfil}">
-
-                                <div class="card-body">
-
-                                    <!-- Mensajes de error -->
-                                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger alert-dismissible">
-                                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                        <h5><i class="icon fas fa-ban"></i> Errores de validación</h5>
-                                        <ul>
-                                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
-                                        </ul>
-                                    </div>
-
-                                    <!-- Información del Perfil -->
-                                    <div class="form-group">
-                                        <label for="nombre">Nombre del Perfil <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="nombre" th:field="*{nombre}"
-                                            placeholder="Ej: VENDEDOR, SUPERVISOR, CAJERO" required>
-                                        <small class="form-text text-muted">
-                                            Debe ser único y descriptivo (se recomienda MAYÚSCULAS)
-                                        </small>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="descripcion">Descripción</label>
-                                        <textarea class="form-control" id="descripcion" th:field="*{descripcion}"
-                                            rows="3"
-                                            placeholder="Descripción breve del perfil y sus funciones"></textarea>
-                                        <small class="form-text text-muted">
-                                            Explica brevemente qué puede hacer un usuario con este perfil
-                                        </small>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <div class="custom-control custom-switch custom-switch-on-success">
-                                            <input type="checkbox" class="custom-control-input" id="activo"
-                                                th:field="*{activo}">
-                                            <label class="custom-control-label" for="activo">
-                                                Perfil Activo
-                                            </label>
-                                        </div>
-                                        <small class="form-text text-muted">
-                                            Solo perfiles activos pueden ser asignados a usuarios
-                                        </small>
-                                    </div>
-
-                                    <hr>
-
-                                    <!-- Nota sobre permisos -->
-                                    <div class="alert alert-info">
-                                        <h5><i class="fas fa-info-circle"></i> Sobre los Permisos</h5>
-                                        <p class="mb-0">
-                                            Después de crear o guardar el perfil, podrá asignar los permisos específicos
-                                            que tendrá este perfil desde la opción <strong>"Gestionar
-                                                Permisos"</strong>.
-                                        </p>
-                                    </div>
-
-                                </div>
-
-                                <div class="card-footer">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save"></i>
-                                        <span th:text="${esNuevo} ? 'Crear Perfil' : 'Guardar Cambios'">Guardar</span>
-                                    </button>
-                                    <a th:href="@{/admin/perfiles}" class="btn btn-secondary">
-                                        <i class="fas fa-times"></i> Cancelar
-                                    </a>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Ejemplos de Perfiles -->
-                        <div class="card card-info" th:if="${esNuevo}">
-                            <div class="card-header">
-                                <h3 class="card-title">
-                                    <i class="fas fa-lightbulb"></i> Ejemplos de Perfiles
-                                </h3>
-                            </div>
+        <div class="content-wrapper">
+            <section class="content">
+                <div class="container-fluid">
+                    <form th:action="${esNuevo ? '/admin/perfiles/guardar' : '/admin/perfiles/actualizar/' + perfil.id}"
+                        th:object="${perfil}" method="post">
+                        <div class="card">
                             <div class="card-body">
-                                <ul>
-                                    <li>
-                                        <strong>ADMINISTRADOR:</strong> Acceso total al sistema, gestiona usuarios y
-                                        configuración
-                                    </li>
-                                    <li>
-                                        <strong>TRABAJADOR/VENDEDOR:</strong> Acceso a ventas, productos, clientes y
-                                        reportes
-                                    </li>
-                                    <li>
-                                        <strong>SUPERVISOR:</strong> Acceso a ventas, productos, clientes, reportes e
-                                        inventario
-                                    </li>
-                                    <li>
-                                        <strong>CAJERO:</strong> Solo acceso al punto de venta (POS)
-                                    </li>
-                                    <li>
-                                        <strong>ALMACENERO:</strong> Solo acceso a inventario y productos
-                                    </li>
-                                </ul>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label>Nombre</label>
+                                        <input type="text" th:field="*{nombre}" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Descripción</label>
+                                        <input type="text" th:field="*{descripcion}" class="form-control">
+                                    </div>
+                                </div>
+
+                                <hr />
+                                <h5>Permisos</h5>
+                                <div class="row">
+                                    <div class="col-md-3" th:each="perm : ${permisos}">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" th:value="${perm.id}"
+                                                th:field="*{permisos}" th:checked="${perfil.permisos.contains(perm)}">
+                                            <label class="form-check-label" th:text="${perm.nombre}"></label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-success">Guardar</button>
+                                    <a th:href="@{/admin/perfiles}" class="btn btn-secondary">Cancelar</a>
+                                </div>
                             </div>
                         </div>
-
-                    </div>
+                    </form>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
+
+        <div th:replace="fragments/footer :: footer"></div>
     </div>
-
-    <th:block layout:fragment="scripts">
-        <script>
-            $(document).ready(function () {
-                // Convertir nombre a mayúsculas automáticamente
-                $('#nombre').on('input', function () {
-                    this.value = this.value.toUpperCase();
-                });
-
-                // Validación del formulario
-                $('form').on('submit', function (e) {
-                    var nombre = $('#nombre').val().trim();
-
-                    if (nombre.length < 3) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'El nombre del perfil debe tener al menos 3 caracteres'
-                        });
-                        return false;
-                    }
-
-                    // Validar que no contenga caracteres especiales
-                    if (!/^[A-Z0-9_\s]+$/.test(nombre)) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'El nombre solo puede contener letras mayúsculas, números, guiones bajos y espacios'
-                        });
-                        return false;
-                    }
-                });
-            });
-        </script>
-    </th:block>
+    <div th:replace="fragments/scripts :: scripts"></div>
 </body>
 
 </html>

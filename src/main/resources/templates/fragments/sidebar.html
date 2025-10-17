@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<body>
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4" th:fragment="sidebar">
+
+        <!-- Brand Logo -->
+        <a th:href="@{/admin/dashboard}" class="brand-link">
+            <img th:src="@{/img/logo.png}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+            <span class="brand-text font-weight-light">Mi E-Commerce</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+
+            <!-- Sidebar user panel -->
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="image">
+                    <i class="fas fa-user-circle fa-2x text-white"></i>
+                </div>
+                <div class="info">
+                    <a href="#" class="d-block" sec:authentication="name">Usuario</a>
+                    <small class="text-muted" sec:authentication="principal.authorities">Rol</small>
+                </div>
+            </div>
+
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                    data-accordion="false">
+
+                    <!-- Dashboard -->
+                    <li class="nav-item">
+                        <a th:href="@{/admin/dashboard}" class="nav-link"
+                            th:classappend="${currentURI != null and #strings.contains(currentURI, '/dashboard')} ? 'active' : ''">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+
+                    <!-- Productos -->
+                    <li class="nav-item" sec:authorize="hasAuthority('MODULO_PRODUCTOS')">
+                        <a href="#" class="nav-link"
+                            th:classappend="${currentURI != null and (#strings.contains(currentURI, '/productos') or #strings.contains(currentURI, '/categorias') or #strings.contains(currentURI, '/marcas'))} ? 'active' : ''">
+                            <i class="nav-icon fas fa-boxes"></i>
+                            <p>
+                                Productos
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a th:href="@{/admin/productos}" class="nav-link"
+                                    th:classappend="${#strings.contains(currentURI, '/productos')} ? 'active' : ''">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Lista de Productos</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a th:href="@{/admin/productos/nuevo}" class="nav-link">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Nuevo Producto</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a th:href="@{/admin/categorias}" class="nav-link"
+                                    th:classappend="${#strings.contains(currentURI, '/categorias')} ? 'active' : ''">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Categorías</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a th:href="@{/admin/marcas}" class="nav-link"
+                                    th:classappend="${#strings.contains(currentURI, '/marcas')} ? 'active' : ''">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Marcas</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Ventas -->
+                    <li class="nav-item" sec:authorize="hasAuthority('MODULO_VENTAS')">
+                        <a href="#" class="nav-link"
+                            th:classappend="${currentURI != null and (#strings.contains(currentURI, '/ventas') or #strings.contains(currentURI, '/pedidos') or #strings.contains(currentURI, '/creditos'))} ? 'active' : ''">
+                            <i class="nav-icon fas fa-cash-register"></i>
+                            <p>
+                                Ventas
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a th:href="@{/admin/ventas/pos}" class="nav-link"
+                                    th:classappend="${#strings.contains(currentURI, '/ventas/pos')} ? 'active' : ''">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Punto de Venta (POS)</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a th:href="@{/admin/ventas}" class="nav-link"
+                                    th:classappend="${#strings.contains(currentURI, '/ventas') and !#strings.contains(currentURI, '/pos')} ? 'active' : ''">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Lista de Ventas</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a th:href="@{/admin/pedidos}" class="nav-link"
+                                    th:classappend="${#strings.contains(currentURI, '/pedidos')} ? 'active' : ''">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Pedidos Web</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a th:href="@{/admin/creditos}" class="nav-link"
+                                    th:classappend="${#strings.contains(currentURI, '/creditos')} ? 'active' : ''">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Créditos</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Clientes -->
+                    <li class="nav-item" sec:authorize="hasAuthority('MODULO_CLIENTES')">
+                        <a th:href="@{/admin/clientes}" class="nav-link"
+                            th:classappend="${#strings.contains(currentURI, '/clientes')} ? 'active' : ''">
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>Clientes</p>
+                        </a>
+                    </li>
+
+                    <!-- Inventario -->
+                    <li class="nav-item" sec:authorize="hasAuthority('MODULO_INVENTARIO')">
+                        <a th:href="@{/admin/inventario}" class="nav-link"
+                            th:classappend="${#strings.contains(currentURI, '/inventario')} ? 'active' : ''">
+                            <i class="nav-icon fas fa-warehouse"></i>
+                            <p>Inventario</p>
+                        </a>
+                    </li>
+
+                    <!-- Reportes -->
+                    <li class="nav-item" sec:authorize="hasAuthority('MODULO_REPORTES')">
+                        <a th:href="@{/admin/reportes}" class="nav-link"
+                            th:classappend="${#strings.contains(currentURI, '/reportes')} ? 'active' : ''">
+                            <i class="nav-icon fas fa-chart-bar"></i>
+                            <p>Reportes</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-header">ADMINISTRACIÓN</li>
+
+                    <!-- Usuarios -->
+                    <li class="nav-item" sec:authorize="hasAuthority('MODULO_USUARIOS')">
+                        <a href="#" class="nav-link"
+                            th:classappend="${currentURI != null and (#strings.contains(currentURI, '/usuarios') or #strings.contains(currentURI, '/perfiles'))} ? 'active' : ''">
+                            <i class="nav-icon fas fa-user-shield"></i>
+                            <p>
+                                Usuarios
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a th:href="@{/admin/usuarios}" class="nav-link"
+                                    th:classappend="${#strings.contains(currentURI, '/usuarios')} ? 'active' : ''">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Lista de Usuarios</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a th:href="@{/admin/perfiles}" class="nav-link"
+                                    th:classappend="${#strings.contains(currentURI, '/perfiles')} ? 'active' : ''">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Perfiles y Permisos</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Proveedores -->
+                    <li class="nav-item" sec:authorize="hasAuthority('MODULO_PROVEEDORES')">
+                        <a th:href="@{/admin/proveedores}" class="nav-link"
+                            th:classappend="${#strings.contains(currentURI, '/proveedores')} ? 'active' : ''">
+                            <i class="nav-icon fas fa-truck"></i>
+                            <p>Proveedores</p>
+                        </a>
+                    </li>
+
+                    <!-- Configuración -->
+                    <li class="nav-item" sec:authorize="hasAuthority('MODULO_CONFIGURACION')">
+                        <a th:href="@{/admin/configuracion}" class="nav-link"
+                            th:classappend="${#strings.contains(currentURI, '/configuracion')} ? 'active' : ''">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <p>Configuración</p>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+            <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
+    </aside>
+
+</body>
+
+</html>

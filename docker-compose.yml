@@ -46,7 +46,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       # Script para inicializar la base de datos (opcional)
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      #- ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
     # Configuración de red
     networks:

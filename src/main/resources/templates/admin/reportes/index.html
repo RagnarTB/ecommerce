@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/head :: head('Reportes')"></head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <div th:replace="fragments/header :: header"></div>
+        <div th:replace="fragments/sidebar :: sidebar"></div>
+
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="container-fluid">
+                    <h1 class="m-0"><i class="fas fa-chart-line"></i> Reportes</h1>
+                </div>
+            </div>
+
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="reportForm" class="row mb-4">
+                                <div class="col-md-4">
+                                    <label>Desde</label>
+                                    <input type="date" id="desde" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Hasta</label>
+                                    <input type="date" id="hasta" class="form-control">
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="button" id="btnGenerar" class="btn btn-primary">Generar</button>
+                                    <button type="button" id="btnExportar" class="btn btn-success ml-2">Exportar
+                                        CSV</button>
+                                </div>
+                            </form>
+
+                            <div>
+                                <canvas id="chartVentas" height="100"></canvas>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div th:replace="fragments/footer :: footer"></div>
+    </div>
+    <div th:replace="fragments/scripts :: scripts"></div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function () {
+            let chart;
+
+            function renderChart(data) {
+                const ctx = document.getElementById('chartVentas').getContext('2d');
+                if (chart) chart.destroy();
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{ label: 'Ventas S/', data: data.values }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            $('#btnGenerar').on('click', function () {
+                const desde = $('#desde').val();
+                const hasta = $('#hasta').val();
+                $.getJSON('/admin/api/reportes/ventas', { desde, hasta }, function (resp) {
+                    renderChart(resp);
+                });
+            });
+
+            $('#btnExportar').on('click', function () {
+                const desde = $('#desde').val();
+                const hasta = $('#hasta').val();
+                window.location.href = `/admin/reportes/export?desde=${desde}&hasta=${hasta}`;
+            });
+        });
+    </script>
+</body>
+
+</html>

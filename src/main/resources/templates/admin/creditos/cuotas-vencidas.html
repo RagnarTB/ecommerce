@@ -1,350 +1,49 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{admin/fragments/base}">
+<html xmlns:th="http://www.thymeleaf.org">
 
-<head>
-    <title th:text="${titulo}">Cuotas Vencidas</title>
-</head>
+<head th:replace="fragments/head :: head('Cuotas Vencidas')"></head>
 
-<body>
-    <div layout:fragment="content">
-        <section class="content-header">
-            <div class="container-fluid">
-                <div class="row mb-2">
-                    <div class="col-sm-6">
-                        <h1>
-                            <i class="fas fa-exclamation-triangle text-danger"></i>
-                            Cuotas Vencidas
-                        </h1>
-                    </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
-                            <li class="breadcrumb-item"><a th:href="@{/admin/creditos}">Créditos</a></li>
-                            <li class="breadcrumb-item active">Cuotas Vencidas</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="content">
-            <div class="container-fluid">
-
-                <!-- Alerta General -->
-                <div th:if="${cuotas != null and !cuotas.isEmpty()}" class="alert alert-danger">
-                    <h5><i class="icon fas fa-exclamation-triangle"></i> ¡Atención!</h5>
-                    Hay <strong th:text="${cuotas.size()}">0</strong> cuotas vencidas que requieren seguimiento urgente.
-                    <br>
-                    Monto total vencido: <strong>S/ <span th:text="${montoTotalVencido ?: 0}">0.00</span></strong>
-                </div>
-
-                <div th:if="${cuotas == null or cuotas.isEmpty()}" class="alert alert-success">
-                    <h5><i class="icon fas fa-check"></i> ¡Excelente!</h5>
-                    No hay cuotas vencidas en este momento.
-                </div>
-
-                <!-- Botones de acción -->
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <a th:href="@{/admin/creditos}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Volver a Créditos
-                        </a>
-                        <button type="button" class="btn btn-info" onclick="exportarExcel()">
-                            <i class="fas fa-file-excel"></i> Exportar Excel
-                        </button>
-                        <button type="button" class="btn btn-primary" onclick="imprimirReporte()">
-                            <i class="fas fa-print"></i> Imprimir Reporte
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tarjetas de Resumen -->
-                <div class="row mb-3">
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-danger">
-                            <div class="inner">
-                                <h3 th:text="${totalCuotasVencidas ?: 0}">0</h3>
-                                <p>Cuotas Vencidas</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-exclamation-circle"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-warning">
-                            <div class="inner">
-                                <h3>S/ <span th:text="${montoTotalVencido ?: 0}">0.00</span></h3>
-                                <p>Monto Total Vencido</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-dollar-sign"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-info">
-                            <div class="inner">
-                                <h3 th:text="${clientesAfectados ?: 0}">0</h3>
-                                <p>Clientes Afectados</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-secondary">
-                            <div class="inner">
-                                <h3 th:text="${diasPromedioVencido ?: 0}">0</h3>
-                                <p>Días Promedio Vencido</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-calendar"></i>
-                            </div>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <div th:replace="fragments/header :: header"></div>
+        <div th:replace="fragments/sidebar :: sidebar"></div>
+        <div class="content-wrapper">
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4>Cuotas vencidas</h4>
+                            <table class="table datatable">
+                                <thead>
+                                    <tr>
+                                        <th>Crédito</th>
+                                        <th>Cliente</th>
+                                        <th>Cuota</th>
+                                        <th>Vencimiento</th>
+                                        <th>Monto pendiente</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="c : ${cuotasVencidasList}">
+                                        <td th:text="${c.credito.id}"></td>
+                                        <td th:text="${c.credito.cliente.nombreCompleto}"></td>
+                                        <td th:text="${c.numero}"></td>
+                                        <td th:text="${#temporals.format(c.fechaVencimiento,'dd/MM/yyyy')}"></td>
+                                        <td th:text="'S/ ' + #numbers.formatDecimal(c.montoPendiente,1,2)"></td>
+                                        <td><a th:href="@{/admin/creditos/ver/{id}(id=${c.credito.id})}"
+                                                class="btn btn-sm btn-info">Ver</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-
-                <!-- Tabla de Cuotas Vencidas -->
-                <div class="card">
-                    <div class="card-header bg-danger">
-                        <h3 class="card-title">
-                            <i class="fas fa-list"></i> Detalle de Cuotas Vencidas
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <table id="tablaCuotasVencidas" class="table table-bordered table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th width="130">N° Venta</th>
-                                    <th>Cliente</th>
-                                    <th width="60" class="text-center">Cuota</th>
-                                    <th width="120">Vencimiento</th>
-                                    <th width="100" class="text-center">Días Vencido</th>
-                                    <th width="100" class="text-right">Monto</th>
-                                    <th width="100" class="text-right">Pendiente</th>
-                                    <th width="100">Estado</th>
-                                    <th width="150">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="cuota : ${cuotas}">
-                                    <td>
-                                        <a th:href="@{/admin/ventas/ver/{id}(id=${cuota.credito.venta.id})}"
-                                            th:text="${cuota.credito.venta.numeroVenta}">
-                                            VEN-2025-00001
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <strong th:text="${cuota.credito.cliente.nombreCompleto}">
-                                            Juan Pérez
-                                        </strong>
-                                        <br>
-                                        <small class="text-muted">
-                                            <span th:text="${cuota.credito.cliente.tipoDocumento}">DNI</span>:
-                                            <span th:text="${cuota.credito.cliente.numeroDocumento}">12345678</span>
-                                        </small>
-                                        <br>
-                                        <small th:if="${cuota.credito.cliente.telefono != null}">
-                                            <i class="fas fa-phone"></i>
-                                            <span th:text="${cuota.credito.cliente.telefono}">999888777</span>
-                                        </small>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge badge-info">
-                                            <span th:text="${cuota.numeroCuota}">1</span>/<span
-                                                th:text="${cuota.credito.numCuotas}">12</span>
-                                        </span>
-                                    </td>
-                                    <td th:text="${#temporals.format(cuota.fechaVencimiento, 'dd/MM/yyyy')}">
-                                        01/01/2025
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge badge-danger">
-                                            <span th:text="${cuota.diasVencido}">15</span> días
-                                        </span>
-                                    </td>
-                                    <td class="text-right">
-                                        S/ <span th:text="${cuota.monto}">100.00</span>
-                                    </td>
-                                    <td class="text-right">
-                                        <strong class="text-danger">
-                                            S/ <span th:text="${cuota.montoPendiente}">100.00</span>
-                                        </strong>
-                                    </td>
-                                    <td>
-                                        <span class="badge" th:classappend="${cuota.estado.classBootstrap}"
-                                            th:text="${cuota.estado.nombre}">
-                                            Vencida
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a th:href="@{/admin/creditos/ver/{id}(id=${cuota.credito.id})}"
-                                                class="btn btn-info" title="Ver Crédito">
-                                                <i class="fas fa-credit-card"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-success"
-                                                th:onclick="'mostrarModalAbono(' + ${cuota.credito.id} + ')'"
-                                                title="Registrar Abono">
-                                                <i class="fas fa-dollar-sign"></i>
-                                            </button>
-                                            <a th:href="@{/admin/clientes/ver/{id}(id=${cuota.credito.cliente.id})}"
-                                                class="btn btn-primary" title="Ver Cliente">
-                                                <i class="fas fa-user"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-warning"
-                                                th:onclick="'contactarCliente(\'' + ${cuota.credito.cliente.telefono} + '\')'"
-                                                title="Contactar por WhatsApp">
-                                                <i class="fab fa-whatsapp"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th>N° Venta</th>
-                                    <th>Cliente</th>
-                                    <th class="text-center">Cuota</th>
-                                    <th>Vencimiento</th>
-                                    <th class="text-center">Días Vencido</th>
-                                    <th class="text-right">Monto</th>
-                                    <th class="text-right">Pendiente</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Modal Registrar Abono -->
-        <div class="modal fade" id="modalAbono" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header bg-success">
-                        <h5 class="modal-title">
-                            <i class="fas fa-dollar-sign"></i> Registrar Abono
-                        </h5>
-                        <button type="button" class="close" data-dismiss="modal">
-                            <span>&times;</span>
-                        </button>
-                    </div>
-                    <form th:action="@{/admin/creditos/registrar-abono}" method="post">
-                        <div class="modal-body">
-                            <input type="hidden" id="creditoId" name="creditoId">
-
-                            <div class="form-group">
-                                <label>Monto a Abonar <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">S/</span>
-                                    </div>
-                                    <input type="number" class="form-control" name="monto" step="0.01" min="0.01"
-                                        required>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Método de Pago <span class="text-danger">*</span></label>
-                                <select class="form-control" name="metodoPago" required>
-                                    <option value="EFECTIVO">Efectivo</option>
-                                    <option value="TARJETA">Tarjeta</option>
-                                    <option value="TRANSFERENCIA">Transferencia</option>
-                                    <option value="YAPE">Yape/Plin</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Referencia</label>
-                                <input type="text" class="form-control" name="referencia"
-                                    placeholder="N° de operación, comprobante, etc.">
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save"></i> Registrar Abono
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+            </section>
         </div>
+        <div th:replace="fragments/footer :: footer"></div>
     </div>
-
-    <th:block layout:fragment="scripts">
-        <script>
-            $(document).ready(function () {
-                $('#tablaCuotasVencidas').DataTable({
-                    "responsive": true,
-                    "lengthChange": true,
-                    "autoWidth": false,
-                    "order": [[4, "desc"]], // Ordenar por días vencido (mayor a menor)
-                    "pageLength": 25,
-                    "language": {
-                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json"
-                    },
-                    "buttons": [
-                        {
-                            extend: 'excelHtml5',
-                            text: '<i class="fas fa-file-excel"></i> Excel',
-                            className: 'btn btn-success btn-sm',
-                            title: 'Cuotas Vencidas',
-                            exportOptions: {
-                                columns: [0, 1, 2, 3, 4, 5, 6, 7]
-                            }
-                        },
-                        {
-                            extend: 'pdfHtml5',
-                            text: '<i class="fas fa-file-pdf"></i> PDF',
-                            className: 'btn btn-danger btn-sm',
-                            title: 'Reporte de Cuotas Vencidas',
-                            orientation: 'landscape',
-                            exportOptions: {
-                                columns: [0, 1, 2, 3, 4, 5, 6, 7]
-                            }
-                        }
-                    ]
-                }).buttons().container().appendTo('#tablaCuotasVencidas_wrapper .col-md-6:eq(0)');
-            });
-
-            function mostrarModalAbono(creditoId) {
-                $('#creditoId').val(creditoId);
-                $('#modalAbono').modal('show');
-            }
-
-            function contactarCliente(telefono) {
-                if (telefono && telefono !== '') {
-                    var mensaje = encodeURIComponent('Hola, le recordamos que tiene una cuota vencida. ¿Podría realizar el pago lo antes posible?');
-                    var url = 'https://wa.me/' + telefono + '?text=' + mensaje;
-                    window.open(url, '_blank');
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'El cliente no tiene teléfono registrado'
-                    });
-                }
-            }
-
-            function exportarExcel() {
-                $('#tablaCuotasVencidas').DataTable().button('.buttons-excel').trigger();
-            }
-
-            function imprimirReporte() {
-                window.print();
-            }
-        </script>
-    </th:block>
+    <div th:replace="fragments/scripts :: scripts"></div>
 </body>
 
 </html>

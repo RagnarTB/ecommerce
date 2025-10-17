@@ -1,220 +1,177 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{admin/fragments/base}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<head>
-    <title th:text="${titulo}">Detalle del Producto</title>
-</head>
+<head th:replace="fragments/head :: head('Detalle del Producto')"></head>
 
-<body>
-    <div layout:fragment="content">
-        <!-- Content Header -->
-        <section class="content-header">
-            <div class="container-fluid">
-                <div class="row mb-2">
-                    <div class="col-sm-6">
-                        <h1 th:text="${producto.nombre}">Producto</h1>
-                    </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
-                            <li class="breadcrumb-item"><a th:href="@{/admin/productos}">Productos</a></li>
-                            <li class="breadcrumb-item active">Detalle</li>
-                        </ol>
+<body class="hold-transition sidebar-mini">
+
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <div th:replace="fragments/header :: header"></div>
+
+        <!-- Sidebar -->
+        <div th:replace="fragments/sidebar :: sidebar"></div>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-eye"></i> Detalle del Producto
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Inicio</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/productos}">Productos</a></li>
+                                <li class="breadcrumb-item active">Detalle</li>
+                            </ol>
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Main content -->
-        <section class="content">
-            <div class="container-fluid">
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
 
-                <!-- Botones de acción -->
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <a th:href="@{/admin/productos/editar/{id}(id=${producto.id})}" class="btn btn-primary">
-                            <i class="fas fa-edit"></i> Editar
-                        </a>
-                        <a th:href="@{/admin/productos}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Volver
-                        </a>
-                    </div>
-                </div>
+                    <div class="row">
 
-                <div class="row">
-                    <!-- Columna Izquierda: Galería de Imágenes -->
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Galería de Imágenes</h3>
-                            </div>
-                            <div class="card-body">
-                                <!-- Imagen Principal -->
-                                <div class="text-center mb-3">
-                                    <img th:if="${producto.imagenPrincipal != null}"
-                                        th:src="@{'/uploads/' + ${producto.imagenPrincipal.url}}"
-                                        class="img-fluid rounded" style="max-height: 400px;" alt="Imagen Principal">
-                                    <img th:unless="${producto.imagenPrincipal != null}" src="/img/no-image.png"
-                                        class="img-fluid rounded" style="max-height: 400px;" alt="Sin imagen">
+                        <!-- Columna izquierda: Imágenes -->
+                        <div class="col-md-5">
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-images"></i> Galería de Imágenes
+                                    </h3>
                                 </div>
+                                <div class="card-body">
 
-                                <!-- Miniaturas -->
-                                <div th:if="${producto.imagenes != null and !producto.imagenes.isEmpty()}" class="row">
-                                    <div th:each="img : ${producto.imagenes}" class="col-3 mb-2">
-                                        <img th:src="@{'/uploads/' + ${img.url}}" class="img-thumbnail cursor-pointer"
-                                            onclick="cambiarImagenPrincipal(this)" alt="Miniatura">
+                                    <!-- Imagen principal -->
+                                    <div class="text-center mb-3">
+                                        <img th:if="${producto.imagenPrincipal != null}"
+                                            th:src="@{${producto.imagenPrincipal.urlCompleta}}" alt="Imagen principal"
+                                            id="imagenPrincipal" class="img-fluid rounded"
+                                            style="max-height: 400px; cursor: pointer;">
+                                        <img th:unless="${producto.imagenPrincipal != null}"
+                                            th:src="@{/img/no-image.png}" alt="Sin imagen" class="img-fluid rounded"
+                                            style="max-height: 400px;">
+                                    </div>
+
+                                    <!-- Miniaturas -->
+                                    <div class="row"
+                                        th:if="${producto.imagenes != null and !producto.imagenes.isEmpty()}">
+                                        <div class="col-3 mb-2" th:each="img : ${producto.imagenes}">
+                                            <img th:src="@{${img.urlCompleta}}" alt="Miniatura"
+                                                class="img-fluid rounded thumbnail-img"
+                                                style="cursor: pointer; border: 2px solid transparent;"
+                                                onclick="cambiarImagenPrincipal(this.src)">
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Columna derecha: Información -->
+                        <div class="col-md-7">
+
+                            <!-- Información general -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-info-circle"></i> Información del Producto
+                                    </h3>
+                                    <div class="card-tools">
+                                        <a th:href="@{/admin/productos/editar/{id}(id=${producto.id})}"
+                                            class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </a>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
+                                <div class="card-body">
 
-                    <!-- Columna Derecha: Información del Producto -->
-                    <div class="col-md-6">
+                                    <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
 
-                        <!-- Información Básica -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Información del Producto</h3>
-                            </div>
-                            <div class="card-body">
-                                <dl class="row">
-                                    <dt class="col-sm-4">Código SKU:</dt>
-                                    <dd class="col-sm-8">
-                                        <span class="badge badge-secondary"
-                                            th:text="${producto.codigoSku}">SKU-001</span>
-                                    </dd>
+                                    <div class="mb-3">
+                                        <span th:if="${producto.activo}" class="badge badge-success">
+                                            <i class="fas fa-check"></i> Activo
+                                        </span>
+                                        <span th:unless="${producto.activo}" class="badge badge-secondary">
+                                            <i class="fas fa-times"></i> Inactivo
+                                        </span>
 
-                                    <dt class="col-sm-4">Categoría:</dt>
-                                    <dd class="col-sm-8" th:text="${producto.categoria.nombre}">Electrónica</dd>
-
-                                    <dt class="col-sm-4">Marca:</dt>
-                                    <dd class="col-sm-8" th:text="${producto.marca.nombre}">Samsung</dd>
-
-                                    <dt class="col-sm-4">Estado:</dt>
-                                    <dd class="col-sm-8">
-                                        <span th:if="${producto.activo}" class="badge badge-success">Activo</span>
-                                        <span th:unless="${producto.activo}" class="badge badge-danger">Inactivo</span>
-                                    </dd>
-
-                                    <dt class="col-sm-4">Destacado:</dt>
-                                    <dd class="col-sm-8">
-                                        <span th:if="${producto.esDestacado}" class="badge badge-warning">
+                                        <span th:if="${producto.esDestacado}" class="badge badge-warning ml-2">
                                             <i class="fas fa-star"></i> Destacado
                                         </span>
-                                        <span th:unless="${producto.esDestacado}" class="text-muted">No</span>
-                                    </dd>
+                                    </div>
 
-                                    <dt class="col-sm-4">Fecha creación:</dt>
-                                    <dd class="col-sm-8"
-                                        th:text="${#temporals.format(producto.fechaCreacion, 'dd/MM/yyyy HH:mm')}">
-                                        01/01/2025</dd>
-                                </dl>
-                            </div>
-                        </div>
+                                    <p th:text="${producto.descripcion}">Descripción del producto...</p>
 
-                        <!-- Precios -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Precios</h3>
-                            </div>
-                            <div class="card-body">
-                                <dl class="row">
-                                    <dt class="col-sm-4">Precio Base:</dt>
-                                    <dd class="col-sm-8">
-                                        <span class="h5">S/ <span th:text="${producto.precioBase}">100.00</span></span>
-                                    </dd>
+                                    <hr>
+                                    <p><strong>Categoría:</strong> <span
+                                            th:text="${producto.categoria.nombre}">Categoría</span></p>
+                                    <p><strong>Marca:</strong> <span
+                                            th:text="${producto.marca != null ? producto.marca.nombre : '-'}">Marca</span>
+                                    </p>
+                                    <p><strong>SKU:</strong> <span th:text="${producto.codigoSku}">SKU001</span></p>
 
-                                    <dt class="col-sm-4" th:if="${producto.precioOferta != null}">Precio Oferta:</dt>
-                                    <dd class="col-sm-8" th:if="${producto.precioOferta != null}">
-                                        <span class="h5 text-danger">
-                                            S/ <span th:text="${producto.precioOferta}">80.00</span>
-                                        </span>
+                                    <hr>
+                                    <p>
+                                        <strong>Precio Base:</strong>
+                                        S/ <span
+                                            th:text="${#numbers.formatDecimal(producto.precioBase, 1, 2)}">0.00</span>
+                                    </p>
+                                    <p th:if="${producto.tieneOferta()}">
+                                        <strong>Precio Oferta:</strong>
+                                        <span class="text-success">S/ <span
+                                                th:text="${#numbers.formatDecimal(producto.precioOferta, 1, 2)}">0.00</span></span>
                                         <span class="badge badge-danger ml-2"
-                                            th:text="${producto.getPorcentajeDescuento()} + '%'">20%</span>
-                                    </dd>
+                                            th:text="'-' + ${producto.porcentajeDescuento} + '%'"></span>
+                                    </p>
 
-                                    <dt class="col-sm-4">Precio Actual:</dt>
-                                    <dd class="col-sm-8">
-                                        <span class="h4 text-success">
-                                            S/ <span th:text="${producto.getPrecioActual()}">80.00</span>
-                                        </span>
-                                    </dd>
-                                </dl>
+                                    <hr>
+                                    <p><strong>Stock Actual:</strong> <span th:text="${producto.stockActual}">0</span>
+                                    </p>
+                                    <p><strong>Stock Mínimo:</strong> <span th:text="${producto.stockMinimo}">5</span>
+                                    </p>
+
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Stock -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Inventario</h3>
-                            </div>
-                            <div class="card-body">
-                                <dl class="row">
-                                    <dt class="col-sm-4">Stock Actual:</dt>
-                                    <dd class="col-sm-8">
-                                        <span class="h4"
-                                            th:classappend="${producto.tieneStockBajo()} ? 'text-danger' : 'text-success'"
-                                            th:text="${producto.stockActual}">50</span>
-                                        <span th:if="${!producto.hayStock()}" class="badge badge-danger ml-2">Sin
-                                            Stock</span>
-                                        <span th:if="${producto.tieneStockBajo()}"
-                                            class="badge badge-warning ml-2">Stock Bajo</span>
-                                    </dd>
-
-                                    <dt class="col-sm-4">Stock Mínimo:</dt>
-                                    <dd class="col-sm-8" th:text="${producto.stockMinimo}">10</dd>
-
-                                    <dt class="col-sm-4">Disponibilidad:</dt>
-                                    <dd class="col-sm-8">
-                                        <span th:if="${producto.hayStock()}" class="text-success">
-                                            <i class="fas fa-check-circle"></i> Disponible
-                                        </span>
-                                        <span th:unless="${producto.hayStock()}" class="text-danger">
-                                            <i class="fas fa-times-circle"></i> Agotado
-                                        </span>
-                                    </dd>
-                                </dl>
-                            </div>
                         </div>
 
                     </div>
-                </div>
 
-                <!-- Descripción Completa -->
-                <div class="row mt-3">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Descripción</h3>
-                            </div>
-                            <div class="card-body">
-                                <p th:if="${producto.descripcion != null}" th:text="${producto.descripcion}">
-                                    Descripción del producto...
-                                </p>
-                                <p th:unless="${producto.descripcion != null}" class="text-muted">
-                                    Sin descripción
-                                </p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
+            </section>
 
-            </div>
-        </section>
+        </div>
+
+        <!-- Footer -->
+        <div th:replace="fragments/footer :: footer"></div>
+
     </div>
 
-    <!-- Scripts adicionales -->
-    <th:block layout:fragment="scripts">
-        <script>
-            // Cambiar imagen principal al hacer clic en miniatura
-            function cambiarImagenPrincipal(miniatura) {
-                let imagenGrande = miniatura.closest('.card').querySelector('.img-fluid.rounded');
-                imagenGrande.src = miniatura.src;
-            }
-        </script>
-    </th:block>
+    <!-- Scripts -->
+    <div th:replace="fragments/scripts :: scripts"></div>
+
+    <script>
+        function cambiarImagenPrincipal(src) {
+            const principal = document.getElementById('imagenPrincipal');
+            principal.src = src;
+            $('.thumbnail-img').css('border', '2px solid transparent');
+            $(`img[src="${src}"]`).css('border', '2px solid #667eea');
+        }
+    </script>
+
 </body>
 
 </html>

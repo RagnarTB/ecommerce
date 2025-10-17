@@ -1,366 +1,131 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{admin/fragments/base}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<head>
-    <title th:text="${titulo}">Lista de Ventas</title>
-</head>
+<head th:replace="fragments/head :: head('Ventas')"></head>
 
-<body>
-    <div layout:fragment="content">
-        <!-- Content Header -->
-        <section class="content-header">
-            <div class="container-fluid">
-                <div class="row mb-2">
-                    <div class="col-sm-6">
-                        <h1><i class="fas fa-dollar-sign"></i> Gestión de Ventas</h1>
-                    </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
-                            <li class="breadcrumb-item active">Ventas</li>
-                        </ol>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <div th:replace="fragments/header :: header"></div>
+        <div th:replace="fragments/sidebar :: sidebar"></div>
+
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0"><i class="fas fa-receipt"></i> Ventas</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Inicio</a></li>
+                                <li class="breadcrumb-item active">Ventas</li>
+                            </ol>
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Main content -->
-        <section class="content">
-            <div class="container-fluid">
+            <section class="content">
+                <div class="container-fluid">
 
-                <!-- Mensajes -->
-                <div th:if="${success}" class="alert alert-success alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                    <i class="icon fas fa-check"></i> <span th:text="${success}"></span>
-                </div>
-
-                <div th:if="${error}" class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                    <i class="icon fas fa-ban"></i> <span th:text="${error}"></span>
-                </div>
-
-                <!-- Botones de acción -->
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <a th:href="@{/admin/ventas/pos}" class="btn btn-success">
-                            <i class="fas fa-cash-register"></i> Ir al POS
-                        </a>
-                        <button type="button" class="btn btn-info" onclick="mostrarFiltros()">
-                            <i class="fas fa-filter"></i> Filtros
-                        </button>
-                        <button type="button" class="btn btn-primary" onclick="exportarExcel()">
-                            <i class="fas fa-file-excel"></i> Exportar Excel
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Panel de Filtros -->
-                <div id="filtrosPanel" class="card collapsed-card" style="display: none;">
-                    <div class="card-header">
-                        <h3 class="card-title">Filtros de Búsqueda</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" onclick="ocultarFiltros()">
-                                <i class="fas fa-times"></i>
-                            </button>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-list"></i> Lista de Ventas</h3>
+                            <div class="card-tools">
+                                <a th:href="@{/admin/ventas/pos}" class="btn btn-success"><i
+                                        class="fas fa-cash-register"></i> Abrir POS</a>
+                                <a th:href="@{/admin/ventas/nuevo}" class="btn btn-primary"><i class="fas fa-plus"></i>
+                                    Nueva Venta</a>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <form method="get" th:action="@{/admin/ventas}">
-                            <div class="row">
+
+                        <div class="card-body">
+                            <div class="row mb-2">
                                 <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label>Fecha Inicio</label>
-                                        <input type="date" name="fechaInicio" class="form-control"
-                                            th:value="${fechaInicio}">
-                                    </div>
+                                    <input type="text" id="filterCliente" class="form-control"
+                                        placeholder="Buscar por cliente">
                                 </div>
                                 <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label>Fecha Fin</label>
-                                        <input type="date" name="fechaFin" class="form-control" th:value="${fechaFin}">
-                                    </div>
+                                    <select id="filterEstado" class="form-control">
+                                        <option value="">Todos los estados</option>
+                                        <option value="COMPLETADA">Completada</option>
+                                        <option value="PENDIENTE">Pendiente</option>
+                                        <option value="ANULADA">Anulada</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label>Estado</label>
-                                        <select name="estado" class="form-control">
-                                            <option value="">Todos</option>
-                                            <option value="COMPLETADA" th:selected="${estado == 'COMPLETADA'}">
-                                                Completada</option>
-                                            <option value="ANULADA" th:selected="${estado == 'ANULADA'}">Anulada
-                                            </option>
-                                        </select>
-                                    </div>
+                                    <input type="date" id="filterDesde" class="form-control">
                                 </div>
                                 <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label>Tipo de Pago</label>
-                                        <select name="tipoPago" class="form-control">
-                                            <option value="">Todos</option>
-                                            <option value="CONTADO" th:selected="${tipoPago == 'CONTADO'}">Contado
-                                            </option>
-                                            <option value="CREDITO" th:selected="${tipoPago == 'CREDITO'}">Crédito
-                                            </option>
-                                        </select>
-                                    </div>
+                                    <input type="date" id="filterHasta" class="form-control">
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-search"></i> Buscar
-                                    </button>
-                                    <a th:href="@{/admin/ventas}" class="btn btn-secondary">
-                                        <i class="fas fa-redo"></i> Limpiar Filtros
-                                    </a>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
 
-                <!-- Tarjetas de Resumen -->
-                <div class="row mb-3">
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-success">
-                            <div class="inner">
-                                <h3>S/ <span th:text="${totalVentas ?: 0}">0.00</span></h3>
-                                <p>Total Ventas</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-dollar-sign"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-info">
-                            <div class="inner">
-                                <h3 th:text="${cantidadVentas ?: 0}">0</h3>
-                                <p>Cantidad de Ventas</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-warning">
-                            <div class="inner">
-                                <h3 th:text="${ventasContado ?: 0}">0</h3>
-                                <p>Ventas al Contado</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-money-bill-wave"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-danger">
-                            <div class="inner">
-                                <h3 th:text="${ventasCredito ?: 0}">0</h3>
-                                <p>Ventas a Crédito</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-credit-card"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                            <table id="ventasTable" class="table table-bordered table-striped datatable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Cliente</th>
+                                        <th>Total</th>
+                                        <th>Pagos</th>
+                                        <th>Estado</th>
+                                        <th>Fecha</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="v : ${ventas}">
+                                        <td th:text="${v.numeroVenta}">VEN-001</td>
+                                        <td th:text="${v.cliente != null ? v.cliente.nombreCompleto : 'Cliente local'}">
+                                            Cliente</td>
+                                        <td th:text="'S/ ' + #numbers.formatDecimal(v.total,1,2)">S/0.00</td>
+                                        <td th:text="${v.pagos != null ? v.pagos.size() : 0}">0</td>
+                                        <td>
+                                            <span
+                                                th:classappend="${v.estado.name() == 'COMPLETADA'} ? 'badge badge-success' : (v.estado.name() == 'PENDIENTE') ? 'badge badge-warning' : 'badge badge-secondary'"
+                                                th:text="${v.estado.nombre}">Estado</span>
+                                        </td>
+                                        <td th:text="${#temporals.format(v.fechaVenta,'dd/MM/yyyy HH:mm')}">01/01/2025
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <a th:href="@{/admin/ventas/ver/{id}(id=${v.id})}"
+                                                    class="btn btn-sm btn-info" title="Ver"><i
+                                                        class="fas fa-eye"></i></a>
+                                                <a th:href="@{/admin/ventas/imprimir/{id}(id=${v.id})}"
+                                                    class="btn btn-sm btn-secondary" title="Imprimir"><i
+                                                        class="fas fa-print"></i></a>
+                                                <a th:href="@{/admin/ventas/anular/{id}(id=${v.id})}"
+                                                    class="btn btn-sm btn-danger btn-delete"
+                                                    th:data-name="${v.numeroVenta}" title="Anular"><i
+                                                        class="fas fa-ban"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-                <!-- Tabla de Ventas -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Lista de Ventas</h3>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <table id="tablaVentas" class="table table-bordered table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th width="120">N° Venta</th>
-                                    <th width="150">Fecha</th>
-                                    <th>Cliente</th>
-                                    <th width="120">Tipo Pago</th>
-                                    <th width="100" class="text-right">Total</th>
-                                    <th width="100">Estado</th>
-                                    <th width="80">Usuario</th>
-                                    <th width="150">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="venta : ${ventas}">
-                                    <td>
-                                        <strong th:text="${venta.numeroVenta}">VEN-2025-00001</strong>
-                                    </td>
-                                    <td th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy HH:mm')}">
-                                        01/01/2025 10:30
-                                    </td>
-                                    <td>
-                                        <strong th:text="${venta.cliente.nombreCompleto}">Juan Pérez</strong>
-                                        <br>
-                                        <small class="text-muted">
-                                            <span th:text="${venta.cliente.tipoDocumento}">DNI</span>:
-                                            <span th:text="${venta.cliente.numeroDocumento}">12345678</span>
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <span class="badge" th:classappend="${venta.tipoPago.classBootstrap}"
-                                            th:text="${venta.tipoPago.nombre}">
-                                            Contado
-                                        </span>
-                                    </td>
-                                    <td class="text-right">
-                                        <strong>S/ <span th:text="${venta.total}">100.00</span></strong>
-                                    </td>
-                                    <td>
-                                        <span class="badge" th:classappend="${venta.estado.classBootstrap}"
-                                            th:text="${venta.estado.nombre}">
-                                            Completada
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <small th:text="${venta.usuario.nombre}">Admin</small>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a th:href="@{/admin/ventas/ver/{id}(id=${venta.id})}" class="btn btn-info"
-                                                title="Ver Detalle">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a th:href="@{/admin/ventas/boleta/{id}(id=${venta.id})}"
-                                                class="btn btn-success" target="_blank" title="Imprimir Boleta">
-                                                <i class="fas fa-print"></i>
-                                            </a>
-                                            <button th:if="${venta.estado.name() == 'COMPLETADA'}" type="button"
-                                                class="btn btn-danger" th:onclick="'anularVenta(' + ${venta.id} + ')'"
-                                                title="Anular Venta">
-                                                <i class="fas fa-ban"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th>N° Venta</th>
-                                    <th>Fecha</th>
-                                    <th>Cliente</th>
-                                    <th>Tipo Pago</th>
-                                    <th class="text-right">Total</th>
-                                    <th>Estado</th>
-                                    <th>Usuario</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
 
-            </div>
-        </section>
+                </div>
+            </section>
+        </div>
+
+        <div th:replace="fragments/footer :: footer"></div>
     </div>
 
-    <!-- Scripts adicionales -->
-    <th:block layout:fragment="scripts">
-        <script>
-            $(document).ready(function () {
-                // Inicializar DataTable
-                $('#tablaVentas').DataTable({
-                    "responsive": true,
-                    "lengthChange": true,
-                    "autoWidth": false,
-                    "order": [[1, "desc"]], // Ordenar por fecha descendente
-                    "pageLength": 25,
-                    "language": {
-                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json"
-                    },
-                    "buttons": [
-                        {
-                            extend: 'excelHtml5',
-                            text: '<i class="fas fa-file-excel"></i> Excel',
-                            className: 'btn btn-success btn-sm',
-                            title: 'Reporte de Ventas',
-                            exportOptions: {
-                                columns: [0, 1, 2, 3, 4, 5, 6]
-                            }
-                        },
-                        {
-                            extend: 'pdfHtml5',
-                            text: '<i class="fas fa-file-pdf"></i> PDF',
-                            className: 'btn btn-danger btn-sm',
-                            title: 'Reporte de Ventas',
-                            orientation: 'landscape',
-                            exportOptions: {
-                                columns: [0, 1, 2, 3, 4, 5, 6]
-                            }
-                        },
-                        {
-                            extend: 'print',
-                            text: '<i class="fas fa-print"></i> Imprimir',
-                            className: 'btn btn-info btn-sm',
-                            exportOptions: {
-                                columns: [0, 1, 2, 3, 4, 5, 6]
-                            }
-                        }
-                    ]
-                }).buttons().container().appendTo('#tablaVentas_wrapper .col-md-6:eq(0)');
+    <div th:replace="fragments/scripts :: scripts"></div>
+
+    <script>
+        $(document).ready(function () {
+            // filtros básicos client-side; puedes cambiarlos a server-side si el dataset es grande
+            $('#filterCliente, #filterEstado, #filterDesde, #filterHasta').on('change keyup', function () {
+                $('.datatable').DataTable().draw();
             });
+        });
+    </script>
 
-            // Mostrar panel de filtros
-            function mostrarFiltros() {
-                $('#filtrosPanel').slideDown();
-            }
-
-            // Ocultar panel de filtros
-            function ocultarFiltros() {
-                $('#filtrosPanel').slideUp();
-            }
-
-            // Anular venta
-            function anularVenta(ventaId) {
-                Swal.fire({
-                    title: '¿Anular esta venta?',
-                    text: "Esta acción devolverá el stock de los productos",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sí, anular',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Enviar petición POST
-                        $.ajax({
-                            url: '/admin/ventas/anular/' + ventaId,
-                            method: 'POST',
-                            success: function (response) {
-                                Swal.fire(
-                                    '¡Anulada!',
-                                    'La venta ha sido anulada correctamente.',
-                                    'success'
-                                ).then(() => {
-                                    location.reload();
-                                });
-                            },
-                            error: function (xhr) {
-                                Swal.fire(
-                                    'Error',
-                                    'No se pudo anular la venta',
-                                    'error'
-                                );
-                            }
-                        });
-                    }
-                });
-            }
-
-            // Exportar a Excel
-            function exportarExcel() {
-                $('#tablaVentas').DataTable().button('.buttons-excel').trigger();
-            }
-        </script>
-    </th:block>
 </body>
 
 </html>
