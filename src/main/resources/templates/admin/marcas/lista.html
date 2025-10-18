@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Marcas')}"></head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper"><!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav><!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside><!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-tags neon-icon"></i>
+                                <span class="neon-text">MARCAS</span>
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Marcas</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-list mr-1"></i>
+                                        Listado de Marcas
+                                    </h3>
+                                    <div class="card-tools">
+                                        <a th:href="@{/admin/marcas/nuevo}" class="btn btn-success btn-sm gamer-btn">
+                                            <i class="fas fa-plus"></i> Nueva Marca
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-bordered table-hover data-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 10px">#</th>
+                                                <th>Nombre</th>
+                                                <th>Descripción</th>
+                                                <th>Nº Productos</th>
+                                                <th>Estado</th>
+                                                <th style="width: 150px">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="marca, iterStat : ${marcas}">
+                                                <td th:text="${iterStat.count}">1</td>
+                                                <td>
+                                                    <strong th:text="${marca.nombre}">Nombre</strong>
+                                                </td>
+                                                <td th:text="${marca.descripcion}">Descripción</td>
+                                                <td>
+                                                    <span class="badge badge-primary"
+                                                        th:text="${marca.productos != null ? marca.productos.size() : 0}">
+                                                        0
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <form
+                                                        th:action="@{/admin/marcas/cambiar-estado/{id}(id=${marca.id})}"
+                                                        method="get" style="display: inline;">
+                                                        <input type="hidden" name="activo" th:value="${!marca.activo}">
+                                                        <button type="submit" class="btn btn-sm"
+                                                            th:classappend="${marca.activo} ? 'btn-success' : 'btn-secondary'">
+                                                            <i class="fas"
+                                                                th:classappend="${marca.activo} ? 'fa-check' : 'fa-times'"></i>
+                                                            <span
+                                                                th:text="${marca.activo} ? 'Activo' : 'Inactivo'">Activo</span>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a th:href="@{/admin/marcas/editar/{id}(id=${marca.id})}"
+                                                            class="btn btn-primary" data-toggle="tooltip"
+                                                            title="Editar">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <a th:href="@{/admin/marcas/eliminar/{id}(id=${marca.id})}"
+                                                            class="btn btn-danger btn-confirm"
+                                                            data-mensaje="¿Estás seguro de eliminar esta marca?"
+                                                            data-toggle="tooltip" title="Eliminar">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div><!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div><!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+
+</html>

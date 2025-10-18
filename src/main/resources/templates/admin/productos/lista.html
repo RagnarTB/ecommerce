@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Lista de Productos')"></head>
+<head th:replace="~{fragments/head :: head('Productos')}"></head>
 
 <body class="hold-transition sidebar-mini">
-
     <div class="wrapper">
 
         <!-- Navbar -->
-        <div th:replace="fragments/header :: header"></div>
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
         <!-- Sidebar -->
-        <div th:replace="fragments/sidebar :: sidebar"></div>
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
         <!-- Content Wrapper -->
         <div class="content-wrapper">
@@ -22,12 +21,15 @@
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">
-                                <i class="fas fa-boxes"></i> Gestión de Productos
+                                <i class="fas fa-gamepad neon-icon"></i>
+                                <span class="neon-text">PRODUCTOS</span> GAMING
                             </h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Inicio</a></li>
+                                <li class="breadcrumb-item">
+                                    <a th:href="@{/admin/dashboard}">Dashboard</a>
+                                </li>
                                 <li class="breadcrumb-item active">Productos</li>
                             </ol>
                         </div>
@@ -38,143 +40,167 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card gamer-card">
 
-                    <!-- Mensajes -->
-                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
-                    </div>
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-list mr-1"></i>
+                                        Listado de Productos
+                                    </h3>
+                                    <div class="card-tools">
+                                        <a th:href="@{/admin/productos/nuevo}" class="btn btn-success btn-sm gamer-btn">
+                                            <i class="fas fa-plus"></i> Nuevo Producto
+                                        </a>
+                                    </div>
+                                </div>
 
-                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
-                    </div>
+                                <div class="card-body">
+                                    <table class="table table-bordered table-hover data-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 10px">#</th>
+                                                <th>Imagen</th>
+                                                <th>Producto</th>
+                                                <th>SKU</th>
+                                                <th>Categoría</th>
+                                                <th>Marca</th>
+                                                <th>Precio</th>
+                                                <th>Stock</th>
+                                                <th>Estado</th>
+                                                <th style="width: 150px">Acciones</th>
+                                            </tr>
+                                        </thead>
 
-                    <!-- Card Principal -->
-                    <div class="card">
+                                        <tbody>
+                                            <tr th:each="producto, iterStat : ${productos}">
+                                                <td th:text="${iterStat.count}">1</td>
 
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                <i class="fas fa-list"></i> Lista de Productos
-                            </h3>
-                            <div class="card-tools">
-                                <a th:href="@{/admin/productos/nuevo}" class="btn btn-success">
-                                    <i class="fas fa-plus"></i> Nuevo Producto
-                                </a>
+                                                <td>
+                                                    <img th:if="${producto.imagenPrincipal != null}"
+                                                        th:src="@{'/uploads' + ${producto.imagenPrincipal.url}}"
+                                                        class="img-thumbnail"
+                                                        style="max-width: 60px; max-height: 60px; object-fit: cover;">
+                                                    <img th:unless="${producto.imagenPrincipal != null}"
+                                                        th:src="@{/img/placeholder-game.jpg}" class="img-thumbnail"
+                                                        style="max-width: 60px; max-height: 60px; object-fit: cover;">
+                                                </td>
+
+                                                <td>
+                                                    <strong th:text="${producto.nombre}">Nombre Producto</strong>
+                                                    <br>
+                                                    <small class="text-muted"
+                                                        th:text="${#strings.abbreviate(producto.descripcion, 50)}">
+                                                        Descripción corta...
+                                                    </small>
+                                                    <br>
+                                                    <span class="badge badge-info" th:if="${producto.esDestacado}">
+                                                        <i class="fas fa-star"></i> Destacado
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <span class="badge badge-secondary"
+                                                        th:text="${producto.codigoSku}">SKU-001</span>
+                                                </td>
+
+                                                <td th:text="${producto.categoria.nombre}">Categoría</td>
+                                                <td th:text="${producto.marca.nombre}">Marca</td>
+
+                                                <td>
+                                                    <div th:if="${producto.tieneOferta()}">
+                                                        <span class="text-muted" style="text-decoration: line-through;">
+                                                            S/
+                                                            <span
+                                                                th:text="${#numbers.formatDecimal(producto.precioBase, 1, 'POINT', 2, 'POINT')}">0.00</span>
+                                                        </span>
+                                                        <br>
+                                                        <span class="text-success font-weight-bold">
+                                                            S/
+                                                            <span
+                                                                th:text="${#numbers.formatDecimal(producto.precioOferta, 1, 'POINT', 2, 'POINT')}">0.00</span>
+                                                        </span>
+                                                        <span class="badge badge-danger">OFERTA</span>
+                                                    </div>
+
+                                                    <div th:unless="${producto.tieneOferta()}">
+                                                        <span class="font-weight-bold">
+                                                            S/
+                                                            <span
+                                                                th:text="${#numbers.formatDecimal(producto.precioBase, 1, 'POINT', 2, 'POINT')}">0.00</span>
+                                                        </span>
+                                                    </div>
+                                                </td>
+
+                                                <td>
+                                                    <span class="badge"
+                                                        th:classappend="${producto.stockActual <= 0} ? 'badge-danger' :
+                                                                          (${producto.stockActual <= producto.stockMinimo} ? 'badge-warning' : 'badge-success')"
+                                                        th:text="${producto.stockActual}">
+                                                        0
+                                                    </span>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        Mín: <span th:text="${producto.stockMinimo}">10</span>
+                                                    </small>
+                                                </td>
+
+                                                <td>
+                                                    <form
+                                                        th:action="@{/admin/productos/cambiar-estado/{id}(id=${producto.id})}"
+                                                        method="get" style="display: inline;">
+                                                        <input type="hidden" name="activo"
+                                                            th:value="${!producto.activo}">
+                                                        <button type="submit" class="btn btn-sm"
+                                                            th:classappend="${producto.activo} ? 'btn-success' : 'btn-secondary'">
+                                                            <i class="fas"
+                                                                th:classappend="${producto.activo} ? 'fa-check' : 'fa-times'"></i>
+                                                            <span
+                                                                th:text="${producto.activo} ? 'Activo' : 'Inactivo'">Activo</span>
+                                                        </button>
+                                                    </form>
+                                                </td>
+
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a th:href="@{/admin/productos/ver/{id}(id=${producto.id})}"
+                                                            class="btn btn-info" data-toggle="tooltip"
+                                                            title="Ver Detalle">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a th:href="@{/admin/productos/editar/{id}(id=${producto.id})}"
+                                                            class="btn btn-primary" data-toggle="tooltip"
+                                                            title="Editar">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <a th:href="@{/admin/productos/eliminar/{id}(id=${producto.id})}"
+                                                            class="btn btn-danger btn-confirm"
+                                                            data-mensaje="¿Estás seguro de eliminar este producto?"
+                                                            data-toggle="tooltip" title="Eliminar">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
                             </div>
                         </div>
-
-                        <div class="card-body">
-                            <table id="productosTable" class="table table-bordered table-striped datatable">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Imagen</th>
-                                        <th>SKU</th>
-                                        <th>Nombre</th>
-                                        <th>Categoría</th>
-                                        <th>Marca</th>
-                                        <th>Precio</th>
-                                        <th>Stock</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="producto : ${productos}">
-                                        <td th:text="${producto.id}">1</td>
-                                        <td class="text-center">
-                                            <img th:if="${producto.imagenPrincipal != null}"
-                                                th:src="@{${producto.imagenPrincipal.urlCompleta}}" alt="Imagen"
-                                                style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
-                                            <img th:unless="${producto.imagenPrincipal != null}"
-                                                th:src="@{/img/no-image.png}" alt="Sin imagen"
-                                                style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
-                                        </td>
-                                        <td th:text="${producto.codigoSku}">SKU-001</td>
-                                        <td>
-                                            <strong th:text="${producto.nombre}">Producto</strong>
-                                            <span th:if="${producto.esDestacado}" class="badge badge-warning ml-2">
-                                                <i class="fas fa-star"></i> Destacado
-                                            </span>
-                                        </td>
-                                        <td th:text="${producto.categoria.nombre}">Categoría</td>
-                                        <td th:text="${producto.marca != null ? producto.marca.nombre : '-'}">Marca</td>
-                                        <td>
-                                            <div th:if="${producto.tieneOferta()}">
-                                                <span class="text-muted" style="text-decoration: line-through;">
-                                                    S/ <span
-                                                        th:text="${#numbers.formatDecimal(producto.precioBase, 1, 2)}">0.00</span>
-                                                </span>
-                                                <br>
-                                                <strong class="text-success">
-                                                    S/ <span
-                                                        th:text="${#numbers.formatDecimal(producto.precioOferta, 1, 2)}">0.00</span>
-                                                </strong>
-                                                <span class="badge badge-danger ml-1"
-                                                    th:text="'-' + ${producto.porcentajeDescuento} + '%'">-10%</span>
-                                            </div>
-                                            <div th:unless="${producto.tieneOferta()}">
-                                                <strong>S/ <span
-                                                        th:text="${#numbers.formatDecimal(producto.precioBase, 1, 2)}">0.00</span></strong>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span th:if="${producto.stockBajoMinimo()}" class="badge badge-danger">
-                                                <i class="fas fa-exclamation-triangle"></i>
-                                                <span th:text="${producto.stockActual}">0</span>
-                                            </span>
-                                            <span th:unless="${producto.stockBajoMinimo()}" class="badge badge-success">
-                                                <span th:text="${producto.stockActual}">0</span>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span th:if="${producto.activo}" class="badge badge-success">
-                                                <i class="fas fa-check"></i> Activo
-                                            </span>
-                                            <span th:unless="${producto.activo}" class="badge badge-secondary">
-                                                <i class="fas fa-times"></i> Inactivo
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="btn-group">
-                                                <a th:href="@{/admin/productos/ver/{id}(id=${producto.id})}"
-                                                    class="btn btn-sm btn-info" data-toggle="tooltip"
-                                                    title="Ver detalle">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a th:href="@{/admin/productos/editar/{id}(id=${producto.id})}"
-                                                    class="btn btn-sm btn-warning" data-toggle="tooltip" title="Editar">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a th:href="@{/admin/productos/eliminar/{id}(id=${producto.id})}"
-                                                    class="btn btn-sm btn-danger btn-delete"
-                                                    th:data-name="${producto.nombre}" data-toggle="tooltip"
-                                                    title="Eliminar">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
                     </div>
-
                 </div>
             </section>
-
         </div>
 
         <!-- Footer -->
-        <div th:replace="fragments/footer :: footer"></div>
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
 
     </div>
 
     <!-- Scripts -->
-    <div th:replace="fragments/scripts :: scripts"></div>
-
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
 </body>
 
 </html>

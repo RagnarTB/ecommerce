@@ -9,11 +9,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private final ThymeleafRequestInterceptor thymeleafRequestInterceptor;
+    private final CurrentURIInterceptor currentURIInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(thymeleafRequestInterceptor)
-                .addPathPatterns("/admin/**");
+        registry.addInterceptor(currentURIInterceptor)
+                .addPathPatterns("/**") // aplica a todas las rutas
+                .excludePathPatterns("/css/**", "/js/**", "/img/**", "/vendor/**"); // excluye estáticos
     }
 }

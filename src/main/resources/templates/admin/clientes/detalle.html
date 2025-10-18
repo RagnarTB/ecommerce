@@ -1,36 +1,308 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Detalle Cliente')"></head>
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
-        <div th:replace="fragments/header :: header"></div>
-        <div th:replace="fragments/sidebar :: sidebar"></div>
+
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
-                    <h1 class="m-0"><i class="fas fa-user"></i> Cliente</h1>
-                </div>
-            </div>
-            <section class="content">
-                <div class="container-fluid">
-                    <div class="card">
-                        <div class="card-body">
-                            <h3 th:text="${cliente.nombreCompleto}">Cliente</h3>
-                            <p><strong>Documento:</strong> <span
-                                    th:text="${cliente.tipoDocumento + ' - ' + cliente.numeroDocumento}"></span></p>
-                            <p><strong>Teléfono:</strong> <span th:text="${cliente.telefono}"></span></p>
-                            <p><strong>Dirección:</strong> <span th:text="${cliente.direccion}"></span></p>
-                            <div class="mt-3"><a th:href="@{/admin/clientes}" class="btn btn-secondary">Volver</a></div>
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-user-circle text-danger"></i>
+                                Detalle del Cliente
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/clientes}">Clientes</a></li>
+                                <li class="breadcrumb-item active">Detalle</li>
+                            </ol>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div class="row">
+                        <!-- Información Personal -->
+                        <div class="col-md-4">
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-id-card"></i> Información Personal
+                                    </h3>
+                                    <div class="card-tools">
+                                        <span th:if="${cliente.activo}" class="badge badge-success">
+                                            <i class="fas fa-check"></i> ACTIVO
+                                        </span>
+                                        <span th:unless="${cliente.activo}" class="badge badge-danger">
+                                            <i class="fas fa-times"></i> INACTIVO
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center mb-3">
+                                        <div class="avatar-circle bg-danger text-white mb-2"
+                                            style="width: 100px; height: 100px; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 3rem;">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <h4 th:text="${cliente.nombreCompleto}"></h4>
+                                        <p class="text-muted" th:if="${cliente.razonSocial}"
+                                            th:text="${cliente.razonSocial}"></p>
+                                    </div>
+
+                                    <dl class="row">
+                                        <dt class="col-sm-5">
+                                            <i class="fas fa-fingerprint text-danger"></i> Tipo Doc.
+                                        </dt>
+                                        <dd class="col-sm-7">
+                                            <span th:if="${cliente.tipoDocumento.name() == 'DNI'}"
+                                                class="badge badge-info">DNI</span>
+                                            <span th:if="${cliente.tipoDocumento.name() == 'RUC'}"
+                                                class="badge badge-primary">RUC</span>
+                                            <span th:if="${cliente.tipoDocumento.name() == 'PASAPORTE'}"
+                                                class="badge badge-secondary">PASAPORTE</span>
+                                        </dd>
+
+                                        <dt class="col-sm-5">
+                                            <i class="fas fa-hashtag text-danger"></i> Documento
+                                        </dt>
+                                        <dd class="col-sm-7">
+                                            <strong th:text="${cliente.numeroDocumento}"></strong>
+                                        </dd>
+
+                                        <!-- Para DNI -->
+                                        <th:block th:if="${cliente.tipoDocumento.name() == 'DNI'}">
+                                            <dt class="col-sm-5">
+                                                <i class="fas fa-user text-danger"></i> Nombres
+                                            </dt>
+                                            <dd class="col-sm-7" th:text="${cliente.nombres ?: '-'}"></dd>
+
+                                            <dt class="col-sm-5">
+                                                <i class="fas fa-user text-danger"></i> Ap. Paterno
+                                            </dt>
+                                            <dd class="col-sm-7" th:text="${cliente.apellidoPaterno ?: '-'}"></dd>
+
+                                            <dt class="col-sm-5">
+                                                <i class="fas fa-user text-danger"></i> Ap. Materno
+                                            </dt>
+                                            <dd class="col-sm-7" th:text="${cliente.apellidoMaterno ?: '-'}"></dd>
+                                        </th:block>
+
+                                        <!-- Para RUC -->
+                                        <th:block th:if="${cliente.tipoDocumento.name() == 'RUC'}">
+                                            <dt class="col-sm-5">
+                                                <i class="fas fa-building text-danger"></i> Razón Social
+                                            </dt>
+                                            <dd class="col-sm-7" th:text="${cliente.razonSocial ?: '-'}"></dd>
+                                        </th:block>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de Contacto -->
+                        <div class="col-md-4">
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-address-book"></i> Información de Contacto
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-phone text-danger"></i> Teléfono
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${cliente.telefono ?: 'No registrado'}"></dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-envelope text-danger"></i> Email
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${cliente.email ?: 'No registrado'}"></dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-map-marker-alt text-danger"></i> Dirección
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${cliente.direccion ?: 'No registrada'}"></dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-map-pin text-danger"></i> Distrito
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${cliente.distrito ?: '-'}"></dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-map text-danger"></i> Provincia
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${cliente.provincia ?: '-'}"></dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-globe text-danger"></i> Departamento
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${cliente.departamento ?: '-'}"></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Estadísticas -->
+                        <div class="col-md-4">
+                            <!-- Total de Compras -->
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3 th:text="${cliente.ventas.size()}">0</h3>
+                                    <p>Total de Compras</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                            </div>
+
+                            <!-- Deuda Pendiente (si tiene créditos) -->
+                            <div class="small-box bg-warning" th:if="${deudaTotal != null && deudaTotal > 0}">
+                                <div class="inner">
+                                    <h3>S/ <span th:text="${#numbers.formatDecimal(deudaTotal, 1, 2)}">0.00</span></h3>
+                                    <p>Deuda Pendiente</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+
+                            <!-- Última Compra -->
+                            <div class="card card-danger card-outline gamer-card" th:if="${!cliente.ventas.isEmpty()}">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-clock"></i> Última Compra
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <th:block th:with="ultimaVenta=${cliente.ventas.get(0)}">
+                                        <p class="mb-1">
+                                            <strong th:text="${ultimaVenta.numeroVenta}"></strong>
+                                        </p>
+                                        <p class="mb-1">
+                                            <i class="fas fa-calendar text-danger"></i>
+                                            <span
+                                                th:text="${#temporals.format(ultimaVenta.fechaVenta, 'dd/MM/yyyy')}"></span>
+                                        </p>
+                                        <p class="mb-0">
+                                            <i class="fas fa-dollar-sign text-success"></i>
+                                            <strong>S/ <span
+                                                    th:text="${#numbers.formatDecimal(ultimaVenta.total, 1, 2)}"></span></strong>
+                                        </p>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Historial de Compras -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-history"></i> Historial de Compras
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div th:if="${cliente.ventas.isEmpty()}" class="text-center text-muted py-5">
+                                        <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                                        <p>Este cliente aún no ha realizado compras</p>
+                                    </div>
+
+                                    <table th:unless="${cliente.ventas.isEmpty()}"
+                                        class="table table-bordered table-hover">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>Nº Venta</th>
+                                                <th>Fecha</th>
+                                                <th>Tipo Pago</th>
+                                                <th>Total</th>
+                                                <th>Estado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="venta : ${cliente.ventas}">
+                                                <td>
+                                                    <strong th:text="${venta.numeroVenta}"></strong>
+                                                </td>
+                                                <td
+                                                    th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy HH:mm')}">
+                                                </td>
+                                                <td>
+                                                    <span th:if="${venta.tipoPago.name() == 'CONTADO'}"
+                                                        class="badge badge-success">Contado</span>
+                                                    <span th:if="${venta.tipoPago.name() == 'CREDITO'}"
+                                                        class="badge badge-warning">Crédito</span>
+                                                </td>
+                                                <td>
+                                                    <strong>S/ <span
+                                                            th:text="${#numbers.formatDecimal(venta.total, 1, 2)}"></span></strong>
+                                                </td>
+                                                <td>
+                                                    <span th:if="${venta.estado.name() == 'COMPLETADA'}"
+                                                        class="badge badge-success">Completada</span>
+                                                    <span th:if="${venta.estado.name() == 'ANULADA'}"
+                                                        class="badge badge-danger">Anulada</span>
+                                                </td>
+                                                <td>
+                                                    <a th:href="@{/admin/ventas/ver/{id}(id=${venta.id})}"
+                                                        class="btn btn-info btn-sm" data-toggle="tooltip"
+                                                        title="Ver Detalle">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-body text-center">
+                                    <a th:href="@{/admin/clientes}" class="btn btn-dark btn-lg gamer-btn">
+                                        <i class="fas fa-arrow-left"></i> Volver a Clientes
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </section>
         </div>
-        <div th:replace="fragments/footer :: footer"></div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
-    <div th:replace="fragments/scripts :: scripts"></div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
 </body>
 
 </html>

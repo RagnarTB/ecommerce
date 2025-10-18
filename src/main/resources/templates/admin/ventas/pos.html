@@ -1,83 +1,257 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Punto de Venta - POS')"></head>
+<head th:replace="~{fragments/head :: head('Punto de Venta - POS'))}"></head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
-        <div th:replace="fragments/header :: header"></div>
-        <div th:replace="fragments/sidebar :: sidebar"></div>
 
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
-                    <h1 class="m-0"><i class="fas fa-cash-register"></i> Punto de Venta</h1>
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-cash-register text-danger"></i>
+                                Punto de Venta (POS)
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">POS</li>
+                            </ol>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
 
+                    <!-- Mensajes -->
+                    <div id="alertContainer"></div>
+
                     <div class="row">
-                        <div class="col-md-8">
-                            <div class="card">
+                        <!-- COLUMNA IZQUIERDA: BÚSQUEDA DE PRODUCTOS -->
+                        <div class="col-lg-7">
+                            <!-- Búsqueda de Productos -->
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-search"></i> Buscar Productos
+                                    </h3>
+                                </div>
                                 <div class="card-body">
+                                    <!-- Buscador -->
                                     <div class="input-group mb-3">
-                                        <input type="text" id="posSearch" class="form-control"
-                                            placeholder="Buscar por SKU o nombre">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" id="posAdd">Agregar</button>
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-danger">
+                                                <i class="fas fa-search"></i>
+                                            </span>
                                         </div>
+                                        <input type="text" class="form-control form-control-lg gamer-input"
+                                            id="searchProduct"
+                                            placeholder="Buscar por nombre, SKU o escanear código de barras..."
+                                            autocomplete="off">
                                     </div>
 
-                                    <table class="table table-sm" id="posCart">
-                                        <thead>
-                                            <tr>
-                                                <th>SKU</th>
-                                                <th>Nombre</th>
-                                                <th>Cant.</th>
-                                                <th>Precio</th>
-                                                <th>Subtotal</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-
+                                    <!-- Grid de Productos -->
+                                    <div id="productGrid" class="row" style="max-height: 500px; overflow-y: auto;">
+                                        <!-- Productos se cargarán aquí dinámicamente -->
+                                        <div class="col-12 text-center text-muted py-5" id="noProducts">
+                                            <i class="fas fa-box-open fa-3x mb-3"></i>
+                                            <p>Comienza a buscar productos...</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <div class="card">
+                        <!-- COLUMNA DERECHA: CARRITO Y PAGO -->
+                        <div class="col-lg-5">
+                            <!-- Información del Cliente -->
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-user"></i> Cliente
+                                    </h3>
+                                </div>
                                 <div class="card-body">
-                                    <h4>Total: S/ <span id="posTotal">0.00</span></h4>
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control gamer-input" id="clienteDocumento"
+                                            placeholder="DNI o RUC del cliente" maxlength="11">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-danger" type="button" id="btnBuscarCliente">
+                                                <i class="fas fa-search"></i> Buscar
+                                            </button>
+                                        </div>
+                                    </div>
 
+                                    <!-- Información del cliente encontrado -->
+                                    <div id="clienteInfo" class="alert alert-info" style="display: none;">
+                                        <strong id="clienteNombre"></strong><br>
+                                        <small id="clienteDocumentoCompleto"></small>
+                                        <input type="hidden" id="clienteId">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Carrito de Compras -->
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-shopping-cart"></i> Carrito de Compras
+                                    </h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-sm btn-danger" id="btnLimpiarCarrito">
+                                            <i class="fas fa-trash"></i> Limpiar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <!-- Lista de productos en el carrito -->
+                                    <div id="cartItems" style="max-height: 300px; overflow-y: auto;">
+                                        <div class="text-center text-muted py-5" id="emptyCart">
+                                            <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                                            <p>Carrito vacío</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <!-- Resumen de Totales -->
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>Subtotal:</strong></td>
+                                            <td class="text-right">
+                                                <strong>S/ <span id="subtotal">0.00</span></strong>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Descuento:</td>
+                                            <td class="text-right">
+                                                <input type="number" class="form-control form-control-sm text-right"
+                                                    id="descuento" value="0" min="0" step="0.01"
+                                                    style="max-width: 100px; float: right;">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Envío:</td>
+                                            <td class="text-right">
+                                                <input type="number" class="form-control form-control-sm text-right"
+                                                    id="costoEnvio" value="0" min="0" step="0.01"
+                                                    style="max-width: 100px; float: right;">
+                                            </td>
+                                        </tr>
+                                        <tr class="bg-light">
+                                            <td>
+                                                <h4><strong>TOTAL:</strong></h4>
+                                            </td>
+                                            <td class="text-right">
+                                                <h4 class="text-danger">
+                                                    <strong>S/ <span id="total">0.00</span></strong>
+                                                </h4>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Opciones de Pago -->
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-money-bill-wave"></i> Forma de Pago
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Tipo de Pago -->
                                     <div class="form-group">
-                                        <label>Cliente (opcional)</label>
-                                        <select class="form-control select2" id="posCliente">
-                                            <option value="">Consumidor final</option>
-                                            <option th:each="c : ${clientesRecientes}" th:value="${c.id}"
-                                                th:text="${c.nombreCompleto}"></option>
+                                        <label>Tipo de Pago</label>
+                                        <select class="form-control gamer-input" id="tipoPago">
+                                            <option value="CONTADO">Contado</option>
+                                            <option value="CREDITO">Crédito</option>
                                         </select>
                                     </div>
 
-                                    <div id="posPagos">
-                                        <div class="form-group">
-                                            <label>Método</label>
-                                            <select id="posMetodo" class="form-control">
-                                                <option value="EFECTIVO">EFECTIVO</option>
-                                                <option value="TARJETA">TARJETA</option>
-                                                <option value="YAPE">YAPE</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Monto</label>
-                                            <input type="number" id="posMonto" step="0.01" class="form-control">
+                                    <!-- Número de Cuotas (solo si es crédito) -->
+                                    <div class="form-group" id="numCuotasGroup" style="display: none;">
+                                        <label>Número de Cuotas</label>
+                                        <input type="number" class="form-control gamer-input" id="numCuotas" min="1"
+                                            max="24" value="12">
+                                    </div>
+
+                                    <!-- Métodos de Pago -->
+                                    <div id="metodoPagoGroup">
+                                        <label>Método de Pago</label>
+                                        <div class="row">
+                                            <div class="col-6 mb-2">
+                                                <div class="custom-control custom-radio">
+                                                    <input class="custom-control-input" type="radio" id="pagoEfectivo"
+                                                        name="metodoPago" value="EFECTIVO" checked>
+                                                    <label for="pagoEfectivo" class="custom-control-label">
+                                                        <i class="fas fa-money-bill-wave text-success"></i> Efectivo
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 mb-2">
+                                                <div class="custom-control custom-radio">
+                                                    <input class="custom-control-input" type="radio" id="pagoTarjeta"
+                                                        name="metodoPago" value="TARJETA">
+                                                    <label for="pagoTarjeta" class="custom-control-label">
+                                                        <i class="fas fa-credit-card text-primary"></i> Tarjeta
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 mb-2">
+                                                <div class="custom-control custom-radio">
+                                                    <input class="custom-control-input" type="radio" id="pagoYape"
+                                                        name="metodoPago" value="YAPE">
+                                                    <label for="pagoYape" class="custom-control-label">
+                                                        <i class="fas fa-mobile-alt text-info"></i> Yape/Plin
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 mb-2">
+                                                <div class="custom-control custom-radio">
+                                                    <input class="custom-control-input" type="radio"
+                                                        id="pagoTransferencia" name="metodoPago" value="TRANSFERENCIA">
+                                                    <label for="pagoTransferencia" class="custom-control-label">
+                                                        <i class="fas fa-exchange-alt text-warning"></i> Transferencia
+                                                    </label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <button id="btnCobrar" class="btn btn-success btn-block">Cobrar</button>
+                                    <!-- Monto Recibido (solo efectivo) -->
+                                    <div class="form-group mt-3" id="montoRecibidoGroup">
+                                        <label>Monto Recibido</label>
+                                        <input type="number" class="form-control form-control-lg gamer-input"
+                                            id="montoRecibido" placeholder="0.00" step="0.01">
+                                    </div>
+
+                                    <!-- Vuelto -->
+                                    <div id="vueltoGroup" style="display: none;">
+                                        <div class="alert alert-success text-center">
+                                            <h4>Vuelto: S/ <span id="vuelto">0.00</span></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button type="button" class="btn btn-success btn-lg btn-block gamer-btn"
+                                        id="btnProcesarVenta">
+                                        <i class="fas fa-check-circle"></i> PROCESAR VENTA
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -87,89 +261,553 @@
             </section>
         </div>
 
-        <div th:replace="fragments/footer :: footer"></div>
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
 
-    <div th:replace="fragments/scripts :: scripts"></div>
-    <script>
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <!-- Script Específico del POS -->
+    <script th:inline="javascript">
         $(document).ready(function () {
-            function actualizarTotal() {
-                let total = 0;
-                $('#posCart tbody tr').each(function () {
-                    total += parseFloat($(this).find('.subtotal').text()) || 0;
-                });
-                $('#posTotal').text(total.toFixed(2));
+            // ============================================
+            // VARIABLES GLOBALES
+            // ============================================
+            let productos = /*[[${productos}]]*/[];
+            let carrito = [];
+            let clienteSeleccionado = null;
+
+            // ============================================
+            // INICIALIZACIÓN
+            // ============================================
+            cargarProductos();
+            configurarEventos();
+
+            // ============================================
+            // CARGAR PRODUCTOS
+            // ============================================
+            function cargarProductos() {
+                if (productos.length > 0) {
+                    mostrarProductos(productos);
+                }
             }
 
-            $('#posAdd').on('click', function () {
-                const q = $('#posSearch').val();
-                if (!q) { Swal.fire('Atención', 'Ingrese SKU o nombre', 'warning'); return; }
-                $.getJSON('/admin/api/productos/buscar', { q: q }, function (resp) {
-                    if (resp && resp.length > 0) {
-                        const p = resp[0];
-                        const row = `<tr data-id="${p.id}">
-          <td>${p.codigoSku}</td><td>${p.nombre}</td>
-          <td><input type="number" class="form-control cantidad" value="1" min="1" style="width:80px"></td>
-          <td>S/ ${parseFloat(p.precioActual).toFixed(2)}</td>
-          <td class="subtotal">${parseFloat(p.precioActual).toFixed(2)}</td>
-          <td><button class="btn btn-sm btn-danger btn-remove">x</button></td>
-        </tr>`;
-                        $('#posCart tbody').append(row);
-                        actualizarTotal();
-                    } else Swal.fire('No encontrado', 'Producto no hallado', 'info');
+            // ============================================
+            // CONFIGURAR EVENTOS
+            // ============================================
+            function configurarEventos() {
+                // Búsqueda de productos
+                $('#searchProduct').on('keyup', function () {
+                    const query = $(this).val().toLowerCase();
+                    if (query.length >= 2) {
+                        const filtrados = productos.filter(p =>
+                            p.nombre.toLowerCase().includes(query) ||
+                            (p.codigoSku && p.codigoSku.toLowerCase().includes(query))
+                        );
+                        mostrarProductos(filtrados);
+                    } else if (query.length === 0) {
+                        mostrarProductos(productos);
+                    }
                 });
-            });
 
-            $(document).on('input', '.cantidad', function () {
-                const tr = $(this).closest('tr');
-                const cantidad = parseFloat($(this).val()) || 0;
-                const precio = parseFloat(tr.find('td').eq(3).text().replace('S/', '')) || 0;
-                tr.find('.subtotal').text((cantidad * precio).toFixed(2));
-                actualizarTotal();
-            });
-            $(document).on('click', '.btn-remove', function () { $(this).closest('tr').remove(); actualizarTotal(); });
+                // Búsqueda de cliente
+                $('#btnBuscarCliente').on('click', buscarCliente);
+                $('#clienteDocumento').on('keypress', function (e) {
+                    if (e.which === 13) buscarCliente();
+                });
 
-            $('#btnCobrar').on('click', function () {
-                const total = parseFloat($('#posTotal').text()) || 0;
-                if (total <= 0) { Swal.fire('Atención', 'Carrito vacío', 'warning'); return; }
-                const metodo = $('#posMetodo').val();
-                const monto = parseFloat($('#posMonto').val()) || 0;
-                if (monto < total && metodo !== 'EFECTIVO') {
-                    // permitimos pagos mixtos en backend; aquí ejemplo simple: exigir al menos el total
+                // Limpiar carrito
+                $('#btnLimpiarCarrito').on('click', function () {
+                    if (confirm('¿Seguro que deseas limpiar el carrito?')) {
+                        carrito = [];
+                        actualizarCarrito();
+                    }
+                });
+
+                // Cambio de tipo de pago
+                $('#tipoPago').on('change', function () {
+                    if ($(this).val() === 'CREDITO') {
+                        $('#numCuotasGroup').show();
+                        $('#metodoPagoGroup').hide();
+                        $('#montoRecibidoGroup').hide();
+                    } else {
+                        $('#numCuotasGroup').hide();
+                        $('#metodoPagoGroup').show();
+                        $('#montoRecibidoGroup').show();
+                    }
+                });
+
+                // Cambio de método de pago
+                $('input[name="metodoPago"]').on('change', function () {
+                    if ($(this).val() === 'EFECTIVO') {
+                        $('#montoRecibidoGroup').show();
+                    } else {
+                        $('#montoRecibidoGroup').hide();
+                        $('#vueltoGroup').hide();
+                    }
+                });
+
+                // Cálculo de vuelto
+                $('#montoRecibido').on('keyup', calcularVuelto);
+
+                // Cambios en descuento y envío
+                $('#descuento, #costoEnvio').on('keyup change', calcularTotales);
+
+                // Procesar venta
+                $('#btnProcesarVenta').on('click', procesarVenta);
+            }
+
+            // ============================================
+            // MOSTRAR PRODUCTOS
+            // ============================================
+            function mostrarProductos(lista) {
+                const grid = $('#productGrid');
+                grid.empty();
+
+                if (lista.length === 0) {
+                    grid.html(`
+                <div class="col-12 text-center text-muted py-5">
+                    <i class="fas fa-search fa-3x mb-3"></i>
+                    <p>No se encontraron productos</p>
+                </div>
+            `);
+                    return;
                 }
-                // construir payload
-                const detalles = [];
-                $('#posCart tbody tr').each(function () {
-                    detalles.push({
-                        productoId: $(this).data('id'),
-                        cantidad: parseFloat($(this).find('.cantidad').val()) || 0
-                    });
+
+                lista.forEach(producto => {
+                    const imagenUrl = producto.imagenPrincipal || '/img/placeholder-game.jpg';
+                    const stock = producto.stockActual || 0;
+                    const sinStock = stock <= 0;
+
+                    grid.append(`
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card gamer-card product-card ${sinStock ? 'sin-stock' : ''}" 
+                         onclick="agregarAlCarrito(${producto.id})">
+                        <img src="${imagenUrl}" 
+                             class="card-img-top" 
+                             alt="${producto.nombre}"
+                             style="height: 150px; object-fit: cover;">
+                        <div class="card-body p-2">
+                            <h6 class="card-title mb-1" style="font-size: 0.9rem;">
+                                ${producto.nombre}
+                            </h6>
+                            <p class="mb-1">
+                                <span class="badge badge-${sinStock ? 'danger' : 'success'}">
+                                    Stock: ${stock}
+                                </span>
+                            </p>
+                            <p class="text-danger mb-0">
+                                <strong>S/ ${producto.precioActual.toFixed(2)}</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `);
                 });
-                const payload = {
-                    clienteId: $('#posCliente').val() || null,
-                    detalles: detalles,
-                    pagos: [{ metodoPago: metodo, monto: monto }]
-                };
-                // POST a endpoint: POST /admin/ventas/pos (esperado por backend)
-                showLoading();
+            }
+
+            // ============================================
+            // AGREGAR AL CARRITO
+            // ============================================
+            window.agregarAlCarrito = function (productoId) {
+                const producto = productos.find(p => p.id === productoId);
+
+                if (!producto) return;
+
+                if (producto.stockActual <= 0) {
+                    showAlert('No hay stock disponible', 'warning');
+                    return;
+                }
+
+                const itemExistente = carrito.find(item => item.id === productoId);
+
+                if (itemExistente) {
+                    if (itemExistente.cantidad >= producto.stockActual) {
+                        showAlert('No hay más stock disponible', 'warning');
+                        return;
+                    }
+                    itemExistente.cantidad++;
+                } else {
+                    carrito.push({
+                        id: producto.id,
+                        nombre: producto.nombre,
+                        precio: producto.precioActual,
+                        cantidad: 1,
+                        stockMax: producto.stockActual
+                    });
+                }
+
+                actualizarCarrito();
+            };
+
+            // ============================================
+            // ACTUALIZAR CARRITO
+            // ============================================
+            function actualizarCarrito() {
+                const container = $('#cartItems');
+                container.empty();
+
+                if (carrito.length === 0) {
+                    container.html(`
+                <div class="text-center text-muted py-5" id="emptyCart">
+                    <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                    <p>Carrito vacío</p>
+                </div>
+            `);
+                    calcularTotales();
+                    return;
+                }
+
+                carrito.forEach((item, index) => {
+                    container.append(`
+                <div class="cart-item p-3 border-bottom">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <small><strong>${item.nombre}</strong></small><br>
+                            <small class="text-muted">S/ ${item.precio.toFixed(2)}</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <button class="btn btn-outline-secondary" 
+                                            type="button"
+                                            onclick="cambiarCantidad(${index}, -1)">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                </div>
+                                <input type="text" 
+                                       class="form-control text-center" 
+                                       value="${item.cantidad}" 
+                                       readonly>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" 
+                                            type="button"
+                                            onclick="cambiarCantidad(${index}, 1)">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-2 text-right">
+                            <button class="btn btn-sm btn-danger" 
+                                    onclick="eliminarDelCarrito(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12 text-right">
+                            <strong>Subtotal: S/ ${(item.precio * item.cantidad).toFixed(2)}</strong>
+                        </div>
+                    </div>
+                </div>
+            `);
+                });
+
+                calcularTotales();
+            }
+
+            // ============================================
+            // CAMBIAR CANTIDAD
+            // ============================================
+            window.cambiarCantidad = function (index, cambio) {
+                const item = carrito[index];
+                const nuevaCantidad = item.cantidad + cambio;
+
+                if (nuevaCantidad <= 0) {
+                    eliminarDelCarrito(index);
+                    return;
+                }
+
+                if (nuevaCantidad > item.stockMax) {
+                    showAlert('No hay más stock disponible', 'warning');
+                    return;
+                }
+
+                item.cantidad = nuevaCantidad;
+                actualizarCarrito();
+            };
+
+            // ============================================
+            // ELIMINAR DEL CARRITO
+            // ============================================
+            window.eliminarDelCarrito = function (index) {
+                carrito.splice(index, 1);
+                actualizarCarrito();
+            };
+
+            // ============================================
+            // CALCULAR TOTALES
+            // ============================================
+            function calcularTotales() {
+                const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+                const descuento = parseFloat($('#descuento').val()) || 0;
+                const costoEnvio = parseFloat($('#costoEnvio').val()) || 0;
+                const total = subtotal - descuento + costoEnvio;
+
+                $('#subtotal').text(subtotal.toFixed(2));
+                $('#total').text(total.toFixed(2));
+
+                calcularVuelto();
+            }
+
+            // ============================================
+            // CALCULAR VUELTO
+            // ============================================
+            function calcularVuelto() {
+                const total = parseFloat($('#total').text()) || 0;
+                const recibido = parseFloat($('#montoRecibido').val()) || 0;
+
+                if (recibido > 0 && recibido >= total) {
+                    const vuelto = recibido - total;
+                    $('#vuelto').text(vuelto.toFixed(2));
+                    $('#vueltoGroup').show();
+                } else {
+                    $('#vueltoGroup').hide();
+                }
+            }
+
+            // ============================================
+            // BUSCAR CLIENTE
+            // ============================================
+            function buscarCliente() {
+                const documento = $('#clienteDocumento').val().trim();
+
+                if (!documento) {
+                    showAlert('Ingrese un documento', 'warning');
+                    return;
+                }
+
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Buscando cliente...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Llamada AJAX
                 $.ajax({
-                    url: '/admin/ventas/pos',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(payload),
-                    success: function (resp) {
-                        hideLoading();
-                        if (resp.success) {
-                            Swal.fire('Éxito', 'Venta registrada', 'success').then(() => { window.location.href = '/admin/ventas/ver/' + resp.id; });
+                    url: '/admin/clientes/buscar',
+                    method: 'GET',
+                    data: { documento: documento },
+                    success: function (response) {
+                        Swal.close();
+
+                        if (response.success) {
+                            clienteSeleccionado = response.cliente;
+                            $('#clienteId').val(response.cliente.id);
+                            $('#clienteNombre').text(response.cliente.nombre);
+                            $('#clienteDocumentoCompleto').text(response.cliente.tipoDocumento + ': ' + response.cliente.numeroDocumento);
+                            $('#clienteInfo').show();
+                            showAlert('Cliente encontrado', 'success');
                         } else {
-                            Swal.fire('Error', resp.message || 'No se pudo registrar', 'error');
+                            showAlert(response.error || 'Cliente no encontrado', 'error');
                         }
                     },
-                    error: function () { hideLoading(); Swal.fire('Error', 'Fallo en el servidor', 'error'); }
+                    error: function () {
+                        Swal.close();
+                        showAlert('Error al buscar cliente', 'error');
+                    }
                 });
-            });
+            }
+
+            // ============================================
+            // PROCESAR VENTA
+            // ============================================
+            function procesarVenta() {
+                // Validaciones
+                if (carrito.length === 0) {
+                    showAlert('El carrito está vacío', 'warning');
+                    return;
+                }
+
+                if (!clienteSeleccionado) {
+                    showAlert('Debe seleccionar un cliente', 'warning');
+                    return;
+                }
+
+                const tipoPago = $('#tipoPago').val();
+                const metodoPago = $('input[name="metodoPago"]:checked').val();
+                const total = parseFloat($('#total').text());
+
+                // Validar pago
+                if (tipoPago === 'CONTADO') {
+                    if (metodoPago === 'EFECTIVO') {
+                        const recibido = parseFloat($('#montoRecibido').val()) || 0;
+                        if (recibido < total) {
+                            showAlert('El monto recibido es insuficiente', 'warning');
+                            return;
+                        }
+                    }
+                } else {
+                    const numCuotas = parseInt($('#numCuotas').val());
+                    if (!numCuotas || numCuotas < 1 || numCuotas > 24) {
+                        showAlert('Ingrese un número de cuotas válido (1-24)', 'warning');
+                        return;
+                    }
+                }
+
+                // Confirmar venta
+                Swal.fire({
+                    title: '¿Procesar venta?',
+                    text: `Total: S/ ${total.toFixed(2)}`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, procesar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        enviarVenta();
+                    }
+                });
+            }
+
+            // ============================================
+            // ENVIAR VENTA
+            // ============================================
+            function enviarVenta() {
+                const tipoPago = $('#tipoPago').val();
+                const metodoPago = tipoPago === 'CONTADO' ? $('input[name="metodoPago"]:checked').val() : null;
+                const numCuotas = tipoPago === 'CREDITO' ? parseInt($('#numCuotas').val()) : null;
+
+                // Preparar datos
+                const ventaData = {
+                    clienteDocumento: clienteSeleccionado.numeroDocumento,
+                    productos: carrito.map(item => ({
+                        id: item.id,
+                        cantidad: item.cantidad,
+                        precio: item.precio
+                    })),
+                    tipoPago: tipoPago,
+                    numCuotas: numCuotas,
+                    pagos: tipoPago === 'CONTADO' ? [{
+                        metodo: metodoPago,
+                        monto: parseFloat($('#total').text())
+                    }] : []
+                };
+
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Procesando venta...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Enviar al servidor
+                $.ajax({
+                    url: '/admin/ventas/pos/registrar',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(ventaData),
+                    success: function (response) {
+                        Swal.close();
+
+                        if (response.success) {
+                            Swal.fire({
+                                title: '¡Venta Exitosa!',
+                                html: `
+                            <p>Venta: <strong>${response.numeroVenta}</strong></p>
+                            <p>Total: <strong>S/ ${response.total.toFixed(2)}</strong></p>
+                            ${response.vuelto ? `<p>Vuelto: <strong>S/ ${response.vuelto.toFixed(2)}</strong></p>` : ''}
+                        `,
+                                icon: 'success',
+                                confirmButtonText: 'Ver Detalle',
+                                showCancelButton: true,
+                                cancelButtonText: 'Nueva Venta'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = '/admin/ventas/ver/' + response.ventaId;
+                                } else {
+                                    location.reload();
+                                }
+                            });
+                        } else {
+                            showAlert(response.error || 'Error al procesar venta', 'error');
+                        }
+                    },
+                    error: function (xhr) {
+                        Swal.close();
+                        const error = xhr.responseJSON?.error || 'Error al procesar venta';
+                        showAlert(error, 'error');
+                    }
+                });
+            }
+
+            // ============================================
+            // MOSTRAR ALERTAS
+            // ============================================
+            function showAlert(message, type) {
+                const alertClass = type === 'success' ? 'alert-success' :
+                    type === 'warning' ? 'alert-warning' : type === 'warning' ? 'alert-warning' :
+                        'alert-danger';
+
+                const alertHTML = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i>
+                ${message}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        `;
+
+                $('#alertContainer').html(alertHTML);
+
+                // Auto-cerrar después de 3 segundos
+                setTimeout(() => {
+                    $('#alertContainer').fadeOut(() => {
+                        $('#alertContainer').html('').show();
+                    });
+                }, 3000);
+            }
         });
     </script>
+
+    <!-- Estilos Específicos del POS -->
+    <style>
+        .product-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(220, 53, 69, 0.3);
+            border-color: #dc3545;
+        }
+
+        .product-card.sin-stock {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .product-card.sin-stock:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .cart-item {
+            transition: background-color 0.3s ease;
+        }
+
+        .cart-item:hover {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        #searchProduct:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+    </style>
+
 </body>
 
 </html>

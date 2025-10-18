@@ -1,86 +1,180 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Reportes')"></head>
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
-        <div th:replace="fragments/header :: header"></div>
-        <div th:replace="fragments/sidebar :: sidebar"></div>
 
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
-                    <h1 class="m-0"><i class="fas fa-chart-line"></i> Reportes</h1>
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-chart-bar text-danger"></i>
+                                Reportes y Estadísticas
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Reportes</li>
+                            </ol>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <div class="card">
-                        <div class="card-body">
-                            <form id="reportForm" class="row mb-4">
-                                <div class="col-md-4">
-                                    <label>Desde</label>
-                                    <input type="date" id="desde" class="form-control">
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Hasta</label>
-                                    <input type="date" id="hasta" class="form-control">
-                                </div>
-                                <div class="col-md-4 d-flex align-items-end">
-                                    <button type="button" id="btnGenerar" class="btn btn-primary">Generar</button>
-                                    <button type="button" id="btnExportar" class="btn btn-success ml-2">Exportar
-                                        CSV</button>
-                                </div>
-                            </form>
 
-                            <div>
-                                <canvas id="chartVentas" height="100"></canvas>
+                    <div class="row">
+                        <!-- Reporte de Ventas -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card card-danger card-outline gamer-card hover-card">
+                                <div class="card-body text-center">
+                                    <div class="icon-container mb-3">
+                                        <i class="fas fa-cash-register fa-5x text-danger"></i>
+                                    </div>
+                                    <h4 class="card-title">Reporte de Ventas</h4>
+                                    <p class="text-muted">
+                                        Análisis completo de ventas por fecha, comparativas y estadísticas
+                                    </p>
+                                    <a th:href="@{/admin/reportes/ventas}"
+                                        class="btn btn-danger btn-block gamer-btn mt-3">
+                                        <i class="fas fa-chart-line"></i> Ver Reporte
+                                    </a>
+                                </div>
                             </div>
+                        </div>
 
+                        <!-- Reporte de Productos -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card card-warning card-outline gamer-card hover-card">
+                                <div class="card-body text-center">
+                                    <div class="icon-container mb-3">
+                                        <i class="fas fa-boxes fa-5x text-warning"></i>
+                                    </div>
+                                    <h4 class="card-title">Reporte de Productos</h4>
+                                    <p class="text-muted">
+                                        Stock, alertas, productos más vendidos y análisis de inventario
+                                    </p>
+                                    <a th:href="@{/admin/reportes/productos}"
+                                        class="btn btn-warning btn-block gamer-btn mt-3">
+                                        <i class="fas fa-box"></i> Ver Reporte
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reporte de Créditos -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card card-info card-outline gamer-card hover-card">
+                                <div class="card-body text-center">
+                                    <div class="icon-container mb-3">
+                                        <i class="fas fa-credit-card fa-5x text-info"></i>
+                                    </div>
+                                    <h4 class="card-title">Reporte de Créditos</h4>
+                                    <p class="text-muted">
+                                        Estado de créditos, cuotas vencidas, cobranzas y morosidad
+                                    </p>
+                                    <a th:href="@{/admin/reportes/creditos}"
+                                        class="btn btn-info btn-block gamer-btn mt-3">
+                                        <i class="fas fa-file-invoice-dollar"></i> Ver Reporte
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Exportación Rápida -->
+                    <div class="card card-success card-outline gamer-card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-file-export"></i> Exportación Rápida
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3">
+                                Genera reportes en PDF de forma rápida con datos del día o mes actual
+                            </p>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <form method="get" th:action="@{/admin/reportes/ventas/pdf}" target="_blank">
+                                        <input type="hidden" name="periodo" value="dia">
+                                        <button type="submit" class="btn btn-success btn-block gamer-btn">
+                                            <i class="fas fa-file-pdf"></i> Ventas del Día (PDF)
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-md-4">
+                                    <form method="get" th:action="@{/admin/reportes/ventas/pdf}" target="_blank">
+                                        <input type="hidden" name="periodo" value="mes">
+                                        <button type="submit" class="btn btn-success btn-block gamer-btn">
+                                            <i class="fas fa-file-pdf"></i> Ventas del Mes (PDF)
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-md-4">
+                                    <form method="get" th:action="@{/admin/reportes/productos/pdf}" target="_blank">
+                                        <button type="submit" class="btn btn-warning btn-block gamer-btn">
+                                            <i class="fas fa-file-pdf"></i> Inventario Actual (PDF)
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </section>
         </div>
 
-        <div th:replace="fragments/footer :: footer"></div>
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
-    <div th:replace="fragments/scripts :: scripts"></div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        $(document).ready(function () {
-            let chart;
 
-            function renderChart(data) {
-                const ctx = document.getElementById('chartVentas').getContext('2d');
-                if (chart) chart.destroy();
-                chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{ label: 'Ventas S/', data: data.values }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <style>
+        .hover-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(220, 53, 69, 0.3);
+        }
+
+        .icon-container {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
             }
 
-            $('#btnGenerar').on('click', function () {
-                const desde = $('#desde').val();
-                const hasta = $('#hasta').val();
-                $.getJSON('/admin/api/reportes/ventas', { desde, hasta }, function (resp) {
-                    renderChart(resp);
-                });
-            });
+            50% {
+                transform: scale(1.05);
+            }
+        }
+    </style>
 
-            $('#btnExportar').on('click', function () {
-                const desde = $('#desde').val();
-                const hasta = $('#hasta').val();
-                window.location.href = `/admin/reportes/export?desde=${desde}&hasta=${hasta}`;
-            });
-        });
-    </script>
 </body>
 
 </html>

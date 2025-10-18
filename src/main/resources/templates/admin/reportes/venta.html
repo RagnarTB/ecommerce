@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-chart-line text-danger"></i>
+                                Reporte de Ventas
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/reportes}">Reportes</a></li>
+                                <li class="breadcrumb-item active">Ventas</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- Filtros de Fecha -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-filter"></i> Filtrar por Fecha
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="get" th:action="@{/admin/reportes/ventas}">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Fecha Inicio</label>
+                                            <input type="datetime-local" class="form-control gamer-input"
+                                                name="fechaInicio"
+                                                th:value="${fechaInicio != null ? #temporals.format(fechaInicio, 'yyyy-MM-dd\'T\'HH:mm') : ''}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Fecha Fin</label>
+                                            <input type="datetime-local" class="form-control gamer-input"
+                                                name="fechaFin"
+                                                th:value="${fechaFin != null ? #temporals.format(fechaFin, 'yyyy-MM-dd\'T\'HH:mm') : ''}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>&nbsp;</label>
+                                        <button type="submit" class="btn btn-danger btn-block">
+                                            <i class="fas fa-search"></i> Filtrar
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- Botones Rápidos -->
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/admin/reportes/ventas(periodo='hoy')}"
+                                            class="btn btn-outline-danger">
+                                            Hoy
+                                        </a>
+                                        <a th:href="@{/admin/reportes/ventas(periodo='ayer')}"
+                                            class="btn btn-outline-danger">
+                                            Ayer
+                                        </a>
+                                        <a th:href="@{/admin/reportes/ventas(periodo='semana')}"
+                                            class="btn btn-outline-danger">
+                                            Esta Semana
+                                        </a>
+                                        <a th:href="@{/admin/reportes/ventas(periodo='mes')}"
+                                            class="btn btn-outline-danger">
+                                            Este Mes
+                                        </a>
+                                    </div>
+
+                                    <!-- Exportar PDF -->
+                                    <form method="get" th:action="@{/admin/reportes/ventas/pdf}" target="_blank"
+                                        style="display: inline-block; margin-left: 10px;">
+                                        <input type="hidden" name="fechaInicio" th:value="${fechaInicio}">
+                                        <input type="hidden" name="fechaFin" th:value="${fechaFin}">
+                                        <button type="submit" class="btn btn-success gamer-btn">
+                                            <i class="fas fa-file-pdf"></i> Exportar PDF
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estadísticas Generales -->
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success gamer-card">
+                                <div class="inner">
+                                    <h3>S/ <span th:text="${#numbers.formatDecimal(totalVentas, 1, 2)}">0.00</span></h3>
+                                    <p>Total en Ventas</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info gamer-card">
+                                <div class="inner">
+                                    <h3 th:text="${ventas.size()}">0</h3>
+                                    <p>Cantidad de Ventas</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning gamer-card">
+                                <div class="inner">
+                                    <h3>S/ <span id="promedioVenta">0.00</span></h3>
+                                    <p>Promedio por Venta</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-calculator"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger gamer-card">
+                                <div class="inner">
+                                    <h3 id="ticketMaximo">S/ 0.00</h3>
+                                    <p>Ticket Máximo</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Ventas -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-bar"></i> Gráfico de Ventas
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="ventasChart" style="height: 300px;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Detalle de Ventas -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list"></i> Detalle de Ventas
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-hover datatable">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Nº Venta</th>
+                                        <th>Cliente</th>
+                                        <th>Tipo Pago</th>
+                                        <th>Total</th>
+                                        <th>Estado</th>
+                                        <th>Vendedor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="venta : ${ventas}">
+                                        <td th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy HH:mm')}"></td>
+                                        <td>
+                                            <a th:href="@{/admin/ventas/ver/{id}(id=${venta.id})}" target="_blank">
+                                                <strong th:text="${venta.numeroVenta}"></strong>
+                                            </a>
+                                        </td>
+                                        <td th:text="${venta.cliente.nombreCompleto}"></td>
+                                        <td>
+                                            <span th:if="${venta.tipoPago.name() == 'CONTADO'}"
+                                                class="badge badge-success">Contado</span>
+                                            <span th:if="${venta.tipoPago.name() == 'CREDITO'}"
+                                                class="badge badge-warning">Crédito</span>
+                                        </td>
+                                        <td>
+                                            <strong class="text-success">
+                                                S/ <span th:text="${#numbers.formatDecimal(venta.total, 1, 2)}"></span>
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            <span th:if="${venta.estado.name() == 'COMPLETADA'}"
+                                                class="badge badge-success">Completada</span>
+                                            <span th:if="${venta.estado.name() == 'ANULADA'}"
+                                                class="badge badge-danger">Anulada</span>
+                                        </td>
+                                        <td th:text="${venta.usuario.nombreCompleto}"></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-light font-weight-bold">
+                                        <td colspan="4" class="text-right">TOTAL:</td>
+                                        <td>
+                                            <strong class="text-success">
+                                                S/ <span th:text="${#numbers.formatDecimal(totalVentas, 1, 2)}"></span>
+                                            </strong>
+                                        </td>
+                                        <td colspan="2"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Calcular estadísticas
+            const ventas = /*[[${ventas}]]*/[];
+            let ticketMaximo = 0;
+
+            ventas.forEach(venta => {
+                if (venta.total > ticketMaximo) {
+                    ticketMaximo = venta.total;
+                }
+            });
+
+            const totalVentas = /*[[${totalVentas}]]*/ 0;
+            const cantidadVentas = ventas.length;
+            const promedioVenta = cantidadVentas > 0 ? (totalVentas / cantidadVentas) : 0;
+
+            $('#promedioVenta').text(promedioVenta.toFixed(2));
+            $('#ticketMaximo').text('S/ ' + ticketMaximo.toFixed(2));
+
+            // Gráfico de ventas por día
+            const ctx = document.getElementById('ventasChart');
+            if (ctx) {
+                // Agrupar ventas por fecha
+                const ventasPorFecha = {};
+
+                ventas.forEach(venta => {
+                    const fecha = new Date(venta.fechaVenta).toLocaleDateString();
+                    if (!ventasPorFecha[fecha]) {
+                        ventasPorFecha[fecha] = 0;
+                    }
+                    ventasPorFecha[fecha] += venta.total;
+                });
+
+                const fechas = Object.keys(ventasPorFecha);
+                const montos = Object.values(ventasPorFecha);
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: fechas,
+                        datasets: [{
+                            label: 'Ventas (S/)',
+                            data: montos,
+                            backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                            borderColor: 'rgba(220, 53, 69, 1)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function (value) {
+                                        return 'S/ ' + value.toFixed(2);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return 'S/ ' + context.parsed.y.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+
+</html>

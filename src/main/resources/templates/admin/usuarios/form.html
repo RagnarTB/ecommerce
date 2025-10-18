@@ -1,71 +1,192 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Formulario Usuario')"></head>
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
-        <div th:replace="fragments/header :: header"></div>
-        <div th:replace="fragments/sidebar :: sidebar"></div>
 
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-user-plus text-danger"></i>
+                                <span th:text="${usuario.id != null} ? 'Editar Usuario' : 'Nuevo Usuario'"></span>
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/usuarios}">Usuarios</a></li>
+                                <li class="breadcrumb-item active">Formulario</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
+
+                    <!-- Mensajes de error -->
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <!-- Formulario -->
                     <form
-                        th:action="${esNuevo ? '/admin/usuarios/guardar' : '/admin/usuarios/actualizar/' + usuario.id}"
-                        th:object="${usuario}" method="post">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label>Usuario</label>
-                                        <input type="text" th:field="*{username}" class="form-control" required>
+                        th:action="${usuario.id != null} ? @{/admin/usuarios/actualizar/{id}(id=${usuario.id})} : @{/admin/usuarios/guardar}"
+                        th:object="${usuario}" method="post" class="needs-validation" novalidate>
+
+                        <div class="row">
+                            <!-- Columna Izquierda: Datos Personales -->
+                            <div class="col-md-6">
+                                <div class="card card-danger card-outline gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-user"></i> Datos Personales
+                                        </h3>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label>Email</label>
-                                        <input type="email" th:field="*{email}" class="form-control" required>
+                                    <div class="card-body">
+                                        <!-- Nombre -->
+                                        <div class="form-group">
+                                            <label for="nombre">
+                                                <i class="fas fa-id-badge text-danger"></i> Nombre *
+                                            </label>
+                                            <input type="text" class="form-control gamer-input" id="nombre"
+                                                th:field="*{nombre}" placeholder="Ej: Juan" required>
+                                            <div class="invalid-feedback">El nombre es obligatorio</div>
+                                        </div>
+
+                                        <!-- Apellido -->
+                                        <div class="form-group">
+                                            <label for="apellido">
+                                                <i class="fas fa-id-badge text-danger"></i> Apellido *
+                                            </label>
+                                            <input type="text" class="form-control gamer-input" id="apellido"
+                                                th:field="*{apellido}" placeholder="Ej: Pérez" required>
+                                            <div class="invalid-feedback">El apellido es obligatorio</div>
+                                        </div>
+
+                                        <!-- Email -->
+                                        <div class="form-group">
+                                            <label for="email">
+                                                <i class="fas fa-envelope text-danger"></i> Email *
+                                            </label>
+                                            <input type="email" class="form-control gamer-input" id="email"
+                                                th:field="*{email}" placeholder="usuario@example.com" required>
+                                            <div class="invalid-feedback">Email válido es obligatorio</div>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="row mt-2">
-                                    <div class="col-md-6">
-                                        <label>Nombre completo</label>
-                                        <input type="text" th:field="*{nombre}" class="form-control" required>
+                            <!-- Columna Derecha: Credenciales y Perfil -->
+                            <div class="col-md-6">
+                                <div class="card card-danger card-outline gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-lock"></i> Credenciales y Permisos
+                                        </h3>
                                     </div>
-                                    <div class="col-md-6" th:if="${esNuevo}">
-                                        <label>Contraseña</label>
-                                        <input type="password" th:field="*{password}" class="form-control" required>
-                                    </div>
-                                </div>
+                                    <div class="card-body">
+                                        <!-- Username -->
+                                        <div class="form-group">
+                                            <label for="username">
+                                                <i class="fas fa-user-tag text-danger"></i> Usuario *
+                                            </label>
+                                            <input type="text" class="form-control gamer-input" id="username"
+                                                th:field="*{username}" placeholder="Nombre de usuario"
+                                                th:readonly="${usuario.id != null}" required>
+                                            <small class="form-text text-muted">
+                                                El username no se puede cambiar después de crear
+                                            </small>
+                                            <div class="invalid-feedback">El username es obligatorio</div>
+                                        </div>
 
-                                <div class="row mt-2">
-                                    <div class="col-md-6">
-                                        <label>Rol</label>
-                                        <select th:field="*{rol.id}" class="form-control">
-                                            <option th:each="r : ${roles}" th:value="${r.id}" th:text="${r.nombre}">
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 d-flex align-items-center">
-                                        <label class="mr-2">Activo</label>
-                                        <input type="checkbox" th:field="*{activo}">
-                                    </div>
-                                </div>
+                                        <!-- Contraseña (solo al crear) -->
+                                        <div class="form-group" th:if="${usuario.id == null}">
+                                            <label for="password">
+                                                <i class="fas fa-key text-danger"></i> Contraseña *
+                                            </label>
+                                            <input type="password" class="form-control gamer-input" id="password"
+                                                name="password" placeholder="Mínimo 6 caracteres" minlength="6"
+                                                required>
+                                            <div class="invalid-feedback">Mínimo 6 caracteres</div>
+                                        </div>
 
-                                <div class="mt-3">
-                                    <button type="submit" class="btn btn-success">Guardar</button>
-                                    <a th:href="@{/admin/usuarios}" class="btn btn-secondary">Cancelar</a>
+                                        <!-- Perfil -->
+                                        <div class="form-group">
+                                            <label for="perfil">
+                                                <i class="fas fa-user-shield text-danger"></i> Perfil *
+                                            </label>
+                                            <select class="form-control gamer-input" id="perfil" th:field="*{perfil.id}"
+                                                required>
+                                                <option value="">Seleccione un perfil</option>
+                                                <option th:each="perfil : ${perfiles}" th:value="${perfil.id}"
+                                                    th:text="${perfil.nombre}">
+                                                </option>
+                                            </select>
+                                            <div class="invalid-feedback">Debe seleccionar un perfil</div>
+                                        </div>
+
+                                        <!-- Estado (solo al editar) -->
+                                        <div class="form-group" th:if="${usuario.id != null}">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="activo"
+                                                    th:field="*{activo}">
+                                                <label class="custom-control-label" for="activo">
+                                                    <i class="fas fa-power-off text-danger"></i> Usuario Activo
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card card-danger card-outline gamer-card">
+                                    <div class="card-body text-center">
+                                        <button type="submit" class="btn btn-success btn-lg gamer-btn">
+                                            <i class="fas fa-save"></i>
+                                            <span
+                                                th:text="${usuario.id != null} ? 'Actualizar Usuario' : 'Crear Usuario'"></span>
+                                        </button>
+                                        <a th:href="@{/admin/usuarios}" class="btn btn-secondary btn-lg gamer-btn">
+                                            <i class="fas fa-times"></i> Cancelar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </form>
+
                 </div>
             </section>
         </div>
 
-        <div th:replace="fragments/footer :: footer"></div>
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
-    <div th:replace="fragments/scripts :: scripts"></div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
 </body>
 
 </html>

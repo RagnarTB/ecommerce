@@ -2,15 +2,17 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
-
-    <footer class="main-footer" th:fragment="footer">
-        <strong>Copyright &copy; 2025 <a href="#">Mi E-Commerce</a>.</strong>
-        Todos los derechos reservados.
-        <div class="float-right d-none d-sm-inline-block">
-            <b>Versión</b> 1.0.0
+    <!-- Main Footer -->
+    <footer th:fragment="footer" class="main-footer">
+        <div class="float-right d-none d-sm-block">
+            <b>Version</b> 1.0.0
         </div>
+        <strong>
+            <span class="neon-text">GAMING STORE</span> &copy;
+            <span th:text="${#dates.year(#dates.createNow())}">2025</span>
+        </strong>
+        - Powered by Spring Boot
     </footer>
-
 </body>
 
 </html>

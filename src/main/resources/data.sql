@@ -1,104 +1,12 @@
 -- ============================================
--- SCRIPT DE DATOS DE PRUEBA - E-COMMERCE
+-- DATOS DE PRUEBA - TIENDA GAMER E-COMMERCE
 -- ============================================
 -- 
--- Este script inserta datos de prueba para:
--- 1. Configuraciones del sistema
--- 2. Categorías y Marcas
--- 3. Productos con imágenes
--- 4. Clientes
--- 5. Proveedores
---
--- IMPORTANTE: Se ejecuta DESPUÉS de que Hibernate cree las tablas
+-- ⚠️ IMPORTANTE: Las CONFIGURACIONES se crean en InitializationService.java
+-- Este archivo solo contiene: Categorías, Marcas, Productos, Clientes, Proveedores
 -- ============================================
 -- ============================================
--- 1. CONFIGURACIONES DEL SISTEMA
--- ============================================
--- Insertar configuraciones básicas (usar INSERT IGNORE para evitar duplicados)
-INSERT IGNORE INTO configuraciones (
-    clave,
-    valor,
-    descripcion,
-    tipo,
-    fecha_creacion,
-    fecha_actualizacion
-)
-VALUES
-    (
-        'nombre_empresa',
-        'Mi E-Commerce',
-        'Nombre de la empresa',
-        'STRING',
-        NOW (),
-        NOW ()
-    ),
-    (
-        'telefono',
-        '+51 999 888 777',
-        'Teléfono de contacto',
-        'STRING',
-        NOW (),
-        NOW ()
-    ),
-    (
-        'email',
-        'ventas@miecommerce.com',
-        'Email de contacto',
-        'EMAIL',
-        NOW (),
-        NOW ()
-    ),
-    (
-        'direccion',
-        'Av. Javier Prado 123, San Isidro, Lima',
-        'Dirección física',
-        'STRING',
-        NOW (),
-        NOW ()
-    ),
-    (
-        'whatsapp',
-        '51999888777',
-        'WhatsApp de contacto',
-        'STRING',
-        NOW (),
-        NOW ()
-    ),
-    (
-        'facebook_url',
-        'https://facebook.com/miecommerce',
-        'URL de Facebook',
-        'STRING',
-        NOW (),
-        NOW ()
-    ),
-    (
-        'instagram_url',
-        'https://instagram.com/miecommerce',
-        'URL de Instagram',
-        'STRING',
-        NOW (),
-        NOW ()
-    ),
-    (
-        'texto_bienvenida',
-        'Bienvenido a nuestra tienda online. Encuentra los mejores productos al mejor precio.',
-        'Texto de bienvenida',
-        'TEXT',
-        NOW (),
-        NOW ()
-    ),
-    (
-        'horario_atencion',
-        'Lun-Vie 9:00am-6:00pm, Sáb 9:00am-2:00pm',
-        'Horario de atención',
-        'STRING',
-        NOW (),
-        NOW ()
-    );
-
--- ============================================
--- 2. CATEGORÍAS
+-- 1. CATEGORÍAS
 -- ============================================
 INSERT IGNORE INTO categorias (
     nombre,
@@ -109,74 +17,131 @@ INSERT IGNORE INTO categorias (
 )
 VALUES
     (
-        'Electrónica',
-        'Productos electrónicos y tecnología',
+        'Videojuegos',
+        'Juegos para PS5, Xbox, Nintendo Switch y PC',
         1,
         TRUE,
-        NOW ()
+        NOW()
     ),
     (
-        'Ropa y Moda',
-        'Ropa, zapatos y accesorios',
+        'Sillas Gaming',
+        'Sillas ergonómicas para largas sesiones de juego',
         2,
         TRUE,
-        NOW ()
+        NOW()
     ),
     (
-        'Hogar y Muebles',
-        'Muebles y decoración para el hogar',
+        'Funkos',
+        'Figuras coleccionables Funko Pop de videojuegos y anime',
         3,
         TRUE,
-        NOW ()
+        NOW()
     ),
     (
-        'Deportes',
-        'Artículos deportivos y fitness',
+        'Camisetas Gaming',
+        'Ropa gamer y merchandising oficial',
         4,
         TRUE,
-        NOW ()
+        NOW()
     ),
     (
-        'Juguetes',
-        'Juguetes y juegos para niños',
+        'Periféricos Gaming',
+        'Teclados, mouses, audífonos y accesorios RGB',
         5,
         TRUE,
-        NOW ()
+        NOW()
+    ),
+    (
+        'Consolas',
+        'Consolas PlayStation, Xbox y Nintendo',
+        6,
+        TRUE,
+        NOW()
     );
 
 -- ============================================
--- 3. MARCAS
+-- 2. MARCAS
 -- ============================================
 INSERT IGNORE INTO marcas (nombre, descripcion, activo, fecha_creacion)
 VALUES
+    -- Consolas y Videojuegos
     (
-        'Samsung',
-        'Tecnología e innovación',
+        'PlayStation',
+        'Consolas y juegos PlayStation',
         TRUE,
-        NOW ()
+        NOW()
+    ),
+    ('Xbox', 'Consolas y juegos Xbox', TRUE, NOW()),
+    (
+        'Nintendo',
+        'Consolas y juegos Nintendo',
+        TRUE,
+        NOW()
+    ),
+    -- Funkos
+    (
+        'Funko Pop',
+        'Figuras coleccionables oficiales',
+        TRUE,
+        NOW()
+    ),
+    -- Sillas Gaming
+    (
+        'DXRacer',
+        'Sillas gaming profesionales',
+        TRUE,
+        NOW()
     ),
     (
-        'LG',
-        'Electrodomésticos y electrónica',
+        'Secretlab',
+        'Sillas gaming premium',
         TRUE,
-        NOW ()
+        NOW()
     ),
-    ('Sony', 'Electrónica de consumo', TRUE, NOW ()),
-    ('Nike', 'Ropa y calzado deportivo', TRUE, NOW ()),
-    ('Adidas', 'Artículos deportivos', TRUE, NOW ()),
-    ('Zara', 'Moda y accesorios', TRUE, NOW ()),
-    ('IKEA', 'Muebles y decoración', TRUE, NOW ()),
     (
-        'Lego',
-        'Juguetes y entretenimiento',
+        'Razer',
+        'Periféricos y sillas gaming',
         TRUE,
-        NOW ()
-    );
+        NOW()
+    ),
+    -- Periféricos
+    (
+        'Logitech',
+        'Periféricos gaming de alta calidad',
+        TRUE,
+        NOW()
+    ),
+    (
+        'HyperX',
+        'Audífonos y periféricos gaming',
+        TRUE,
+        NOW()
+    ),
+    (
+        'Corsair',
+        'Componentes y periféricos gaming',
+        TRUE,
+        NOW()
+    ),
+    (
+        'SteelSeries',
+        'Periféricos gaming profesionales',
+        TRUE,
+        NOW()
+    ),
+    -- Componentes PC
+    ('NVIDIA', 'Tarjetas gráficas', TRUE, NOW()),
+    (
+        'AMD',
+        'Procesadores y tarjetas gráficas',
+        TRUE,
+        NOW()
+    ),
+    ('Intel', 'Procesadores para gaming', TRUE, NOW());
 
 -- ============================================
--- 4. PRODUCTOS
+-- 3. PRODUCTOS - VIDEOJUEGOS
 -- ============================================
--- PRODUCTOS DE ELECTRÓNICA
 INSERT IGNORE INTO productos (
     codigo_sku,
     nombre,
@@ -193,177 +158,13 @@ INSERT IGNORE INTO productos (
     fecha_actualizacion
 )
 VALUES
+    -- PS5
     (
-        'SKU-ELEC-001',
-        'Smart TV Samsung 55"',
-        'Televisor Samsung 55 pulgadas 4K UHD Smart TV con HDR y sistema operativo Tizen',
-        2499.00,
-        1999.00,
-        15,
-        3,
-        (
-            SELECT
-                id
-            FROM
-                categorias
-            WHERE
-                nombre = 'Electrónica'
-            LIMIT
-                1
-        ),
-        (
-            SELECT
-                id
-            FROM
-                marcas
-            WHERE
-                nombre = 'Samsung'
-            LIMIT
-                1
-        ),
-        TRUE,
-        TRUE,
-        NOW (),
-        NOW ()
-    ),
-    (
-        'SKU-ELEC-002',
-        'Laptop Dell Inspiron 15',
-        'Laptop Dell Inspiron 15, Intel Core i5, 8GB RAM, 512GB SSD, Windows 11',
-        2800.00,
-        NULL,
-        8,
-        2,
-        (
-            SELECT
-                id
-            FROM
-                categorias
-            WHERE
-                nombre = 'Electrónica'
-            LIMIT
-                1
-        ),
-        (
-            SELECT
-                id
-            FROM
-                marcas
-            WHERE
-                nombre = 'Samsung'
-            LIMIT
-                1
-        ),
-        TRUE,
-        TRUE,
-        NOW (),
-        NOW ()
-    ),
-    (
-        'SKU-ELEC-003',
-        'Auriculares Sony WH-1000XM5',
-        'Auriculares inalámbricos con cancelación de ruido premium',
-        1299.00,
-        999.00,
-        20,
-        5,
-        (
-            SELECT
-                id
-            FROM
-                categorias
-            WHERE
-                nombre = 'Electrónica'
-            LIMIT
-                1
-        ),
-        (
-            SELECT
-                id
-            FROM
-                marcas
-            WHERE
-                nombre = 'Sony'
-            LIMIT
-                1
-        ),
-        FALSE,
-        TRUE,
-        NOW (),
-        NOW ()
-    ),
-    (
-        'SKU-ELEC-004',
-        'Refrigeradora LG 420L',
-        'Refrigeradora LG No Frost 420 litros con tecnología Inverter',
-        3500.00,
-        2999.00,
-        5,
-        2,
-        (
-            SELECT
-                id
-            FROM
-                categorias
-            WHERE
-                nombre = 'Electrónica'
-            LIMIT
-                1
-        ),
-        (
-            SELECT
-                id
-            FROM
-                marcas
-            WHERE
-                nombre = 'LG'
-            LIMIT
-                1
-        ),
-        TRUE,
-        TRUE,
-        NOW (),
-        NOW ()
-    ),
-    (
-        'SKU-ELEC-005',
-        'Tablet Samsung Galaxy Tab S8',
-        'Tablet Samsung 11 pulgadas, 8GB RAM, 128GB almacenamiento',
-        1899.00,
-        NULL,
-        12,
-        3,
-        (
-            SELECT
-                id
-            FROM
-                categorias
-            WHERE
-                nombre = 'Electrónica'
-            LIMIT
-                1
-        ),
-        (
-            SELECT
-                id
-            FROM
-                marcas
-            WHERE
-                nombre = 'Samsung'
-            LIMIT
-                1
-        ),
-        FALSE,
-        TRUE,
-        NOW (),
-        NOW ()
-    ),
-    (
-        'SKU-ELEC-006',
-        'Smartwatch Samsung Galaxy Watch 5',
-        'Reloj inteligente con GPS, monitor de salud y resistencia al agua',
-        899.00,
-        699.00,
+        'SKU-VJ-001',
+        'The Last of Us Part II Remastered PS5',
+        'Obra maestra remasterizada para PS5 con gráficos mejorados y modo roguelike',
+        249.00,
+        199.00,
         25,
         5,
         (
@@ -372,7 +173,7 @@ VALUES
             FROM
                 categorias
             WHERE
-                nombre = 'Electrónica'
+                nombre = 'Videojuegos'
             LIMIT
                 1
         ),
@@ -382,30 +183,30 @@ VALUES
             FROM
                 marcas
             WHERE
-                nombre = 'Samsung'
+                nombre = 'PlayStation'
             LIMIT
                 1
         ),
         TRUE,
         TRUE,
-        NOW (),
-        NOW ()
+        NOW(),
+        NOW()
     ),
     (
-        'SKU-ELEC-007',
-        'Lavadora LG 18kg',
-        'Lavadora automática LG 18kg con tecnología TurboDrum',
-        1799.00,
+        'SKU-VJ-002',
+        'God of War Ragnarök PS5',
+        'Kratos y Atreus enfrentan el apocalipsis nórdico en esta épica aventura',
+        279.00,
         NULL,
-        7,
-        2,
+        30,
+        5,
         (
             SELECT
                 id
             FROM
                 categorias
             WHERE
-                nombre = 'Electrónica'
+                nombre = 'Videojuegos'
             LIMIT
                 1
         ),
@@ -415,40 +216,90 @@ VALUES
             FROM
                 marcas
             WHERE
-                nombre = 'LG'
+                nombre = 'PlayStation'
             LIMIT
                 1
         ),
-        FALSE,
         TRUE,
-        NOW (),
-        NOW ()
-    );
-
--- PRODUCTOS DE ROPA
-INSERT IGNORE INTO productos (
-    codigo_sku,
-    nombre,
-    descripcion,
-    precio_base,
-    precio_oferta,
-    stock_actual,
-    stock_minimo,
-    categoria_id,
-    marca_id,
-    es_destacado,
-    activo,
-    fecha_creacion,
-    fecha_actualizacion
-)
-VALUES
+        TRUE,
+        NOW(),
+        NOW()
+    ),
     (
-        'SKU-ROPA-001',
-        'Zapatillas Nike Air Max',
-        'Zapatillas deportivas Nike Air Max para running y casual',
-        399.00,
+        'SKU-VJ-003',
+        'Spider-Man 2 PS5',
+        'Peter Parker y Miles Morales unen fuerzas contra Venom',
         299.00,
-        30,
+        249.00,
+        20,
+        5,
+        (
+            SELECT
+                id
+            FROM
+                categorias
+            WHERE
+                nombre = 'Videojuegos'
+            LIMIT
+                1
+        ),
+        (
+            SELECT
+                id
+            FROM
+                marcas
+            WHERE
+                nombre = 'PlayStation'
+            LIMIT
+                1
+        ),
+        TRUE,
+        TRUE,
+        NOW(),
+        NOW()
+    ),
+    -- Xbox
+    (
+        'SKU-VJ-006',
+        'Starfield Xbox Series X',
+        'RPG espacial de Bethesda, explora el universo',
+        279.00,
+        229.00,
+        22,
+        5,
+        (
+            SELECT
+                id
+            FROM
+                categorias
+            WHERE
+                nombre = 'Videojuegos'
+            LIMIT
+                1
+        ),
+        (
+            SELECT
+                id
+            FROM
+                marcas
+            WHERE
+                nombre = 'Xbox'
+            LIMIT
+                1
+        ),
+        TRUE,
+        TRUE,
+        NOW(),
+        NOW()
+    ),
+    -- Nintendo Switch
+    (
+        'SKU-VJ-009',
+        'The Legend of Zelda: Tears of the Kingdom',
+        'Secuela de Breath of the Wild, la mejor aventura de Switch',
+        289.00,
+        NULL,
+        35,
         8,
         (
             SELECT
@@ -456,7 +307,7 @@ VALUES
             FROM
                 categorias
             WHERE
-                nombre = 'Ropa y Moda'
+                nombre = 'Videojuegos'
             LIMIT
                 1
         ),
@@ -466,54 +317,21 @@ VALUES
             FROM
                 marcas
             WHERE
-                nombre = 'Nike'
+                nombre = 'Nintendo'
             LIMIT
                 1
         ),
         TRUE,
         TRUE,
-        NOW (),
-        NOW ()
+        NOW(),
+        NOW()
     ),
     (
-        'SKU-ROPA-002',
-        'Polo Adidas Clásico',
-        'Polo deportivo Adidas de algodón, varios colores disponibles',
-        89.00,
-        NULL,
-        50,
-        15,
-        (
-            SELECT
-                id
-            FROM
-                categorias
-            WHERE
-                nombre = 'Ropa y Moda'
-            LIMIT
-                1
-        ),
-        (
-            SELECT
-                id
-            FROM
-                marcas
-            WHERE
-                nombre = 'Adidas'
-            LIMIT
-                1
-        ),
-        FALSE,
-        TRUE,
-        NOW (),
-        NOW ()
-    ),
-    (
-        'SKU-ROPA-003',
-        'Jean Zara Slim Fit',
-        'Jean de mezclilla Zara corte slim fit para hombre',
-        159.00,
-        119.00,
+        'SKU-VJ-010',
+        'Super Mario Bros Wonder',
+        'Mario en 2D como nunca antes, innovación pura',
+        259.00,
+        219.00,
         40,
         10,
         (
@@ -522,7 +340,7 @@ VALUES
             FROM
                 categorias
             WHERE
-                nombre = 'Ropa y Moda'
+                nombre = 'Videojuegos'
             LIMIT
                 1
         ),
@@ -532,83 +350,19 @@ VALUES
             FROM
                 marcas
             WHERE
-                nombre = 'Zara'
-            LIMIT
-                1
-        ),
-        FALSE,
-        TRUE,
-        NOW (),
-        NOW ()
-    ),
-    (
-        'SKU-ROPA-004',
-        'Chaqueta Nike Sportswear',
-        'Chaqueta cortaviento Nike con capucha',
-        249.00,
-        199.00,
-        18,
-        5,
-        (
-            SELECT
-                id
-            FROM
-                categorias
-            WHERE
-                nombre = 'Ropa y Moda'
-            LIMIT
-                1
-        ),
-        (
-            SELECT
-                id
-            FROM
-                marcas
-            WHERE
-                nombre = 'Nike'
+                nombre = 'Nintendo'
             LIMIT
                 1
         ),
         TRUE,
         TRUE,
-        NOW (),
-        NOW ()
-    ),
-    (
-        'SKU-ROPA-005',
-        'Zapatillas Adidas Superstar',
-        'Zapatillas clásicas Adidas Superstar blancas',
-        329.00,
-        NULL,
-        35,
-        10,
-        (
-            SELECT
-                id
-            FROM
-                categorias
-            WHERE
-                nombre = 'Ropa y Moda'
-            LIMIT
-                1
-        ),
-        (
-            SELECT
-                id
-            FROM
-                marcas
-            WHERE
-                nombre = 'Adidas'
-            LIMIT
-                1
-        ),
-        FALSE,
-        TRUE,
-        NOW (),
-        NOW ()
+        NOW(),
+        NOW()
     );
 
--- PRODUCTOS DE HOGAR
+-- ============================================
+-- 4. PRODUCTOS - SILLAS GAMING
+-- ============================================
 INSERT IGNORE INTO productos (
     codigo_sku,
     nombre,
@@ -626,110 +380,11 @@ INSERT IGNORE INTO productos (
 )
 VALUES
     (
-        'SKU-HOGAR-001',
-        'Sofá IKEA Kivik 3 plazas',
-        'Sofá moderno IKEA de 3 plazas con funda lavable',
-        1899.00,
-        1599.00,
-        6,
-        2,
-        (
-            SELECT
-                id
-            FROM
-                categorias
-            WHERE
-                nombre = 'Hogar y Muebles'
-            LIMIT
-                1
-        ),
-        (
-            SELECT
-                id
-            FROM
-                marcas
-            WHERE
-                nombre = 'IKEA'
-            LIMIT
-                1
-        ),
-        TRUE,
-        TRUE,
-        NOW (),
-        NOW ()
-    ),
-    (
-        'SKU-HOGAR-002',
-        'Mesa de Centro IKEA Lack',
-        'Mesa de centro IKEA Lack, diseño minimalista',
-        149.00,
-        NULL,
-        15,
-        4,
-        (
-            SELECT
-                id
-            FROM
-                categorias
-            WHERE
-                nombre = 'Hogar y Muebles'
-            LIMIT
-                1
-        ),
-        (
-            SELECT
-                id
-            FROM
-                marcas
-            WHERE
-                nombre = 'IKEA'
-            LIMIT
-                1
-        ),
-        FALSE,
-        TRUE,
-        NOW (),
-        NOW ()
-    ),
-    (
-        'SKU-HOGAR-003',
-        'Estante IKEA Billy',
-        'Estante librería IKEA Billy blanco, 80x28x202 cm',
-        349.00,
-        279.00,
-        10,
-        3,
-        (
-            SELECT
-                id
-            FROM
-                categorias
-            WHERE
-                nombre = 'Hogar y Muebles'
-            LIMIT
-                1
-        ),
-        (
-            SELECT
-                id
-            FROM
-                marcas
-            WHERE
-                nombre = 'IKEA'
-            LIMIT
-                1
-        ),
-        FALSE,
-        TRUE,
-        NOW (),
-        NOW ()
-    ),
-    (
-        'SKU-HOGAR-004',
-        'Cama IKEA Malm Queen',
-        'Cama Queen IKEA Malm con cajones de almacenamiento',
+        'SKU-SG-001',
+        'DXRacer Formula Series Negro/Rojo',
+        'Silla gaming ergonómica con soporte lumbar y cojín cervical, reclinable hasta 135°',
         899.00,
-        NULL,
+        749.00,
         8,
         2,
         (
@@ -738,7 +393,7 @@ VALUES
             FROM
                 categorias
             WHERE
-                nombre = 'Hogar y Muebles'
+                nombre = 'Sillas Gaming'
             LIMIT
                 1
         ),
@@ -748,17 +403,85 @@ VALUES
             FROM
                 marcas
             WHERE
-                nombre = 'IKEA'
+                nombre = 'DXRacer'
             LIMIT
                 1
         ),
         TRUE,
         TRUE,
-        NOW (),
-        NOW ()
+        NOW(),
+        NOW()
+    ),
+    (
+        'SKU-SG-002',
+        'Secretlab Titan Evo 2024',
+        'La mejor silla gaming del mercado, con tecnología NEO Hybrid',
+        1499.00,
+        NULL,
+        5,
+        1,
+        (
+            SELECT
+                id
+            FROM
+                categorias
+            WHERE
+                nombre = 'Sillas Gaming'
+            LIMIT
+                1
+        ),
+        (
+            SELECT
+                id
+            FROM
+                marcas
+            WHERE
+                nombre = 'Secretlab'
+            LIMIT
+                1
+        ),
+        TRUE,
+        TRUE,
+        NOW(),
+        NOW()
+    ),
+    (
+        'SKU-SG-003',
+        'Razer Iskur X RGB',
+        'Silla gaming con iluminación RGB Chroma y diseño ergonómico',
+        1299.00,
+        1099.00,
+        6,
+        2,
+        (
+            SELECT
+                id
+            FROM
+                categorias
+            WHERE
+                nombre = 'Sillas Gaming'
+            LIMIT
+                1
+        ),
+        (
+            SELECT
+                id
+            FROM
+                marcas
+            WHERE
+                nombre = 'Razer'
+            LIMIT
+                1
+        ),
+        TRUE,
+        TRUE,
+        NOW(),
+        NOW()
     );
 
--- PRODUCTOS DE DEPORTES
+-- ============================================
+-- 5. PRODUCTOS - FUNKOS
+-- ============================================
 INSERT IGNORE INTO productos (
     codigo_sku,
     nombre,
@@ -776,12 +499,12 @@ INSERT IGNORE INTO productos (
 )
 VALUES
     (
-        'SKU-DEP-001',
-        'Balón Nike Fútbol',
-        'Balón de fútbol Nike Strike tamaño oficial',
-        89.00,
-        69.00,
-        45,
+        'SKU-FK-001',
+        'Funko Pop Master Chief (Halo)',
+        'Figura coleccionable del icónico Spartan de Halo, 10cm',
+        79.00,
+        59.00,
+        50,
         10,
         (
             SELECT
@@ -789,7 +512,7 @@ VALUES
             FROM
                 categorias
             WHERE
-                nombre = 'Deportes'
+                nombre = 'Funkos'
             LIMIT
                 1
         ),
@@ -799,20 +522,172 @@ VALUES
             FROM
                 marcas
             WHERE
-                nombre = 'Nike'
+                nombre = 'Funko Pop'
             LIMIT
                 1
         ),
-        FALSE,
         TRUE,
-        NOW (),
-        NOW ()
+        TRUE,
+        NOW(),
+        NOW()
     ),
     (
-        'SKU-DEP-002',
-        'Pesas Ajustables 20kg',
-        'Set de pesas ajustables para ejercicio en casa',
-        299.00,
+        'SKU-FK-002',
+        'Funko Pop Kratos (God of War)',
+        'El Dios de la Guerra en versión chibi, incluye Leviathan Axe',
+        79.00,
+        NULL,
+        45,
+        10,
+        (
+            SELECT
+                id
+            FROM
+                categorias
+            WHERE
+                nombre = 'Funkos'
+            LIMIT
+                1
+        ),
+        (
+            SELECT
+                id
+            FROM
+                marcas
+            WHERE
+                nombre = 'Funko Pop'
+            LIMIT
+                1
+        ),
+        TRUE,
+        TRUE,
+        NOW(),
+        NOW()
+    ),
+    (
+        'SKU-FK-003',
+        'Funko Pop Link (Zelda TOTK)',
+        'Link de Tears of the Kingdom con Master Sword',
+        89.00,
+        69.00,
+        40,
+        8,
+        (
+            SELECT
+                id
+            FROM
+                categorias
+            WHERE
+                nombre = 'Funkos'
+            LIMIT
+                1
+        ),
+        (
+            SELECT
+                id
+            FROM
+                marcas
+            WHERE
+                nombre = 'Funko Pop'
+            LIMIT
+                1
+        ),
+        TRUE,
+        TRUE,
+        NOW(),
+        NOW()
+    ),
+    (
+        'SKU-FK-004',
+        'Funko Pop Pikachu (Pokémon)',
+        'El Pokémon más famoso en versión Funko Pop',
+        75.00,
+        NULL,
+        60,
+        15,
+        (
+            SELECT
+                id
+            FROM
+                categorias
+            WHERE
+                nombre = 'Funkos'
+            LIMIT
+                1
+        ),
+        (
+            SELECT
+                id
+            FROM
+                marcas
+            WHERE
+                nombre = 'Funko Pop'
+            LIMIT
+                1
+        ),
+        TRUE,
+        TRUE,
+        NOW(),
+        NOW()
+    );
+
+-- ============================================
+-- 6. PRODUCTOS - PERIFÉRICOS GAMING
+-- ============================================
+INSERT IGNORE INTO productos (
+    codigo_sku,
+    nombre,
+    descripcion,
+    precio_base,
+    precio_oferta,
+    stock_actual,
+    stock_minimo,
+    categoria_id,
+    marca_id,
+    es_destacado,
+    activo,
+    fecha_creacion,
+    fecha_actualizacion
+)
+VALUES
+    (
+        'SKU-PG-001',
+        'Teclado Razer BlackWidow V4 Pro',
+        'Teclado mecánico RGB con switches Green, reposa muñecas magnético',
+        899.00,
+        749.00,
+        15,
+        3,
+        (
+            SELECT
+                id
+            FROM
+                categorias
+            WHERE
+                nombre = 'Periféricos Gaming'
+            LIMIT
+                1
+        ),
+        (
+            SELECT
+                id
+            FROM
+                marcas
+            WHERE
+                nombre = 'Razer'
+            LIMIT
+                1
+        ),
+        TRUE,
+        TRUE,
+        NOW(),
+        NOW()
+    ),
+    (
+        'SKU-PG-002',
+        'Mouse Logitech G Pro X Superlight 2',
+        'Mouse inalámbrico ultraligero para esports, 80 horas de batería',
+        649.00,
         NULL,
         20,
         5,
@@ -822,7 +697,7 @@ VALUES
             FROM
                 categorias
             WHERE
-                nombre = 'Deportes'
+                nombre = 'Periféricos Gaming'
             LIMIT
                 1
         ),
@@ -832,30 +707,30 @@ VALUES
             FROM
                 marcas
             WHERE
-                nombre = 'Nike'
+                nombre = 'Logitech'
             LIMIT
                 1
         ),
         TRUE,
         TRUE,
-        NOW (),
-        NOW ()
+        NOW(),
+        NOW()
     ),
     (
-        'SKU-DEP-003',
-        'Bicicleta Estática',
-        'Bicicleta estática para ejercicio con monitor digital',
-        899.00,
-        699.00,
+        'SKU-PG-003',
+        'Audífonos HyperX Cloud III',
+        'Audífonos gaming con sonido 7.1 surround y micrófono desmontable',
+        449.00,
+        379.00,
+        25,
         5,
-        2,
         (
             SELECT
                 id
             FROM
                 categorias
             WHERE
-                nombre = 'Deportes'
+                nombre = 'Periféricos Gaming'
             LIMIT
                 1
         ),
@@ -865,17 +740,19 @@ VALUES
             FROM
                 marcas
             WHERE
-                nombre = 'Adidas'
+                nombre = 'HyperX'
             LIMIT
                 1
         ),
         TRUE,
         TRUE,
-        NOW (),
-        NOW ()
+        NOW(),
+        NOW()
     );
 
--- PRODUCTOS DE JUGUETES
+-- ============================================
+-- 7. PRODUCTOS - CONSOLAS
+-- ============================================
 INSERT IGNORE INTO productos (
     codigo_sku,
     nombre,
@@ -893,20 +770,20 @@ INSERT IGNORE INTO productos (
 )
 VALUES
     (
-        'SKU-JUG-001',
-        'LEGO City Estación de Policía',
-        'Set LEGO City con estación de policía y vehículos',
-        249.00,
-        199.00,
-        22,
-        5,
+        'SKU-CN-001',
+        'PlayStation 5 Slim Digital',
+        'Consola PS5 edición Slim sin lector de discos, 1TB SSD',
+        2499.00,
+        2299.00,
+        10,
+        2,
         (
             SELECT
                 id
             FROM
                 categorias
             WHERE
-                nombre = 'Juguetes'
+                nombre = 'Consolas'
             LIMIT
                 1
         ),
@@ -916,20 +793,20 @@ VALUES
             FROM
                 marcas
             WHERE
-                nombre = 'Lego'
+                nombre = 'PlayStation'
             LIMIT
                 1
         ),
         TRUE,
         TRUE,
-        NOW (),
-        NOW ()
+        NOW(),
+        NOW()
     ),
     (
-        'SKU-JUG-002',
-        'LEGO Star Wars Millennium Falcon',
-        'Set LEGO Star Wars Millennium Falcon con 1351 piezas',
-        699.00,
+        'SKU-CN-002',
+        'PlayStation 5 Slim Standard',
+        'Consola PS5 Slim con lector de discos, 1TB SSD',
+        2799.00,
         NULL,
         8,
         2,
@@ -939,7 +816,7 @@ VALUES
             FROM
                 categorias
             WHERE
-                nombre = 'Juguetes'
+                nombre = 'Consolas'
             LIMIT
                 1
         ),
@@ -949,30 +826,30 @@ VALUES
             FROM
                 marcas
             WHERE
-                nombre = 'Lego'
+                nombre = 'PlayStation'
             LIMIT
                 1
         ),
         TRUE,
         TRUE,
-        NOW (),
-        NOW ()
+        NOW(),
+        NOW()
     ),
     (
-        'SKU-JUG-003',
-        'LEGO Friends Casa de Stephanie',
-        'Set LEGO Friends con casa y figuras',
-        179.00,
-        149.00,
-        18,
-        5,
+        'SKU-CN-003',
+        'Xbox Series X',
+        'Consola Xbox Series X, 1TB, 4K 120fps',
+        2699.00,
+        2499.00,
+        12,
+        3,
         (
             SELECT
                 id
             FROM
                 categorias
             WHERE
-                nombre = 'Juguetes'
+                nombre = 'Consolas'
             LIMIT
                 1
         ),
@@ -982,18 +859,51 @@ VALUES
             FROM
                 marcas
             WHERE
-                nombre = 'Lego'
+                nombre = 'Xbox'
             LIMIT
                 1
         ),
-        FALSE,
         TRUE,
-        NOW (),
-        NOW ()
+        TRUE,
+        NOW(),
+        NOW()
+    ),
+    (
+        'SKU-CN-005',
+        'Nintendo Switch OLED Zelda Edition',
+        'Switch OLED edición limitada de Zelda TOTK',
+        1899.00,
+        1699.00,
+        6,
+        2,
+        (
+            SELECT
+                id
+            FROM
+                categorias
+            WHERE
+                nombre = 'Consolas'
+            LIMIT
+                1
+        ),
+        (
+            SELECT
+                id
+            FROM
+                marcas
+            WHERE
+                nombre = 'Nintendo'
+            LIMIT
+                1
+        ),
+        TRUE,
+        TRUE,
+        NOW(),
+        NOW()
     );
 
 -- ============================================
--- 5. CLIENTES DE PRUEBA
+-- 8. CLIENTES DE PRUEBA
 -- ============================================
 INSERT IGNORE INTO clientes (
     tipo_documento,
@@ -1015,50 +925,34 @@ VALUES
     (
         'DNI',
         '12345678',
-        'Juan Carlos',
-        'Pérez',
-        'García',
+        'Carlos Alberto',
+        'Gómez',
+        'Ramírez',
         NULL,
-        'Av. Arequipa 1234',
+        'Av. Benavides 2500',
         'Miraflores',
         'Lima',
         'Lima',
         '999111222',
-        'juan.perez@email.com',
+        'carlos.gamer@email.com',
         TRUE,
-        NOW ()
+        NOW()
     ),
     (
         'DNI',
         '87654321',
-        'María Elena',
-        'López',
-        'Fernández',
+        'María Fernanda',
+        'Torres',
+        'Silva',
         NULL,
-        'Jr. Las Flores 567',
+        'Jr. Puno 450',
         'San Isidro',
         'Lima',
         'Lima',
         '999222333',
-        'maria.lopez@email.com',
+        'maria.gamer@email.com',
         TRUE,
-        NOW ()
-    ),
-    (
-        'DNI',
-        '11223344',
-        'Pedro Antonio',
-        'Ramírez',
-        'Soto',
-        NULL,
-        'Calle Los Olivos 890',
-        'Surco',
-        'Lima',
-        'Lima',
-        '999333444',
-        'pedro.ramirez@email.com',
-        TRUE,
-        NOW ()
+        NOW()
     ),
     (
         'RUC',
@@ -1066,19 +960,19 @@ VALUES
         NULL,
         NULL,
         NULL,
-        'EMPRESA DE PRUEBAS S.A.C.',
-        'Av. Javier Prado 2000',
+        'ESPORTS PERÚ S.A.C.',
+        'Av. Javier Prado 2500',
         'San Isidro',
         'Lima',
         'Lima',
         '999444555',
-        'ventas@empresa1.com',
+        'ventas@esportsperu.com',
         TRUE,
-        NOW ()
+        NOW()
     );
 
 -- ============================================
--- 6. PROVEEDORES
+-- 9. PROVEEDORES
 -- ============================================
 INSERT IGNORE INTO proveedores (
     ruc,
@@ -1094,52 +988,30 @@ INSERT IGNORE INTO proveedores (
 VALUES
     (
         '20111222333',
-        'DISTRIBUIDORA TECH S.A.C.',
-        'Av. Argentina 1500, Callao',
+        'DISTRIBUIDORA GAMER TECH S.A.C.',
+        'Av. Venezuela 1500, Callao',
         '014567890',
-        'ventas@distribuidoratech.com',
-        'Carlos Mendoza',
+        'ventas@gamertechperu.com',
+        'Roberto Díaz',
         '999555666',
         TRUE,
-        NOW ()
+        NOW()
     ),
     (
         '20444555666',
-        'IMPORTACIONES GLOBAL E.I.R.L.',
+        'IMPORTACIONES GAMING PERÚ E.I.R.L.',
         'Jr. Comercio 789, Lima',
         '014567891',
-        'compras@importacionesglobal.com',
-        'Ana Torres',
+        'compras@gamingperu.com',
+        'Sandra Morales',
         '999666777',
         TRUE,
-        NOW ()
-    ),
-    (
-        '20777888999',
-        'MAYORISTA TEXTIL S.A.',
-        'Av. Gamarra 2500, La Victoria',
-        '014567892',
-        'ventas@mayoristatextil.com',
-        'Roberto Silva',
-        '999777888',
-        TRUE,
-        NOW ()
+        NOW()
     );
 
 -- ============================================
--- NOTAS IMPORTANTES
--- ============================================
--- 
--- 1. Este script usa INSERT IGNORE para evitar errores si los datos ya existen
--- 2. Las fechas se generan automáticamente con NOW()
--- 3. Los pedidos, ventas y créditos se crean mejor desde la aplicación
---    ya que requieren lógica de negocio compleja
--- 4. Las imágenes de productos deben subirse manualmente
--- 
--- CREDENCIALES DE ACCESO (creadas por InitializationService):
--- Usuario Admin: admin / admin123
--- Usuario Trabajador: trabajador / trabajador123
--- 
--- ============================================
 -- FIN DEL SCRIPT
+-- ============================================
+-- ✅ Base de datos lista con productos GAMER
+-- ⚠️ Las configuraciones se crean en InitializationService.java
 -- ============================================

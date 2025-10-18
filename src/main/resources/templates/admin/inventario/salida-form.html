@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-arrow-up text-warning"></i>
+                                Registrar Salida de Inventario
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/inventario}">Inventario</a></li>
+                                <li class="breadcrumb-item active">Registrar Salida</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div class="row">
+                        <div class="col-md-8 offset-md-2">
+                            <!-- Formulario -->
+                            <div class="card card-warning card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-minus-circle"></i> Nueva Salida
+                                    </h3>
+                                </div>
+                                <form method="post" th:action="@{/admin/inventario/registrar-salida}">
+                                    <div class="card-body">
+
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <strong>Salida de Inventario:</strong> Disminuye el stock del producto.
+                                            Usado para mermas, ajustes negativos o productos dañados.
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Producto <span class="text-danger">*</span></label>
+                                            <select class="form-control gamer-input select2" name="productoId"
+                                                id="productoId" required style="width: 100%;">
+                                                <option value="">Seleccione un producto...</option>
+                                                <option th:each="producto : ${productos}" th:value="${producto.id}"
+                                                    th:text="${producto.nombre + ' - Stock: ' + producto.stockActual}"
+                                                    th:data-stock="${producto.stockActual}">
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Info Stock Actual -->
+                                        <div id="infoStock" class="alert alert-secondary" style="display: none;">
+                                            <strong>Stock Disponible:</strong> <span id="stockActual">0</span> unidades
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Cantidad <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control gamer-input" name="cantidad"
+                                                id="cantidad" min="1" required placeholder="Ingrese la cantidad">
+                                            <small class="form-text text-muted">
+                                                No puede exceder el stock disponible
+                                            </small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Motivo <span class="text-danger">*</span></label>
+                                            <select class="form-control gamer-input" name="motivo" required>
+                                                <option value="">Seleccione el motivo...</option>
+                                                <option th:each="motivo : ${motivos}"
+                                                    th:if="${motivo.name() == 'MERMA' || motivo.name() == 'AJUSTE_NEGATIVO'}"
+                                                    th:value="${motivo.name()}" th:text="${motivo.nombre}">
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Observaciones <span class="text-danger">*</span></label>
+                                            <textarea class="form-control gamer-input" name="observaciones" rows="3"
+                                                required
+                                                placeholder="Explique el motivo de esta salida (requerido para auditoría)"></textarea>
+                                        </div>
+
+                                        <!-- Previsualización -->
+                                        <div id="preview" class="alert alert-warning" style="display: none;">
+                                            <h5><i class="fas fa-calculator"></i> Resultado:</h5>
+                                            <p class="mb-0">
+                                                Stock actual: <strong id="prevStockActual">0</strong> →
+                                                Nuevo stock: <strong id="prevStockNuevo" class="text-warning">0</strong>
+                                            </p>
+                                        </div>
+
+                                        <!-- Alerta de stock insuficiente -->
+                                        <div id="alertStock" class="alert alert-danger" style="display: none;">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            <strong>¡Stock insuficiente!</strong> No hay suficiente stock para esta
+                                            salida.
+                                        </div>
+
+                                    </div>
+                                    <div class="card-footer">
+                                        <button type="submit" class="btn btn-warning btn-lg gamer-btn" id="btnSubmit">
+                                            <i class="fas fa-check"></i> Registrar Salida
+                                        </button>
+                                        <a th:href="@{/admin/inventario}" class="btn btn-secondary btn-lg">
+                                            <i class="fas fa-times"></i> Cancelar
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Inicializar Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Seleccione un producto'
+            });
+
+            let stockActual = 0;
+
+            // Al seleccionar producto
+            $('#productoId').on('change', function () {
+                const selectedOption = $(this).find(':selected');
+                stockActual = parseInt(selectedOption.data('stock')) || 0;
+
+                if (stockActual >= 0) {
+                    $('#stockActual').text(stockActual);
+                    $('#cantidad').attr('max', stockActual);
+                    $('#infoStock').show();
+                    calcularNuevoStock();
+                } else {
+                    $('#infoStock').hide();
+                    $('#preview').hide();
+                }
+            });
+
+            // Al cambiar cantidad
+            $('#cantidad').on('input', function () {
+                calcularNuevoStock();
+            });
+
+            function calcularNuevoStock() {
+                const cantidad = parseInt($('#cantidad').val()) || 0;
+
+                if (cantidad > 0 && stockActual >= 0) {
+                    const nuevoStock = stockActual - cantidad;
+
+                    $('#prevStockActual').text(stockActual);
+                    $('#prevStockNuevo').text(nuevoStock);
+
+                    if (nuevoStock < 0) {
+                        $('#preview').hide();
+                        $('#alertStock').show();
+                        $('#btnSubmit').prop('disabled', true);
+                    } else {
+                        $('#preview').show();
+                        $('#alertStock').hide();
+                        $('#btnSubmit').prop('disabled', false);
+                    }
+                } else {
+                    $('#preview').hide();
+                    $('#alertStock').hide();
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>

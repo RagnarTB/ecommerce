@@ -2,8 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
-
-    <th:block th:fragment="scripts">
+    <!-- Scripts -->
+    <div th:fragment="scripts">
         <!-- jQuery -->
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
@@ -21,7 +21,6 @@
 
         <!-- Select2 -->
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/es.js"></script>
 
         <!-- SweetAlert2 -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -29,10 +28,33 @@
         <!-- Chart.js -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-        <!-- Custom JS -->
-        <script th:src="@{/js/custom-admin.js}"></script>
-    </th:block>
+        <!-- Custom Admin JS -->
+        <script th:src="@{/js/admin-gamer.js}"></script>
 
+        <!-- Mostrar mensajes flash -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            $(document).ready(function () {
+                var successMsg = /*[[${success}]]*/ null;
+                if (successMsg) {
+                    AdminGamer.showToast('success', 'Éxito', successMsg);
+                }
+                var errorMsg = /*[[${error}]]*/ null;
+                if (errorMsg) {
+                    AdminGamer.showToast('error', 'Error', errorMsg);
+                }
+                var infoMsg = /*[[${info}]]*/ null;
+                if (infoMsg) {
+                    AdminGamer.showToast('info', 'Información', infoMsg);
+                }
+                var mensaje = /*[[${mensaje}]]*/ null;
+                if (mensaje) {
+                    AdminGamer.showToast('info', 'Notificación', mensaje);
+                }
+            });
+            /*]]>*/
+        </script>
+    </div>
 </body>
 
 </html>

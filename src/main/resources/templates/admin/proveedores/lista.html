@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-truck text-danger"></i>
+                                Gestión de Proveedores
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Proveedores</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- Mensajes -->
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <!-- Tarjeta principal -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list"></i> Lista de Proveedores
+                            </h3>
+                            <div class="card-tools">
+                                <a th:href="@{/admin/proveedores/nuevo}" class="btn btn-success btn-sm gamer-btn">
+                                    <i class="fas fa-plus"></i> Nuevo Proveedor
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-hover datatable">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>RUC</th>
+                                        <th>Razón Social</th>
+                                        <th>Contacto</th>
+                                        <th>Teléfono</th>
+                                        <th>Email</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="proveedor : ${proveedores}">
+                                        <td th:text="${proveedor.id}"></td>
+                                        <td>
+                                            <strong th:text="${proveedor.ruc}"></strong>
+                                        </td>
+                                        <td th:text="${proveedor.razonSocial}"></td>
+                                        <td>
+                                            <i class="fas fa-user text-info"></i>
+                                            <span th:text="${proveedor.contactoNombre ?: '-'}"></span>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-phone text-success"></i>
+                                            <span th:text="${proveedor.telefono ?: '-'}"></span>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-envelope text-warning"></i>
+                                            <span th:text="${proveedor.email ?: '-'}"></span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${proveedor.activo}" class="badge badge-success">
+                                                <i class="fas fa-check"></i> Activo
+                                            </span>
+                                            <span th:unless="${proveedor.activo}" class="badge badge-danger">
+                                                <i class="fas fa-times"></i> Inactivo
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <!-- Ver Detalle -->
+                                                <a th:href="@{/admin/proveedores/ver/{id}(id=${proveedor.id})}"
+                                                    class="btn btn-info btn-sm" data-toggle="tooltip"
+                                                    title="Ver Detalle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+
+                                                <!-- Editar -->
+                                                <a th:href="@{/admin/proveedores/editar/{id}(id=${proveedor.id})}"
+                                                    class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+
+                                                <!-- Cambiar Estado -->
+                                                <a th:href="@{/admin/proveedores/cambiar-estado/{id}(id=${proveedor.id}, activo=${!proveedor.activo})}"
+                                                    th:class="${proveedor.activo} ? 'btn btn-danger btn-sm' : 'btn btn-success btn-sm'"
+                                                    data-toggle="tooltip"
+                                                    th:title="${proveedor.activo} ? 'Desactivar' : 'Activar'">
+                                                    <i
+                                                        th:class="${proveedor.activo} ? 'fas fa-ban' : 'fas fa-check'"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+
+</html>

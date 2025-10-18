@@ -1,21 +1,30 @@
 package com.miempresa.ecommerce.controllers.web;
 
-import com.miempresa.ecommerce.models.Order;
-import com.miempresa.ecommerce.models.OrderDetail;
-import com.miempresa.ecommerce.models.Product;
-import com.miempresa.ecommerce.services.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.miempresa.ecommerce.models.Order;
+import com.miempresa.ecommerce.models.OrderDetail;
+import com.miempresa.ecommerce.models.Product;
+import com.miempresa.ecommerce.services.CategoryService;
+import com.miempresa.ecommerce.services.ConfigurationService;
+import com.miempresa.ecommerce.services.CustomerService;
+import com.miempresa.ecommerce.services.OrderService;
+import com.miempresa.ecommerce.services.ProductService;
+
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * CONTROLLER: HOME (Catálogo Público)

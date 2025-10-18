@@ -1,0 +1,501 @@
+/* ============================================
+   GAMER ZONE - ADMIN PANEL CSS
+   Tema gaming para AdminLTE
+   ============================================ */
+
+/* ========================================
+   VARIABLES GAMER
+   ======================================== */
+:root {
+    --gamer-pink: #FF0080;
+    --gamer-cyan: #00F0FF;
+    --gamer-purple: #7B2FFF;
+    --gamer-dark: #0A0E27;
+    --gamer-dark-light: #1a1f3a;
+    --gamer-card-bg: rgba(26, 31, 58, 0.6);
+}
+
+/* ========================================
+   LAYOUT GENERAL
+   ======================================== */
+body {
+    font-family: 'Rajdhani', sans-serif;
+    background: linear-gradient(135deg, var(--gamer-dark) 0%, var(--gamer-dark-light) 100%);
+}
+
+.wrapper {
+    background: var(--gamer-dark);
+}
+
+.content-wrapper {
+    background: var(--gamer-dark);
+    color: #fff;
+}
+
+.content-header h1 {
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(135deg, var(--gamer-pink), var(--gamer-purple), var(--gamer-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
+
+/* ========================================
+   NAVBAR SUPERIOR
+   ======================================== */
+.main-header {
+    background: linear-gradient(135deg, var(--gamer-dark) 0%, var(--gamer-dark-light) 100%);
+    border-bottom: 2px solid var(--gamer-pink);
+    box-shadow: 0 2px 20px rgba(255, 0, 128, 0.3);
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: var(--gamer-cyan);
+    transform: translateY(-2px);
+}
+
+.navbar-dark .navbar-nav .nav-link i {
+    transition: transform 0.3s ease;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover i {
+    transform: rotate(10deg) scale(1.1);
+}
+
+/* ========================================
+   BRAND/LOGO
+   ======================================== */
+.brand-link {
+    background: var(--gamer-dark-light);
+    border-bottom: 2px solid var(--gamer-pink);
+    font-family: 'Orbitron', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.brand-link:hover {
+    box-shadow: 0 0 20px rgba(255, 0, 128, 0.4);
+}
+
+.brand-text {
+    background: linear-gradient(135deg, var(--gamer-pink), var(--gamer-purple), var(--gamer-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.brand-image {
+    filter: drop-shadow(0 0 10px rgba(255, 0, 128, 0.6));
+}
+
+/* ========================================
+   SIDEBAR
+   ======================================== */
+.main-sidebar {
+    background: linear-gradient(180deg, var(--gamer-dark) 0%, var(--gamer-dark-light) 100%);
+    box-shadow: 2px 0 20px rgba(255, 0, 128, 0.2);
+}
+
+.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link {
+    background: rgba(255, 255, 255, 0.02);
+    color: rgba(255, 255, 255, 0.7);
+    border-left: 3px solid transparent;
+    margin: 5px 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link:hover {
+    background: rgba(255, 0, 128, 0.1);
+    border-left-color: var(--gamer-pink);
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link.active {
+    background: linear-gradient(90deg, rgba(255, 0, 128, 0.2), transparent);
+    border-left-color: var(--gamer-pink);
+    color: var(--gamer-cyan);
+    box-shadow: 0 0 15px rgba(255, 0, 128, 0.3);
+}
+
+.nav-sidebar .nav-link p {
+    font-weight: 600;
+}
+
+.nav-sidebar .nav-icon {
+    margin-right: 10px;
+    transition: transform 0.3s ease;
+}
+
+.nav-sidebar .nav-link:hover .nav-icon {
+    transform: scale(1.2);
+}
+
+/* Submenu */
+.nav-treeview>.nav-item>.nav-link {
+    padding-left: 3rem;
+    font-size: 0.9rem;
+}
+
+/* ========================================
+   CARDS
+   ======================================== */
+.card {
+    background: var(--gamer-card-bg);
+    border: 1px solid rgba(255, 0, 128, 0.2);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    border-color: var(--gamer-pink);
+    box-shadow: 0 8px 30px rgba(255, 0, 128, 0.4);
+    transform: translateY(-5px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, rgba(255, 0, 128, 0.1), rgba(123, 47, 255, 0.1));
+    border-bottom: 1px solid rgba(255, 0, 128, 0.3);
+    color: var(--gamer-cyan);
+    font-weight: 600;
+}
+
+.card-title {
+    color: var(--gamer-cyan);
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    margin: 0;
+}
+
+.card-body {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.card-footer {
+    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 0, 128, 0.1);
+}
+
+/* ========================================
+   SMALL BOXES (Info boxes del dashboard)
+   ======================================== */
+.small-box {
+    background: linear-gradient(135deg, rgba(255, 0, 128, 0.2), rgba(123, 47, 255, 0.2));
+    border: 1px solid rgba(255, 0, 128, 0.3);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.small-box:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 40px rgba(255, 0, 128, 0.5);
+}
+
+.small-box>.inner h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    color: var(--gamer-cyan);
+}
+
+.small-box>.inner p {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+}
+
+.small-box .icon {
+    color: rgba(255, 0, 128, 0.3);
+}
+
+.small-box .small-box-footer {
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--gamer-cyan);
+    font-weight: 600;
+}
+
+.small-box .small-box-footer:hover {
+    background: rgba(255, 0, 128, 0.2);
+    color: #fff;
+}
+
+/* ========================================
+   BOTONES
+   ======================================== */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--gamer-pink), var(--gamer-purple));
+    border: none;
+    box-shadow: 0 4px 15px rgba(255, 0, 128, 0.4);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--gamer-purple), var(--gamer-cyan));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 0, 128, 0.6);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #00F0FF, #00D4FF);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 240, 255, 0.6);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #FF0080, #FF0055);
+    border: none;
+    box-shadow: 0 4px 15px rgba(255, 0, 80, 0.4);
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 0, 80, 0.6);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border: none;
+    color: #000;
+    font-weight: 700;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #7B2FFF, #9D4FFF);
+    border: none;
+}
+
+/* ========================================
+   TABLAS
+   ======================================== */
+.table {
+    color: #fff;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, rgba(255, 0, 128, 0.2), rgba(123, 47, 255, 0.2));
+    color: var(--gamer-cyan);
+    font-weight: 700;
+    border-color: rgba(255, 0, 128, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background: rgba(255, 0, 128, 0.1);
+    transform: scale(1.01);
+}
+
+.table-bordered td,
+.table-bordered th {
+    border-color: rgba(255, 0, 128, 0.2);
+}
+
+/* DataTables personalizado */
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 0, 128, 0.3);
+    color: #fff;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.page-item.active .page-link {
+    background: linear-gradient(135deg, var(--gamer-pink), var(--gamer-purple));
+    border-color: var(--gamer-pink);
+}
+
+.page-link {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 0, 128, 0.2);
+    color: var(--gamer-cyan);
+}
+
+.page-link:hover {
+    background: rgba(255, 0, 128, 0.1);
+    border-color: var(--gamer-pink);
+    color: #fff;
+}
+
+/* ========================================
+   FORMULARIOS
+   ======================================== */
+.form-control {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 0, 128, 0.3);
+    color: #fff;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--gamer-pink);
+    box-shadow: 0 0 15px rgba(255, 0, 128, 0.3);
+    color: #fff;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.form-label {
+    color: var(--gamer-cyan);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.input-group-text {
+    background: rgba(255, 0, 128, 0.2);
+    border-color: rgba(255, 0, 128, 0.3);
+    color: var(--gamer-cyan);
+}
+
+/* Select2 personalizado */
+.select2-container--default .select2-selection--single {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 0, 128, 0.3);
+    border-radius: 8px;
+    height: calc(2.25rem + 2px);
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #fff;
+    line-height: 2.25rem;
+}
+
+.select2-dropdown {
+    background: var(--gamer-dark-light);
+    border-color: rgba(255, 0, 128, 0.3);
+}
+
+.select2-results__option {
+    color: #fff;
+}
+
+.select2-results__option--highlighted {
+    background: rgba(255, 0, 128, 0.3);
+}
+
+/* ========================================
+   BADGES
+   ======================================== */
+.badge {
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+}
+
+.badge-primary {
+    background: linear-gradient(135deg, var(--gamer-pink), var(--gamer-purple));
+}
+
+.badge-success {
+    background: linear-gradient(135deg, #00F0FF, #00D4FF);
+}
+
+.badge-danger {
+    background: linear-gradient(135deg, #FF0080, #FF0055);
+}
+
+.badge-warning {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+}
+
+/* ========================================
+   ALERTS
+   ======================================== */
+.alert {
+    border-radius: 10px;
+    border: none;
+    backdrop-filter: blur(10px);
+    font-weight: 600;
+}
+
+.alert-success {
+    background: rgba(0, 240, 255, 0.2);
+    color: var(--gamer-cyan);
+    border-left: 4px solid var(--gamer-cyan);
+}
+
+.alert-danger {
+    background: rgba(255, 0, 128, 0.2);
+    color: var(--gamer-pink);
+    border-left: 4px solid var(--gamer-pink);
+}
+
+.alert-warning {
+    background: rgba(255, 215, 0, 0.2);
+    color: #FFD700;
+    border-left: 4px solid #FFD700;
+}
+
+.alert-info {
+    background: rgba(123, 47, 255, 0.2);
+    color: var(--gamer-purple);
+    border-left: 4px solid var(--gamer-purple);
+}
+
+/* ========================================
+   ANIMACIONES
+   ======================================== */
+@keyframes glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 40px rgba(255, 0, 128, 0.6);
+    }
+}
+
+.glow-animation {
+    animation: glow 2s ease-in-out infinite;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    .content-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .small-box>.inner h3 {
+        font-size: 1.8rem;
+    }
+}

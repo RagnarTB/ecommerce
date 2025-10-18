@@ -1,112 +1,328 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Detalle de Venta')"></head>
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
-        <div th:replace="fragments/header :: header"></div>
-        <div th:replace="fragments/sidebar :: sidebar"></div>
 
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0"><i class="fas fa-receipt"></i> Detalle de Venta</h1>
+                            <h1 class="m-0">
+                                <i class="fas fa-file-invoice text-danger"></i>
+                                Detalle de Venta
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/ventas}">Ventas</a></li>
+                                <li class="breadcrumb-item active">Detalle</li>
+                            </ol>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <div class="card">
-                        <div class="card-body">
 
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <p><strong>Venta:</strong> <span th:text="${venta.numeroVenta}">VEN-001</span></p>
-                                    <p><strong>Cliente:</strong> <span
-                                            th:text="${venta.cliente != null ? venta.cliente.nombreCompleto : 'Consumidor final'}">Cliente</span>
-                                    </p>
-                                    <p><strong>Fecha:</strong> <span
-                                            th:text="${#temporals.format(venta.fechaVenta,'dd/MM/yyyy HH:mm')}">01/01/2025</span>
-                                    </p>
+                    <div class="row">
+                        <!-- Información General -->
+                        <div class="col-md-6">
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-info-circle"></i> Información General
+                                    </h3>
+                                    <div class="card-tools">
+                                        <span th:if="${venta.estado.name() == 'COMPLETADA'}"
+                                            class="badge badge-success badge-lg">
+                                            <i class="fas fa-check"></i> COMPLETADA
+                                        </span>
+                                        <span th:if="${venta.estado.name() == 'ANULADA'}"
+                                            class="badge badge-danger badge-lg">
+                                            <i class="fas fa-ban"></i> ANULADA
+                                        </span>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <p><strong>Total:</strong> S/ <span
-                                            th:text="${#numbers.formatDecimal(venta.total,1,2)}">0.00</span></p>
-                                    <p><strong>Estado:</strong> <span th:text="${venta.estado.nombre}">COMPLETADA</span>
-                                    </p>
-                                    <p><strong>Usuario:</strong> <span th:text="${venta.usuario.nombre}">Admin</span>
-                                    </p>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-hashtag text-danger"></i> Nº Venta
+                                        </dt>
+                                        <dd class="col-sm-8">
+                                            <h5><strong th:text="${venta.numeroVenta}"></strong></h5>
+                                        </dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-calendar text-danger"></i> Fecha
+                                        </dt>
+                                        <dd class="col-sm-8"
+                                            th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy HH:mm')}">
+                                        </dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-user text-danger"></i> Cliente
+                                        </dt>
+                                        <dd class="col-sm-8">
+                                            <strong th:text="${venta.cliente.nombreCompleto}"></strong><br>
+                                            <small
+                                                th:text="${venta.cliente.tipoDocumento + ': ' + venta.cliente.numeroDocumento}"></small>
+                                        </dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-money-bill-wave text-danger"></i> Tipo Pago
+                                        </dt>
+                                        <dd class="col-sm-8">
+                                            <span th:if="${venta.tipoPago.name() == 'CONTADO'}"
+                                                class="badge badge-success">
+                                                Contado
+                                            </span>
+                                            <span th:if="${venta.tipoPago.name() == 'CREDITO'}"
+                                                class="badge badge-warning">
+                                                Crédito
+                                            </span>
+                                        </dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-user-tie text-danger"></i> Vendedor
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${venta.usuario.nombreCompleto}"></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumen de Totales -->
+                        <div class="col-md-6">
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-calculator"></i> Resumen de Totales
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table">
+                                        <tr>
+                                            <td><strong>Subtotal:</strong></td>
+                                            <td class="text-right">
+                                                S/ <span
+                                                    th:text="${#numbers.formatDecimal(venta.subtotal, 1, 2)}"></span>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${venta.descuento != null && venta.descuento > 0}">
+                                            <td>Descuento:</td>
+                                            <td class="text-right text-danger">
+                                                - S/ <span
+                                                    th:text="${#numbers.formatDecimal(venta.descuento, 1, 2)}"></span>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${venta.costoEnvio != null && venta.costoEnvio > 0}">
+                                            <td>Envío:</td>
+                                            <td class="text-right">
+                                                S/ <span
+                                                    th:text="${#numbers.formatDecimal(venta.costoEnvio, 1, 2)}"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>IGV (18%):</td>
+                                            <td class="text-right">
+                                                S/ <span th:text="${#numbers.formatDecimal(venta.igv, 1, 2)}"></span>
+                                            </td>
+                                        </tr>
+                                        <tr class="bg-light">
+                                            <td>
+                                                <h4><strong>TOTAL:</strong></h4>
+                                            </td>
+                                            <td class="text-right">
+                                                <h4 class="text-success">
+                                                    <strong>S/ <span
+                                                            th:text="${#numbers.formatDecimal(venta.total, 1, 2)}"></span></strong>
+                                                </h4>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
                             </div>
 
-                            <hr />
-
-                            <h5>Productos</h5>
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>SKU</th>
-                                        <th>Nombre</th>
-                                        <th>Cant.</th>
-                                        <th>Precio</th>
-                                        <th>Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="d : ${venta.detalles}">
-                                        <td th:text="${d.producto.codigoSku}">SKU</td>
-                                        <td th:text="${d.nombreProducto}">Prod</td>
-                                        <td th:text="${d.cantidad}">1</td>
-                                        <td th:text="'S/ ' + #numbers.formatDecimal(d.precioUnitario,1,2)">S/ 0.00</td>
-                                        <td th:text="'S/ ' + #numbers.formatDecimal(d.subtotal,1,2)">S/ 0.00</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            <hr />
-
-                            <h5>Pagos</h5>
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Método</th>
-                                        <th>Monto</th>
-                                        <th>Referencia</th>
-                                        <th>Fecha</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="p : ${venta.pagos}">
-                                        <td th:text="${p.metodoPago}">EFECTIVO</td>
-                                        <td th:text="'S/ ' + #numbers.formatDecimal(p.monto,1,2)">S/ 0.00</td>
-                                        <td th:text="${p.referencia}">REF</td>
-                                        <td th:text="${#temporals.format(p.fechaPago,'dd/MM/yyyy HH:mm')}">01/01/2025
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            <div class="mt-3">
-                                <a th:href="@{/admin/ventas}" class="btn btn-secondary">Volver</a>
-                                <a th:href="@{/admin/ventas/imprimir/{id}(id=${venta.id})}"
-                                    class="btn btn-primary">Imprimir</a>
+                            <!-- Pagos (si existen) -->
+                            <div class="card card-danger card-outline gamer-card" th:if="${!venta.pagos.isEmpty()}">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-dollar-sign"></i> Pagos Registrados
+                                    </h3>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Método</th>
+                                                <th>Monto</th>
+                                                <th>Fecha</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="pago : ${venta.pagos}">
+                                                <td>
+                                                    <span class="badge badge-info"
+                                                        th:text="${pago.metodoPago.nombre}"></span>
+                                                </td>
+                                                <td>S/ <span
+                                                        th:text="${#numbers.formatDecimal(pago.monto, 1, 2)}"></span>
+                                                </td>
+                                                <td>
+                                                    <small
+                                                        th:text="${#temporals.format(pago.fechaPago, 'dd/MM/yyyy HH:mm')}"></small>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-
                         </div>
                     </div>
+
+                    <!-- Detalle de Productos -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-boxes"></i> Productos Vendidos
+                                    </h3>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-bordered">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Producto</th>
+                                                <th>Precio Unit.</th>
+                                                <th>Cantidad</th>
+                                                <th>Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="detalle, iterStat : ${venta.detalles}">
+                                                <td th:text="${iterStat.count}"></td>
+                                                <td>
+                                                    <strong th:text="${detalle.nombreProducto}"></strong>
+                                                </td>
+                                                <td>S/ <span
+                                                        th:text="${#numbers.formatDecimal(detalle.precioUnitario, 1, 2)}"></span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-primary"
+                                                        th:text="${detalle.cantidad}"></span>
+                                                </td>
+                                                <td>
+                                                    <strong>S/ <span
+                                                            th:text="${#numbers.formatDecimal(detalle.subtotal, 1, 2)}"></span></strong>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-body text-center">
+                                    <!-- Imprimir -->
+                                    <a th:href="@{/admin/ventas/imprimir/{id}(id=${venta.id})}"
+                                        class="btn btn-secondary btn-lg gamer-btn" target="_blank">
+                                        <i class="fas fa-print"></i> Imprimir Boleta
+                                    </a>
+
+                                    <!-- Anular (solo si está completada) -->
+                                    <button th:if="${venta.estado.name() == 'COMPLETADA'}" type="button"
+                                        class="btn btn-danger btn-lg gamer-btn" id="btnAnular" th:data-id="${venta.id}"
+                                        th:data-numero="${venta.numeroVenta}">
+                                        <i class="fas fa-ban"></i> Anular Venta
+                                    </button>
+
+                                    <!-- Volver -->
+                                    <a th:href="@{/admin/ventas}" class="btn btn-dark btn-lg gamer-btn">
+                                        <i class="fas fa-arrow-left"></i> Volver a Ventas
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </section>
         </div>
 
-        <div th:replace="fragments/footer :: footer"></div>
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
 
-    <div th:replace="fragments/scripts :: scripts"></div>
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <!-- Script para anular -->
+    <script th:inline="javascript">
+        $(document).ready(function () {
+            $('#btnAnular').on('click', function () {
+                const ventaId = $(this).data('id');
+                const numeroVenta = $(this).data('numero');
+
+                Swal.fire({
+                    title: '¿Anular Venta?',
+                    html: `¿Está seguro de anular la venta <strong>${numeroVenta}</strong>?<br>
+                   <small class="text-danger">Esta acción devolverá el stock de los productos.</small>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, anular',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/admin/ventas/anular/' + ventaId,
+                            method: 'POST',
+                            success: function (response) {
+                                Swal.fire({
+                                    title: '¡Venta Anulada!',
+                                    text: 'La venta ha sido anulada correctamente',
+                                    icon: 'success'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function (xhr) {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: xhr.responseJSON?.error || 'Error al anular la venta',
+                                    icon: 'error'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+
 </body>
 
 </html>

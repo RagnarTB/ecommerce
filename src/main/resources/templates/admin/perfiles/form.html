@@ -1,57 +1,150 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Perfil')"></head>
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
-        <div th:replace="fragments/header :: header"></div>
-        <div th:replace="fragments/sidebar :: sidebar"></div>
 
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-user-shield text-danger"></i>
+                                <span th:text="${perfil.id != null} ? 'Editar Perfil' : 'Nuevo Perfil'"></span>
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/perfiles}">Perfiles</a></li>
+                                <li class="breadcrumb-item active">Formulario</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <form th:action="${esNuevo ? '/admin/perfiles/guardar' : '/admin/perfiles/actualizar/' + perfil.id}"
-                        th:object="${perfil}" method="post">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label>Nombre</label>
-                                        <input type="text" th:field="*{nombre}" class="form-control" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Descripción</label>
-                                        <input type="text" th:field="*{descripcion}" class="form-control">
-                                    </div>
-                                </div>
 
-                                <hr />
-                                <h5>Permisos</h5>
-                                <div class="row">
-                                    <div class="col-md-3" th:each="perm : ${permisos}">
-                                        <div class="form-check">
-                                            <input type="checkbox" class="form-check-input" th:value="${perm.id}"
-                                                th:field="*{permisos}" th:checked="${perfil.permisos.contains(perm)}">
-                                            <label class="form-check-label" th:text="${perm.nombre}"></label>
+                    <!-- Mensajes de error -->
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <!-- Formulario -->
+                    <form
+                        th:action="${perfil.id != null} ? @{/admin/perfiles/actualizar/{id}(id=${perfil.id})} : @{/admin/perfiles/guardar}"
+                        th:object="${perfil}" method="post" class="needs-validation" novalidate>
+
+                        <div class="row">
+                            <!-- Datos del Perfil -->
+                            <div class="col-md-4">
+                                <div class="card card-danger card-outline gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-info-circle"></i> Información del Perfil
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- Nombre -->
+                                        <div class="form-group">
+                                            <label for="nombre">
+                                                <i class="fas fa-tag text-danger"></i> Nombre *
+                                            </label>
+                                            <input type="text" class="form-control gamer-input" id="nombre"
+                                                th:field="*{nombre}" placeholder="Ej: VENDEDOR" required>
+                                            <div class="invalid-feedback">El nombre es obligatorio</div>
+                                        </div>
+
+                                        <!-- Descripción -->
+                                        <div class="form-group">
+                                            <label for="descripcion">
+                                                <i class="fas fa-align-left text-danger"></i> Descripción
+                                            </label>
+                                            <textarea class="form-control gamer-input" id="descripcion"
+                                                th:field="*{descripcion}" rows="3"
+                                                placeholder="Describe las funciones de este perfil"></textarea>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="mt-3">
-                                    <button type="submit" class="btn btn-success">Guardar</button>
-                                    <a th:href="@{/admin/perfiles}" class="btn btn-secondary">Cancelar</a>
+                            <!-- Permisos -->
+                            <div class="col-md-8">
+                                <div class="card card-danger card-outline gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-shield-alt"></i> Asignar Permisos
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6" th:each="permiso : ${permisos}">
+                                                <div class="custom-control custom-checkbox mb-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        th:id="${'permiso-' + permiso.id}" name="permisosIds"
+                                                        th:value="${permiso.id}"
+                                                        th:checked="${perfil.permisos != null && perfil.permisos.contains(permiso)}">
+                                                    <label class="custom-control-label"
+                                                        th:for="${'permiso-' + permiso.id}">
+                                                        <i th:class="${permiso.icono} + ' text-danger'"></i>
+                                                        <strong th:text="${permiso.nombre}"></strong>
+                                                        <br>
+                                                        <small class="text-muted"
+                                                            th:text="${permiso.descripcion}"></small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card card-danger card-outline gamer-card">
+                                    <div class="card-body text-center">
+                                        <button type="submit" class="btn btn-success btn-lg gamer-btn">
+                                            <i class="fas fa-save"></i>
+                                            <span
+                                                th:text="${perfil.id != null} ? 'Actualizar Perfil' : 'Crear Perfil'"></span>
+                                        </button>
+                                        <a th:href="@{/admin/perfiles}" class="btn btn-secondary btn-lg gamer-btn">
+                                            <i class="fas fa-times"></i> Cancelar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </form>
+
                 </div>
             </section>
         </div>
 
-        <div th:replace="fragments/footer :: footer"></div>
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
-    <div th:replace="fragments/scripts :: scripts"></div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
 </body>
 
 </html>

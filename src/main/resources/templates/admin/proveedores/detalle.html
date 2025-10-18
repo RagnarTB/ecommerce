@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-truck text-danger"></i>
+                                Detalle del Proveedor
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/proveedores}">Proveedores</a></li>
+                                <li class="breadcrumb-item active">Detalle</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div class="row">
+                        <!-- Información del Proveedor -->
+                        <div class="col-md-6">
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-building"></i> Información de la Empresa
+                                    </h3>
+                                    <div class="card-tools">
+                                        <span th:if="${proveedor.activo}" class="badge badge-success">
+                                            <i class="fas fa-check"></i> ACTIVO
+                                        </span>
+                                        <span th:unless="${proveedor.activo}" class="badge badge-danger">
+                                            <i class="fas fa-times"></i> INACTIVO
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-id-card text-danger"></i> RUC
+                                        </dt>
+                                        <dd class="col-sm-8">
+                                            <strong th:text="${proveedor.ruc}"></strong>
+                                        </dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-briefcase text-danger"></i> Razón Social
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${proveedor.razonSocial}"></dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-map-marker-alt text-danger"></i> Dirección
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${proveedor.direccion ?: 'No especificada'}"></dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-phone text-danger"></i> Teléfono
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${proveedor.telefono ?: 'No especificado'}"></dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-envelope text-danger"></i> Email
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${proveedor.email ?: 'No especificado'}"></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Datos de Contacto -->
+                        <div class="col-md-6">
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-user-tie"></i> Contacto Comercial
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-user text-danger"></i> Nombre
+                                        </dt>
+                                        <dd class="col-sm-8" th:text="${proveedor.contactoNombre ?: 'No especificado'}">
+                                        </dd>
+
+                                        <dt class="col-sm-4">
+                                            <i class="fas fa-mobile-alt text-danger"></i> Teléfono
+                                        </dt>
+                                        <dd class="col-sm-8"
+                                            th:text="${proveedor.contactoTelefono ?: 'No especificado'}"></dd>
+                                    </dl>
+
+                                    <hr>
+
+                                    <h5><i class="fas fa-sticky-note text-danger"></i> Notas</h5>
+                                    <p th:if="${proveedor.notas}" th:text="${proveedor.notas}"></p>
+                                    <p th:unless="${proveedor.notas}" class="text-muted">Sin notas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-danger card-outline gamer-card">
+                                <div class="card-body text-center">
+                                    <a th:href="@{/admin/proveedores/editar/{id}(id=${proveedor.id})}"
+                                        class="btn btn-warning btn-lg gamer-btn">
+                                        <i class="fas fa-edit"></i> Editar Proveedor
+                                    </a>
+                                    <a th:href="@{/admin/proveedores}" class="btn btn-secondary btn-lg gamer-btn">
+                                        <i class="fas fa-arrow-left"></i> Volver a la Lista
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+
+</html>

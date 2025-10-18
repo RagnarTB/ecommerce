@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-boxes text-warning"></i>
+                                Reporte de Productos e Inventario
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/reportes}">Reportes</a></li>
+                                <li class="breadcrumb-item active">Productos</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- Botón Exportar -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <form method="get" th:action="@{/admin/reportes/productos/pdf}" target="_blank">
+                                <button type="submit" class="btn btn-success btn-lg gamer-btn">
+                                    <i class="fas fa-file-pdf"></i> Exportar Inventario Completo (PDF)
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Estadísticas Generales -->
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info gamer-card">
+                                <div class="inner">
+                                    <h3 th:text="${productos.size()}">0</h3>
+                                    <p>Total de Productos</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-boxes"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning gamer-card">
+                                <div class="inner">
+                                    <h3 th:text="${stockBajo.size()}">0</h3>
+                                    <p>Stock Bajo</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger gamer-card">
+                                <div class="inner">
+                                    <h3 th:text="${sinStock.size()}">0</h3>
+                                    <p>Sin Stock</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success gamer-card">
+                                <div class="inner">
+                                    <h3 id="valorTotal">S/ 0</h3>
+                                    <p>Valor Total Inventario</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Stock por Categoría -->
+                    <div class="card card-warning card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-pie"></i> Stock por Categoría
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="stockChart" style="height: 300px;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Productos con Stock Bajo -->
+                    <div th:if="${!stockBajo.isEmpty()}" class="card card-warning card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-exclamation-triangle"></i> Productos con Stock Bajo
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th>Stock Actual</th>
+                                        <th>Stock Mínimo</th>
+                                        <th>Precio</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="producto : ${stockBajo}" class="table-warning">
+                                        <td>
+                                            <strong th:text="${producto.nombre}"></strong><br>
+                                            <small th:text="${producto.codigoSku}"></small>
+                                        </td>
+                                        <td th:text="${producto.categoria.nombre}"></td>
+                                        <td class="text-center">
+                                            <span class="badge badge-warning badge-lg"
+                                                th:text="${producto.stockActual}"></span>
+                                        </td>
+                                        <td class="text-center" th:text="${producto.stockMinimo}"></td>
+                                        <td>S/ <span
+                                                th:text="${#numbers.formatDecimal(producto.precioActual, 1, 2)}"></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-warning">
+                                                <i class="fas fa-exclamation-triangle"></i> Reabastecer
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Productos Sin Stock -->
+                    <div th:if="${!sinStock.isEmpty()}" class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-times-circle"></i> Productos Agotados
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th>Precio</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="producto : ${sinStock}" class="table-danger">
+                                        <td>
+                                            <strong th:text="${producto.nombre}"></strong><br>
+                                            <small th:text="${producto.codigoSku}"></small>
+                                        </td>
+                                        <td th:text="${producto.categoria.nombre}"></td>
+                                        <td>S/ <span
+                                                th:text="${#numbers.formatDecimal(producto.precioActual, 1, 2)}"></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-danger">
+                                                <i class="fas fa-ban"></i> AGOTADO
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Inventario Completo -->
+                    <div class="card card-info card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list"></i> Inventario Completo
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-hover datatable">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th>Marca</th>
+                                        <th>Stock</th>
+                                        <th>Precio</th>
+                                        <th>Valor Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="producto : ${productos}">
+                                        <td>
+                                            <strong th:text="${producto.nombre}"></strong><br>
+                                            <small th:text="${producto.codigoSku}"></small>
+                                        </td>
+                                        <td th:text="${producto.categoria.nombre}"></td>
+                                        <td th:text="${producto.marca.nombre}"></td>
+                                        <td class="text-center">
+                                            <span th:if="${producto.stockActual == 0}"
+                                                class="badge badge-danger badge-lg">0</span>
+                                            <span
+                                                th:if="${producto.stockActual > 0 && producto.stockActual <= producto.stockMinimo}"
+                                                class="badge badge-warning badge-lg"
+                                                th:text="${producto.stockActual}"></span>
+                                            <span th:if="${producto.stockActual > producto.stockMinimo}"
+                                                class="badge badge-success badge-lg"
+                                                th:text="${producto.stockActual}"></span>
+                                        </td>
+                                        <td>
+                                            S/ <span
+                                                th:text="${#numbers.formatDecimal(producto.precioActual, 1, 2)}"></span>
+                                        </td>
+                                        <td>
+                                            <strong class="text-success">
+                                                S/ <span
+                                                    th:text="${#numbers.formatDecimal(producto.precioActual * producto.stockActual, 1, 2)}"></span>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Calcular valor total del inventario
+            let valorTotal = 0;
+            const productos = /*[[${productos}]]*/[];
+
+            productos.forEach(producto => {
+                valorTotal += producto.precioActual * producto.stockActual;
+            });
+
+            $('#valorTotal').text('S/ ' + valorTotal.toFixed(2));
+
+            // Gráfico de stock por categoría
+            const ctx = document.getElementById('stockChart');
+            if (ctx && productos.length > 0) {
+                // Agrupar stock por categoría
+                const stockPorCategoria = {};
+
+                productos.forEach(producto => {
+                    const categoria = producto.categoria.nombre;
+                    if (!stockPorCategoria[categoria]) {
+                        stockPorCategoria[categoria] = 0;
+                    }
+                    stockPorCategoria[categoria] += producto.stockActual;
+                });
+
+                const categorias = Object.keys(stockPorCategoria);
+                const stocks = Object.values(stockPorCategoria);
+
+                // Colores para el gráfico
+                const colores = [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(255, 159, 64, 0.7)',
+                    'rgba(220, 53, 69, 0.7)',
+                    'rgba(40, 167, 69, 0.7)'
+                ];
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categorias,
+                        datasets: [{
+                            label: 'Stock por Categoría',
+                            data: stocks,
+                            backgroundColor: colores.slice(0, categorias.length),
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'right'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const porcentaje = ((context.parsed / total) * 100).toFixed(1);
+                                        return context.label + ': ' + context.parsed + ' unidades (' + porcentaje + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+
+</html>

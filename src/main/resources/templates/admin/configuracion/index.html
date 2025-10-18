@@ -1,72 +1,372 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Configuración')"></head>
+<head th:replace="~{fragments/head :: head('Configuración del Sistema')}"></head>
 
 <body class="hold-transition sidebar-mini">
     <div class="wrapper">
-        <div th:replace="fragments/header :: header"></div>
-        <div th:replace="fragments/sidebar :: sidebar"></div>
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-cog neon-icon"></i>
+                                <span class="neon-text">CONFIGURACIÓN</span> DEL SISTEMA
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Configuración</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <form th:action="@{/admin/configuracion/guardar}" th:object="${configuracion}" method="post"
-                        enctype="multipart/form-data">
-                        <div class="card">
-                            <div class="card-body">
 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label>Nombre de la Empresa</label>
-                                        <input type="text" th:field="*{nombreEmpresa}" class="form-control" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Moneda</label>
-                                        <input type="text" th:field="*{moneda}" class="form-control" required>
-                                    </div>
-                                </div>
+                    <!-- Alertas -->
+                    <div class="row" th:if="${success}">
+                        <div class="col-12">
+                            <div class="alert alert-success alert-dismissible fade show">
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+                            </div>
+                        </div>
+                    </div>
 
-                                <div class="row mt-2">
-                                    <div class="col-md-6">
-                                        <label>RUC</label>
-                                        <input type="text" th:field="*{ruc}" class="form-control">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Dirección</label>
-                                        <input type="text" th:field="*{direccion}" class="form-control">
-                                    </div>
-                                </div>
+                    <div class="row" th:if="${error}">
+                        <div class="col-12">
+                            <div class="alert alert-danger alert-dismissible fade show">
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+                            </div>
+                        </div>
+                    </div>
 
-                                <div class="row mt-2">
-                                    <div class="col-md-6">
-                                        <label>Logo</label>
-                                        <input type="file" name="logoFile" class="form-control-file">
-                                        <div class="mt-2">
-                                            <img th:if="${configuracion.logoUrl}" th:src="@{${configuracion.logoUrl}}"
-                                                alt="Logo" style="max-height:100px;">
+                    <form th:action="@{/admin/configuracion/guardar}" method="post">
+
+                        <div class="row">
+                            <!-- Columna Izquierda -->
+                            <div class="col-md-6">
+
+                                <!-- INFORMACIÓN GENERAL -->
+                                <div class="card gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Información General
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="nombre_empresa">Nombre de la Empresa</label>
+                                            <input type="text" class="form-control" id="nombre_empresa"
+                                                name="nombre_empresa" th:value="${config['nombre_empresa']}"
+                                                placeholder="Game Store SAC">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="texto_bienvenida">Texto de Bienvenida</label>
+                                            <textarea class="form-control" id="texto_bienvenida" name="texto_bienvenida"
+                                                rows="3" th:text="${config['texto_bienvenida']}"
+                                                placeholder="¡Bienvenido a nuestra tienda!"></textarea>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="horario_atencion">Horario de Atención</label>
+                                            <input type="text" class="form-control" id="horario_atencion"
+                                                name="horario_atencion" th:value="${config['horario_atencion']}"
+                                                placeholder="Lun-Vie 10:00am-8:00pm">
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label>Impuesto (%)</label>
-                                        <input type="number" step="0.01" th:field="*{impuesto}" class="form-control">
+                                </div>
+
+                                <!-- CONTACTO -->
+                                <div class="card gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-address-book mr-1"></i>
+                                            Datos de Contacto
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="telefono">
+                                                <i class="fas fa-phone"></i> Teléfono
+                                            </label>
+                                            <input type="text" class="form-control" id="telefono" name="telefono"
+                                                th:value="${config['telefono']}" placeholder="+51 999 888 777">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="email">
+                                                <i class="fas fa-envelope"></i> Email
+                                            </label>
+                                            <input type="email" class="form-control" id="email" name="email"
+                                                th:value="${config['email']}" placeholder="ventas@gamestore.com">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="direccion">
+                                                <i class="fas fa-map-marker-alt"></i> Dirección
+                                            </label>
+                                            <input type="text" class="form-control" id="direccion" name="direccion"
+                                                th:value="${config['direccion']}" placeholder="Av. Principal 123, Lima">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="whatsapp">
+                                                <i class="fab fa-whatsapp"></i> WhatsApp
+                                            </label>
+                                            <input type="text" class="form-control" id="whatsapp" name="whatsapp"
+                                                th:value="${config['whatsapp']}" placeholder="51999888777">
+                                            <small class="form-text text-muted">
+                                                Solo números, sin espacios ni símbolos
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="mt-3">
-                                    <button type="submit" class="btn btn-success">Guardar</button>
+                                <!-- REDES SOCIALES -->
+                                <div class="card gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-share-alt mr-1"></i>
+                                            Redes Sociales
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="facebook_url">
+                                                <i class="fab fa-facebook"></i> Facebook
+                                            </label>
+                                            <input type="url" class="form-control" id="facebook_url" name="facebook_url"
+                                                th:value="${config['facebook_url']}"
+                                                placeholder="https://facebook.com/gamestore">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="instagram_url">
+                                                <i class="fab fa-instagram"></i> Instagram
+                                            </label>
+                                            <input type="url" class="form-control" id="instagram_url"
+                                                name="instagram_url" th:value="${config['instagram_url']}"
+                                                placeholder="https://instagram.com/gamestore">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="twitter_url">
+                                                <i class="fab fa-twitter"></i> Twitter
+                                            </label>
+                                            <input type="url" class="form-control" id="twitter_url" name="twitter_url"
+                                                th:value="${config['twitter_url']}"
+                                                placeholder="https://twitter.com/gamestore">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="tiktok_url">
+                                                <i class="fab fa-tiktok"></i> TikTok
+                                            </label>
+                                            <input type="url" class="form-control" id="tiktok_url" name="tiktok_url"
+                                                th:value="${config['tiktok_url']}"
+                                                placeholder="https://tiktok.com/@gamestore">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="discord_url">
+                                                <i class="fab fa-discord"></i> Discord
+                                            </label>
+                                            <input type="url" class="form-control" id="discord_url" name="discord_url"
+                                                th:value="${config['discord_url']}"
+                                                placeholder="https://discord.gg/gamestore">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="twitch_url">
+                                                <i class="fab fa-twitch"></i> Twitch
+                                            </label>
+                                            <input type="url" class="form-control" id="twitch_url" name="twitch_url"
+                                                th:value="${config['twitch_url']}"
+                                                placeholder="https://twitch.tv/gamestore">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Columna Derecha -->
+                            <div class="col-md-6">
+
+                                <!-- BRANDING Y COLORES -->
+                                <div class="card gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-palette mr-1"></i>
+                                            Branding y Colores
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="color_primario">Color Primario (Rosa Neón)</label>
+                                            <div class="input-group">
+                                                <input type="color" class="form-control" id="color_primario"
+                                                    name="color_primario" th:value="${config['color_primario']}"
+                                                    style="max-width: 80px;">
+                                                <input type="text" class="form-control"
+                                                    th:value="${config['color_primario']}" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="color_secundario">Color Secundario (Cyan Neón)</label>
+                                            <div class="input-group">
+                                                <input type="color" class="form-control" id="color_secundario"
+                                                    name="color_secundario" th:value="${config['color_secundario']}"
+                                                    style="max-width: 80px;">
+                                                <input type="text" class="form-control"
+                                                    th:value="${config['color_secundario']}" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="color_acento">Color de Acento (Púrpura)</label>
+                                            <div class="input-group">
+                                                <input type="color" class="form-control" id="color_acento"
+                                                    name="color_acento" th:value="${config['color_acento']}"
+                                                    style="max-width: 80px;">
+                                                <input type="text" class="form-control"
+                                                    th:value="${config['color_acento']}" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- CONFIGURACIÓN DE ENVÍOS -->
+                                <div class="card gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-shipping-fast mr-1"></i>
+                                            Configuración de Envíos
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="envio_gratis_desde">Envío Gratis Desde (S/)</label>
+                                            <input type="number" class="form-control" id="envio_gratis_desde"
+                                                name="envio_gratis_desde" th:value="${config['envio_gratis_desde']}"
+                                                step="0.01" min="0" placeholder="200.00">
+                                            <small class="form-text text-muted">
+                                                Monto mínimo para envío gratuito
+                                            </small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="costo_envio_lima">Costo Envío Lima (S/)</label>
+                                            <input type="number" class="form-control" id="costo_envio_lima"
+                                                name="costo_envio_lima" th:value="${config['costo_envio_lima']}"
+                                                step="0.01" min="0" placeholder="15.00">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="costo_envio_provincia">Costo Envío Provincia (S/)</label>
+                                            <input type="number" class="form-control" id="costo_envio_provincia"
+                                                name="costo_envio_provincia"
+                                                th:value="${config['costo_envio_provincia']}" step="0.01" min="0"
+                                                placeholder="25.00">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- SEO -->
+                                <div class="card gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-search mr-1"></i>
+                                            SEO (Optimización Motores de Búsqueda)
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="meta_title">Título SEO</label>
+                                            <input type="text" class="form-control" id="meta_title" name="meta_title"
+                                                th:value="${config['meta_title']}"
+                                                placeholder="Game Store - Tienda Gaming #1">
+                                            <small class="form-text text-muted">
+                                                Máximo 60 caracteres
+                                            </small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="meta_description">Descripción SEO</label>
+                                            <textarea class="form-control" id="meta_description" name="meta_description"
+                                                rows="3" th:text="${config['meta_description']}"
+                                                placeholder="Descripción que aparece en Google..."></textarea>
+                                            <small class="form-text text-muted">
+                                                Máximo 160 caracteres
+                                            </small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="meta_keywords">Palabras Clave</label>
+                                            <input type="text" class="form-control" id="meta_keywords"
+                                                name="meta_keywords" th:value="${config['meta_keywords']}"
+                                                placeholder="videojuegos, gaming, peru">
+                                            <small class="form-text text-muted">
+                                                Separadas por comas
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- BOTÓN GUARDAR -->
+                                <div class="card gamer-card">
+                                    <div class="card-body">
+                                        <button type="submit" class="btn btn-success btn-lg btn-block gamer-btn">
+                                            <i class="fas fa-save"></i> Guardar Configuración
+                                        </button>
+                                        <a th:href="@{/admin/dashboard}" class="btn btn-secondary btn-block">
+                                            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                                        </a>
+                                    </div>
                                 </div>
 
                             </div>
                         </div>
+
                     </form>
+
                 </div>
             </section>
         </div>
 
-        <div th:replace="fragments/footer :: footer"></div>
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
-    <div th:replace="fragments/scripts :: scripts"></div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <script>
+        // Sincronizar color picker con input de texto
+        document.querySelectorAll('input[type="color"]').forEach(colorInput => {
+            colorInput.addEventListener('change', function () {
+                this.nextElementSibling.value = this.value;
+            });
+        });
+    </script>
 </body>
 
 </html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-boxes text-danger"></i>
+                                Movimientos de Inventario
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Inventario</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- Mensajes -->
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <a th:href="@{/admin/inventario/registrar-entrada}"
+                                class="btn btn-success btn-block btn-lg gamer-btn">
+                                <i class="fas fa-arrow-down"></i>
+                                Registrar Entrada
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a th:href="@{/admin/inventario/registrar-salida}"
+                                class="btn btn-warning btn-block btn-lg gamer-btn">
+                                <i class="fas fa-arrow-up"></i>
+                                Registrar Salida
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a th:href="@{/admin/inventario/alertas}" class="btn btn-danger btn-block btn-lg gamer-btn">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Alertas de Stock
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a th:href="@{/admin/reportes/productos}" class="btn btn-info btn-block btn-lg gamer-btn">
+                                <i class="fas fa-chart-bar"></i>
+                                Ver Reportes
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Filtros -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-filter"></i> Filtrar Movimientos
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="get" th:action="@{/admin/inventario}">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Producto</label>
+                                            <select class="form-control gamer-input select2" name="productoId"
+                                                style="width: 100%;">
+                                                <option value="">Todos los productos</option>
+                                                <option th:each="prod : ${productos}" th:value="${prod.id}"
+                                                    th:text="${prod.nombre}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Tipo de Movimiento</label>
+                                            <select class="form-control gamer-input" name="tipo">
+                                                <option value="">Todos</option>
+                                                <option value="ENTRADA">Entradas</option>
+                                                <option value="SALIDA">Salidas</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>&nbsp;</label>
+                                        <button type="submit" class="btn btn-danger btn-block">
+                                            <i class="fas fa-search"></i> Filtrar
+                                        </button>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label>&nbsp;</label>
+                                        <a th:href="@{/admin/inventario}" class="btn btn-secondary btn-block">
+                                            <i class="fas fa-times"></i> Limpiar
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta principal -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list"></i> Historial de Movimientos
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-hover datatable">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Producto</th>
+                                        <th>Tipo</th>
+                                        <th>Motivo</th>
+                                        <th>Cantidad</th>
+                                        <th>Stock Anterior</th>
+                                        <th>Stock Nuevo</th>
+                                        <th>Usuario</th>
+                                        <th>Observaciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="movimiento : ${movimientos}">
+                                        <td
+                                            th:text="${#temporals.format(movimiento.fechaMovimiento, 'dd/MM/yyyy HH:mm')}">
+                                        </td>
+                                        <td>
+                                            <strong th:text="${movimiento.producto.nombre}"></strong><br>
+                                            <small class="text-muted"
+                                                th:text="${movimiento.producto.codigoSku}"></small>
+                                        </td>
+                                        <td>
+                                            <span th:if="${movimiento.tipo.name() == 'ENTRADA'}"
+                                                class="badge badge-success">
+                                                <i class="fas fa-arrow-down"></i> Entrada
+                                            </span>
+                                            <span th:if="${movimiento.tipo.name() == 'SALIDA'}"
+                                                class="badge badge-warning">
+                                                <i class="fas fa-arrow-up"></i> Salida
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-info" th:text="${movimiento.motivo.nombre}"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge badge-dark badge-lg"
+                                                th:classappend="${movimiento.tipo.name() == 'ENTRADA' ? 'badge-success' : 'badge-warning'}"
+                                                th:text="${movimiento.tipo.name() == 'ENTRADA' ? '+' : '-'} + ${movimiento.cantidad}">
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <strong th:text="${movimiento.stockAnterior}"></strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="text-primary" th:text="${movimiento.stockNuevo}"></strong>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-user text-info"></i>
+                                            <span th:text="${movimiento.usuario.nombreCompleto}"></span>
+                                        </td>
+                                        <td>
+                                            <small th:text="${movimiento.observaciones ?: '-'}"></small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Inicializar Select2 para el selector de productos
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Seleccione un producto',
+                allowClear: true
+            });
+        });
+    </script>
+
+</body>
+
+</html>

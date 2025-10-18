@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Categorías')}"></head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-folder neon-icon"></i>
+                                <span class="neon-text">CATEGORÍAS</span>
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Categorías</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-list mr-1"></i>
+                                        Listado de Categorías
+                                    </h3>
+                                    <div class="card-tools">
+                                        <a th:href="@{/admin/categorias/nuevo}"
+                                            class="btn btn-success btn-sm gamer-btn">
+                                            <i class="fas fa-plus"></i> Nueva Categoría
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="card-body">
+                                    <table class="table table-bordered table-hover data-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 10px">#</th>
+                                                <th>Nombre</th>
+                                                <th>Descripción</th>
+                                                <th>Orden</th>
+                                                <th>Estado</th>
+                                                <th style="width: 150px">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="categoria, iterStat : ${categorias}">
+                                                <td th:text="${iterStat.count}">1</td>
+                                                <td>
+                                                    <strong th:text="${categoria.nombre}">Nombre</strong>
+                                                </td>
+                                                <td th:text="${categoria.descripcion}">Descripción</td>
+                                                <td>
+                                                    <span class="badge badge-info" th:text="${categoria.orden}">1</span>
+                                                </td>
+                                                <td>
+                                                    <form
+                                                        th:action="@{/admin/categorias/cambiar-estado/{id}(id=${categoria.id})}"
+                                                        method="get" style="display: inline;">
+                                                        <input type="hidden" name="activo"
+                                                            th:value="${!categoria.activo}">
+                                                        <button type="submit" class="btn btn-sm"
+                                                            th:classappend="${categoria.activo} ? 'btn-success' : 'btn-secondary'">
+                                                            <i class="fas"
+                                                                th:classappend="${categoria.activo} ? 'fa-check' : 'fa-times'"></i>
+                                                            <span
+                                                                th:text="${categoria.activo} ? 'Activo' : 'Inactivo'">Activo</span>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a th:href="@{/admin/categorias/editar/{id}(id=${categoria.id})}"
+                                                            class="btn btn-primary" data-toggle="tooltip"
+                                                            title="Editar">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <a th:href="@{/admin/categorias/eliminar/{id}(id=${categoria.id})}"
+                                                            class="btn btn-danger btn-confirm"
+                                                            data-mensaje="¿Estás seguro de eliminar esta categoría?"
+                                                            data-toggle="tooltip" title="Eliminar">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+
+</html>

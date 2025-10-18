@@ -1,56 +1,128 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Perfiles')"></head>
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
-        <div th:replace="fragments/header :: header"></div>
-        <div th:replace="fragments/sidebar :: sidebar"></div>
 
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
-                    <h1 class="m-0"><i class="fas fa-user-shield"></i> Perfiles</h1>
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-user-shield text-danger"></i>
+                                Gestión de Perfiles
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Perfiles</li>
+                            </ol>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <div class="card">
+
+                    <!-- Mensajes -->
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <!-- Tarjeta principal -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list"></i> Lista de Perfiles (Roles)
+                            </h3>
+                            <div class="card-tools">
+                                <a th:href="@{/admin/perfiles/nuevo}" class="btn btn-success btn-sm gamer-btn">
+                                    <i class="fas fa-plus"></i> Nuevo Perfil
+                                </a>
+                            </div>
+                        </div>
                         <div class="card-body">
-                            <a th:href="@{/admin/perfiles/nuevo}" class="btn btn-primary mb-3">Nuevo Perfil</a>
-                            <table class="table datatable">
-                                <thead>
+                            <table class="table table-bordered table-hover datatable">
+                                <thead class="thead-dark">
                                     <tr>
                                         <th>ID</th>
                                         <th>Nombre</th>
                                         <th>Descripción</th>
+                                        <th>Permisos</th>
+                                        <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="p : ${perfiles}">
-                                        <td th:text="${p.id}"></td>
-                                        <td th:text="${p.nombre}"></td>
-                                        <td th:text="${p.descripcion}"></td>
+                                    <tr th:each="perfil : ${perfiles}">
+                                        <td th:text="${perfil.id}"></td>
                                         <td>
-                                            <a th:href="@{/admin/perfiles/editar/{id}(id=${p.id})}"
-                                                class="btn btn-sm btn-warning">Editar</a>
-                                            <a th:href="@{/admin/perfiles/eliminar/{id}(id=${p.id})}"
-                                                class="btn btn-sm btn-danger btn-delete">Eliminar</a>
+                                            <strong th:text="${perfil.nombre}"></strong>
+                                        </td>
+                                        <td th:text="${perfil.descripcion}"></td>
+                                        <td>
+                                            <span class="badge badge-info"
+                                                th:text="${perfil.permisos.size()} + ' permisos'">
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${perfil.activo}" class="badge badge-success">
+                                                <i class="fas fa-check"></i> Activo
+                                            </span>
+                                            <span th:unless="${perfil.activo}" class="badge badge-danger">
+                                                <i class="fas fa-times"></i> Inactivo
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{/admin/perfiles/editar/{id}(id=${perfil.id})}"
+                                                    class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a th:href="@{/admin/perfiles/cambiar-estado/{id}(id=${perfil.id}, activo=${!perfil.activo})}"
+                                                    th:class="${perfil.activo} ? 'btn btn-danger btn-sm' : 'btn btn-success btn-sm'"
+                                                    data-toggle="tooltip"
+                                                    th:title="${perfil.activo} ? 'Desactivar' : 'Activar'">
+                                                    <i th:class="${perfil.activo} ? 'fas fa-ban' : 'fas fa-check'"></i>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
+
                 </div>
             </section>
         </div>
 
-        <div th:replace="fragments/footer :: footer"></div>
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
-    <div th:replace="fragments/scripts :: scripts"></div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
 </body>
 
 </html>

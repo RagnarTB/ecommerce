@@ -1,74 +1,329 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Clientes')"></head>
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
-        <div th:replace="fragments/header :: header"></div>
-        <div th:replace="fragments/sidebar :: sidebar"></div>
 
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
-                    <h1 class="m-0"><i class="fas fa-users"></i> Clientes</h1>
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-users text-danger"></i>
+                                Gestión de Clientes
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Clientes</li>
+                            </ol>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <div class="card">
+
+                    <!-- Mensajes -->
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <!-- Búsqueda Avanzada -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-search"></i> Buscar Cliente
+                            </h3>
+                        </div>
                         <div class="card-body">
-                            <div class="row mb-2">
-                                <div class="col-md-4"><a th:href="@{/admin/clientes/nuevo}"
-                                        class="btn btn-success">Nuevo Cliente</a></div>
-                                <div class="col-md-4"><input id="clienteSearch" class="form-control"
-                                        placeholder="Buscar por nombre o doc"></div>
+                            <form method="get" th:action="@{/admin/clientes}">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text bg-danger">
+                                                    <i class="fas fa-search"></i>
+                                                </span>
+                                            </div>
+                                            <input type="text" class="form-control gamer-input" name="busqueda"
+                                                placeholder="Buscar por documento, nombre o razón social..."
+                                                autocomplete="off">
+                                            <div class="input-group-append">
+                                                <button type="submit" class="btn btn-danger">
+                                                    <i class="fas fa-search"></i> Buscar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-success btn-block gamer-btn"
+                                            data-toggle="modal" data-target="#modalConsultarAPI">
+                                            <i class="fas fa-cloud-download-alt"></i> Consultar API (DNI/RUC)
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta principal -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list"></i> Lista de Clientes
+                            </h3>
+                            <div class="card-tools">
+                                <span class="badge badge-danger">
+                                    Total: <span th:text="${clientes.size()}"></span> clientes
+                                </span>
                             </div>
-                            <table class="table table-striped datatable">
-                                <thead>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-hover datatable">
+                                <thead class="thead-dark">
                                     <tr>
-                                        <th>#</th>
-                                        <th>Nombre</th>
+                                        <th>ID</th>
+                                        <th>Tipo Doc.</th>
                                         <th>Documento</th>
+                                        <th>Nombre / Razón Social</th>
+                                        <th>Email</th>
                                         <th>Teléfono</th>
+                                        <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="c : ${clientes}">
-                                        <td th:text="${c.id}">1</td>
-                                        <td th:text="${c.nombreCompleto}">Cliente</td>
-                                        <td th:text="${c.tipoDocumento + ' - ' + c.numeroDocumento}">DNI</td>
-                                        <td th:text="${c.telefono}">999999999</td>
-                                        <td><a th:href="@{/admin/clientes/ver/{id}(id=${c.id})}"
-                                                class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
-                                            <a th:href="@{/admin/clientes/editar/{id}(id=${c.id})}"
-                                                class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
-                                            <a th:href="@{/admin/clientes/eliminar/{id}(id=${c.id})}"
-                                                class="btn btn-sm btn-danger btn-delete"
-                                                th:data-name="${c.nombreCompleto}"><i class="fas fa-trash"></i></a>
+                                    <tr th:each="cliente : ${clientes}">
+                                        <td th:text="${cliente.id}"></td>
+                                        <td>
+                                            <span th:if="${cliente.tipoDocumento.name() == 'DNI'}"
+                                                class="badge badge-info">DNI</span>
+                                            <span th:if="${cliente.tipoDocumento.name() == 'RUC'}"
+                                                class="badge badge-primary">RUC</span>
+                                            <span th:if="${cliente.tipoDocumento.name() == 'PASAPORTE'}"
+                                                class="badge badge-secondary">PASAPORTE</span>
+                                        </td>
+                                        <td>
+                                            <strong th:text="${cliente.numeroDocumento}"></strong>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-user text-info"></i>
+                                            <strong th:text="${cliente.nombreCompleto}"></strong>
+                                            <br>
+                                            <small class="text-muted" th:if="${cliente.razonSocial}"
+                                                th:text="${cliente.razonSocial}"></small>
+                                        </td>
+                                        <td>
+                                            <span th:if="${cliente.email}">
+                                                <i class="fas fa-envelope text-warning"></i>
+                                                <small th:text="${cliente.email}"></small>
+                                            </span>
+                                            <span th:unless="${cliente.email}" class="text-muted">-</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${cliente.telefono}">
+                                                <i class="fas fa-phone text-success"></i>
+                                                <small th:text="${cliente.telefono}"></small>
+                                            </span>
+                                            <span th:unless="${cliente.telefono}" class="text-muted">-</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${cliente.activo}" class="badge badge-success">
+                                                <i class="fas fa-check"></i> Activo
+                                            </span>
+                                            <span th:unless="${cliente.activo}" class="badge badge-danger">
+                                                <i class="fas fa-times"></i> Inactivo
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <!-- Ver Detalle -->
+                                                <a th:href="@{/admin/clientes/ver/{id}(id=${cliente.id})}"
+                                                    class="btn btn-info btn-sm" data-toggle="tooltip"
+                                                    title="Ver Detalle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+
+                                                <!-- Cambiar Estado -->
+                                                <a th:href="@{/admin/clientes/cambiar-estado/{id}(id=${cliente.id}, activo=${!cliente.activo})}"
+                                                    th:class="${cliente.activo} ? 'btn btn-danger btn-sm' : 'btn btn-success btn-sm'"
+                                                    data-toggle="tooltip"
+                                                    th:title="${cliente.activo} ? 'Desactivar' : 'Activar'">
+                                                    <i th:class="${cliente.activo} ? 'fas fa-ban' : 'fas fa-check'"></i>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
+
                 </div>
             </section>
         </div>
-        <div th:replace="fragments/footer :: footer"></div>
-    </div>
-    <div th:replace="fragments/scripts :: scripts"></div>
 
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+
+    <!-- Modal Consultar API -->
+    <div class="modal fade" id="modalConsultarAPI" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content gamer-card">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title">
+                        <i class="fas fa-cloud-download-alt"></i> Consultar DNI/RUC
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="alertModal"></div>
+
+                    <div class="form-group">
+                        <label for="documentoConsulta">
+                            <i class="fas fa-id-card text-danger"></i> Número de Documento
+                        </label>
+                        <input type="text" class="form-control form-control-lg gamer-input" id="documentoConsulta"
+                            placeholder="DNI (8 dígitos) o RUC (11 dígitos)" maxlength="11">
+                        <small class="form-text text-muted">
+                            Ingrese DNI o RUC para consultar en RENIEC/SUNAT
+                        </small>
+                    </div>
+
+                    <!-- Resultado de la consulta -->
+                    <div id="resultadoConsulta" style="display: none;">
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-check-circle"></i> Cliente Encontrado</h6>
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Documento:</dt>
+                                <dd class="col-sm-8" id="resultado-documento"></dd>
+
+                                <dt class="col-sm-4">Nombre:</dt>
+                                <dd class="col-sm-8" id="resultado-nombre"></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cerrar
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnConsultarAPI">
+                        <i class="fas fa-search"></i> Consultar
+                    </button>
+                    <a href="#" id="btnVerCliente" class="btn btn-primary" style="display: none;">
+                        <i class="fas fa-eye"></i> Ver Cliente
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <!-- Script Consulta API -->
     <script>
         $(document).ready(function () {
-            // búsqueda via endpoint (opcional): GET /admin/api/clientes/buscar?term=
-            $('#clienteSearch').on('keyup', function (e) {
-                const term = $(this).val();
-                $('.datatable').DataTable().search(term).draw();
+            // Consultar API
+            $('#btnConsultarAPI').on('click', function () {
+                const documento = $('#documentoConsulta').val().trim();
+
+                if (!documento) {
+                    showAlertModal('Ingrese un documento', 'warning');
+                    return;
+                }
+
+                if (documento.length !== 8 && documento.length !== 11) {
+                    showAlertModal('Ingrese un DNI (8 dígitos) o RUC (11 dígitos) válido', 'warning');
+                    return;
+                }
+
+                // Mostrar loading
+                const btn = $(this);
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Consultando...');
+
+                // Llamada AJAX
+                $.ajax({
+                    url: '/admin/clientes/buscar',
+                    method: 'GET',
+                    data: { documento: documento },
+                    success: function (response) {
+                        btn.prop('disabled', false).html('<i class="fas fa-search"></i> Consultar');
+
+                        if (response.success) {
+                            // Mostrar resultado
+                            $('#resultado-documento').text(response.cliente.tipoDocumento + ': ' + response.cliente.numeroDocumento);
+                            $('#resultado-nombre').text(response.cliente.nombre);
+                            $('#resultadoConsulta').show();
+
+                            // Mostrar botón para ver cliente
+                            $('#btnVerCliente')
+                                .attr('href', '/admin/clientes/ver/' + response.cliente.id)
+                                .show();
+
+                            showAlertModal('Cliente encontrado/creado correctamente', 'success');
+                        } else {
+                            showAlertModal(response.error || 'No se encontró el documento', 'error');
+                        }
+                    },
+                    error: function (xhr) {
+                        btn.prop('disabled', false).html('<i class="fas fa-search"></i> Consultar');
+                        showAlertModal(xhr.responseJSON?.error || 'Error al consultar API', 'error');
+                    }
+                });
             });
+
+            // Limpiar modal al cerrar
+            $('#modalConsultarAPI').on('hidden.bs.modal', function () {
+                $('#documentoConsulta').val('');
+                $('#resultadoConsulta').hide();
+                $('#btnVerCliente').hide();
+                $('#alertModal').html('');
+            });
+
+            function showAlertModal(message, type) {
+                const alertClass = type === 'success' ? 'alert-success' :
+                    type === 'warning' ? 'alert-warning' :
+                        'alert-danger';
+
+                const alertHTML = `
+            <div class="alert ${alertClass} alert-dismissible fade show">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i>
+                ${message}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        `;
+
+                $('#alertModal').html(alertHTML);
+            }
         });
     </script>
+
 </body>
 
 </html>

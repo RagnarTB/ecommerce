@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-exclamation-triangle text-danger"></i>
+                                Alertas de Inventario
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/inventario}">Inventario</a></li>
+                                <li class="breadcrumb-item active">Alertas</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- Estadísticas -->
+                    <div class="row">
+                        <div class="col-lg-6 col-6">
+                            <div class="small-box bg-warning gamer-card">
+                                <div class="inner">
+                                    <h3 th:text="${stockBajo.size()}">0</h3>
+                                    <p>Productos con Stock Bajo</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 col-6">
+                            <div class="small-box bg-danger gamer-card">
+                                <div class="inner">
+                                    <h3 th:text="${sinStock.size()}">0</h3>
+                                    <p>Productos Sin Stock</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Productos sin Stock -->
+                    <div th:if="${!sinStock.isEmpty()}" class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-times-circle"></i> Productos SIN STOCK (Agotados)
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-danger">
+                                <i class="fas fa-ban"></i>
+                                <strong>¡Alerta Crítica!</strong> Los siguientes productos están agotados y no se pueden
+                                vender.
+                            </div>
+
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th>Marca</th>
+                                        <th>Stock</th>
+                                        <th>Precio</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="producto : ${sinStock}" class="table-danger">
+                                        <td>
+                                            <img th:if="${producto.imagenPrincipal != null}"
+                                                th:src="@{'/uploads' + ${producto.imagenPrincipal.url}}"
+                                                class="img-thumbnail"
+                                                style="width: 50px; height: 50px; object-fit: cover;">
+                                            <strong th:text="${producto.nombre}"></strong><br>
+                                            <small class="text-muted" th:text="${producto.codigoSku}"></small>
+                                        </td>
+                                        <td th:text="${producto.categoria.nombre}"></td>
+                                        <td th:text="${producto.marca.nombre}"></td>
+                                        <td class="text-center">
+                                            <span class="badge badge-danger badge-lg">
+                                                <i class="fas fa-times-circle"></i> 0
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>S/ </strong>
+                                            <span
+                                                th:text="${#numbers.formatDecimal(producto.precioActual, 1, 2)}"></span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/admin/inventario/registrar-entrada}"
+                                                class="btn btn-success btn-sm gamer-btn">
+                                                <i class="fas fa-plus"></i> Registrar Entrada
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Productos con Stock Bajo -->
+                    <div th:if="${!stockBajo.isEmpty()}" class="card card-warning card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-exclamation-triangle"></i> Productos con Stock Bajo
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>¡Advertencia!</strong> Los siguientes productos están por debajo del stock
+                                mínimo.
+                            </div>
+
+                            <table class="table table-bordered table-hover datatable">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th>Marca</th>
+                                        <th>Stock Actual</th>
+                                        <th>Stock Mínimo</th>
+                                        <th>Diferencia</th>
+                                        <th>Precio</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="producto : ${stockBajo}" class="table-warning">
+                                        <td>
+                                            <img th:if="${producto.imagenPrincipal != null}"
+                                                th:src="@{'/uploads' + ${producto.imagenPrincipal.url}}"
+                                                class="img-thumbnail"
+                                                style="width: 50px; height: 50px; object-fit: cover;">
+                                            <strong th:text="${producto.nombre}"></strong><br>
+                                            <small class="text-muted" th:text="${producto.codigoSku}"></small>
+                                        </td>
+                                        <td th:text="${producto.categoria.nombre}"></td>
+                                        <td th:text="${producto.marca.nombre}"></td>
+                                        <td class="text-center">
+                                            <span class="badge badge-warning badge-lg"
+                                                th:text="${producto.stockActual}"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span th:text="${producto.stockMinimo}"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge badge-danger">
+                                                <i class="fas fa-arrow-down"></i>
+                                                <span th:text="${producto.stockActual - producto.stockMinimo}"></span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>S/ </strong>
+                                            <span
+                                                th:text="${#numbers.formatDecimal(producto.precioActual, 1, 2)}"></span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{/admin/productos/ver/{id}(id=${producto.id})}"
+                                                    class="btn btn-info btn-sm" data-toggle="tooltip"
+                                                    title="Ver Producto">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a th:href="@{/admin/inventario/registrar-entrada}"
+                                                    class="btn btn-success btn-sm" data-toggle="tooltip"
+                                                    title="Registrar Entrada">
+                                                    <i class="fas fa-plus"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Sin alertas -->
+                    <div th:if="${sinStock.isEmpty() && stockBajo.isEmpty()}"
+                        class="card card-success card-outline gamer-card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
+                            <h3>¡Todo está en orden!</h3>
+                            <p class="text-muted">No hay productos con alertas de inventario en este momento.</p>
+                            <a th:href="@{/admin/inventario}" class="btn btn-success btn-lg gamer-btn mt-3">
+                                <i class="fas fa-boxes"></i> Ver Inventario
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Botón Volver -->
+                    <div class="row">
+                        <div class="col-12">
+                            <a th:href="@{/admin/inventario}" class="btn btn-dark btn-lg gamer-btn">
+                                <i class="fas fa-arrow-left"></i> Volver a Inventario
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+</body>
+
+</html>

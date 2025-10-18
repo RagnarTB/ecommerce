@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-credit-card text-info"></i>
+                                Reporte de Créditos y Cobranzas
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/reportes}">Reportes</a></li>
+                                <li class="breadcrumb-item active">Créditos</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- Botón Exportar -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <form method="get" th:action="@{/admin/reportes/creditos/pdf}" target="_blank">
+                                <button type="submit" class="btn btn-success btn-lg gamer-btn">
+                                    <i class="fas fa-file-pdf"></i> Exportar Reporte de Créditos (PDF)
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Estadísticas Generales -->
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info gamer-card">
+                                <div class="inner">
+                                    <h3 th:text="${creditosActivos.size()}">0</h3>
+                                    <p>Créditos Activos</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning gamer-card">
+                                <div class="inner">
+                                    <h3>S/ <span th:text="${#numbers.formatDecimal(deudaTotal, 1, 2)}">0.00</span></h3>
+                                    <p>Deuda Total Pendiente</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger gamer-card">
+                                <div class="inner">
+                                    <h3 th:text="${cuotasVencidas.size()}">0</h3>
+                                    <p>Cuotas Vencidas</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success gamer-card">
+                                <div class="inner">
+                                    <h3 id="indiceCobranza">0%</h3>
+                                    <p>Índice de Cobranza</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-percentage"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Estado de Créditos -->
+                    <div class="card card-info card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-pie"></i> Distribución de Créditos
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="creditosChart" style="height: 300px;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Cuotas Vencidas -->
+                    <div th:if="${!cuotasVencidas.isEmpty()}" class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-exclamation-triangle"></i> Cuotas Vencidas (Requieren Atención)
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-danger">
+                                <i class="fas fa-ban"></i>
+                                <strong>¡Alerta!</strong> Hay <strong th:text="${cuotasVencidas.size()}"></strong>
+                                cuotas vencidas que requieren gestión de cobranza.
+                            </div>
+
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Venta</th>
+                                        <th>Cuota</th>
+                                        <th>Fecha Venc.</th>
+                                        <th>Días Vencidos</th>
+                                        <th>Monto Pendiente</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="cuota : ${cuotasVencidas}" class="table-danger">
+                                        <td>
+                                            <strong th:text="${cuota.credito.cliente.nombreCompleto}"></strong><br>
+                                            <small th:text="${cuota.credito.cliente.numeroDocumento}"></small>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/admin/ventas/ver/{id}(id=${cuota.credito.venta.id})}"
+                                                target="_blank">
+                                                <strong th:text="${cuota.credito.venta.numeroVenta}"></strong>
+                                            </a>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge badge-danger">Cuota #<span
+                                                    th:text="${cuota.numeroCuota}"></span></span>
+                                        </td>
+                                        <td th:text="${#temporals.format(cuota.fechaVencimiento, 'dd/MM/yyyy')}"></td>
+                                        <td class="text-center">
+                                            <span class="badge badge-danger badge-lg">
+                                                <i class="fas fa-clock"></i> <span
+                                                    th:text="${cuota.diasVencidos}"></span> días
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong class="text-danger">
+                                                S/ <span
+                                                    th:text="${#numbers.formatDecimal(cuota.montoPendiente, 1, 2)}"></span>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Estado de Créditos Activos -->
+                    <div class="card card-info card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list"></i> Créditos Activos
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-hover datatable">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Venta</th>
+                                        <th>Fecha Inicio</th>
+                                        <th>Monto Total</th>
+                                        <th>Monto Pagado</th>
+                                        <th>Deuda Pendiente</th>
+                                        <th>Cuotas</th>
+                                        <th>Próx. Vencimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="credito : ${creditosActivos}">
+                                        <td>
+                                            <strong th:text="${credito.cliente.nombreCompleto}"></strong><br>
+                                            <small th:text="${credito.cliente.numeroDocumento}"></small>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/admin/creditos/ver/{id}(id=${credito.id})}" target="_blank">
+                                                <strong th:text="${credito.venta.numeroVenta}"></strong>
+                                            </a>
+                                        </td>
+                                        <td th:text="${#temporals.format(credito.fechaInicio, 'dd/MM/yyyy')}"></td>
+                                        <td class="text-primary">
+                                            <strong>S/ <span
+                                                    th:text="${#numbers.formatDecimal(credito.montoTotal, 1, 2)}"></span></strong>
+                                        </td>
+                                        <td class="text-success">
+                                            S/ <span
+                                                th:text="${#numbers.formatDecimal(credito.montoTotal - credito.montoPendiente, 1, 2)}"></span>
+                                        </td>
+                                        <td class="text-danger">
+                                            <strong>S/ <span
+                                                    th:text="${#numbers.formatDecimal(credito.montoPendiente, 1, 2)}"></span></strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge badge-info">
+                                                <span th:text="${credito.cuotasPagadas}"></span> / <span
+                                                    th:text="${credito.numCuotas}"></span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${credito.proximoVencimiento != null}"
+                                                th:text="${#temporals.format(credito.proximoVencimiento, 'dd/MM/yyyy')}"
+                                                th:classappend="${credito.tieneVencidas ? 'text-danger font-weight-bold' : ''}">
+                                            </span>
+                                            <br th:if="${credito.tieneVencidas}">
+                                            <span th:if="${credito.tieneVencidas}" class="badge badge-danger">
+                                                <i class="fas fa-exclamation-triangle"></i> Con Vencidas
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Calcular índice de cobranza
+            const creditosActivos = /*[[${creditosActivos}]]*/[];
+            let montoTotalCreditos = 0;
+            let montoPagado = 0;
+
+            creditosActivos.forEach(credito => {
+                montoTotalCreditos += credito.montoTotal;
+                montoPagado += (credito.montoTotal - credito.montoPendiente);
+            });
+
+            const indiceCobranza = montoTotalCreditos > 0
+                ? ((montoPagado / montoTotalCreditos) * 100).toFixed(1)
+                : 0;
+
+            $('#indiceCobranza').text(indiceCobranza + '%');
+
+            // Gráfico de distribución de créditos
+            const ctx = document.getElementById('creditosChart');
+            if (ctx && creditosActivos.length > 0) {
+                // Calcular totales
+                let totalPagado = 0;
+                let totalPendiente = 0;
+
+                creditosActivos.forEach(credito => {
+                    totalPagado += (credito.montoTotal - credito.montoPendiente);
+                    totalPendiente += credito.montoPendiente;
+                });
+
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Monto Pagado', 'Deuda Pendiente'],
+                        datasets: [{
+                            data: [totalPagado, totalPendiente],
+                            backgroundColor: [
+                                'rgba(40, 167, 69, 0.7)',
+                                'rgba(220, 53, 69, 0.7)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'right'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const porcentaje = ((context.parsed / total) * 100).toFixed(1);
+                                        return context.label + ': S/ ' + context.parsed.toFixed(2) + ' (' + porcentaje + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${esNuevo} ? 'Nueva Marca' : 'Editar Marca')}"></head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-tags neon-icon"></i>
+                                <span class="neon-text" th:text="${esNuevo} ? 'NUEVA' : 'EDITAR'">NUEVA</span> MARCA
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/marcas}">Marcas</a></li>
+                                <li class="breadcrumb-item active" th:text="${esNuevo} ? 'Nueva' : 'Editar'">Nueva
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="card gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Datos de la Marca
+                                    </h3>
+                                </div>
+
+                                <form
+                                    th:action="${esNuevo} ? @{/admin/marcas/guardar} : @{/admin/marcas/actualizar/{id}(id=${marca.id})}"
+                                    th:object="${marca}" method="post" class="needs-validation" novalidate>
+
+                                    <div class="card-body">
+                                        <!-- Nombre -->
+                                        <div class="form-group">
+                                            <label for="nombre">Nombre de la Marca <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="nombre" th:field="*{nombre}"
+                                                placeholder="Ej: PlayStation, Xbox, Razer" required>
+                                            <div class="invalid-feedback">
+                                                El nombre es obligatorio
+                                            </div>
+                                        </div>
+
+                                        <!-- Descripción -->
+                                        <div class="form-group">
+                                            <label for="descripcion">Descripción</label>
+                                            <textarea class="form-control" id="descripcion" th:field="*{descripcion}"
+                                                rows="3" placeholder="Información sobre la marca..."></textarea>
+                                        </div>
+
+                                        <!-- Activo -->
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="activo"
+                                                    th:field="*{activo}" checked>
+                                                <label class="custom-control-label" for="activo">
+                                                    Marca Activa
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-footer">
+                                        <button type="submit" class="btn btn-success gamer-btn">
+                                            <i class="fas fa-save"></i>
+                                            <span th:text="${esNuevo} ? 'Guardar Marca' : 'Actualizar Marca'">
+                                                Guardar
+                                            </span>
+                                        </button>
+                                        <a th:href="@{/admin/marcas}" class="btn btn-secondary">
+                                            <i class="fas fa-times"></i> Cancelar
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+
+</html>

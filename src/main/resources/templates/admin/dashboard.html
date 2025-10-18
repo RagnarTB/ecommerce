@@ -1,33 +1,32 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Dashboard')"></head>
+<head th:replace="~{fragments/head :: head('Dashboard')}"></head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
-
     <div class="wrapper">
 
         <!-- Navbar -->
-        <div th:replace="fragments/header :: header"></div>
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
         <!-- Sidebar -->
-        <div th:replace="fragments/sidebar :: sidebar"></div>
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
         <!-- Content Wrapper -->
         <div class="content-wrapper">
-
             <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                                <i class="fas fa-tachometer-alt neon-icon"></i>
+                                <span class="neon-text">DASHBOARD</span> GAMER
                             </h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Home</a></li>
                                 <li class="breadcrumb-item active">Dashboard</li>
                             </ol>
                         </div>
@@ -39,209 +38,156 @@
             <section class="content">
                 <div class="container-fluid">
 
-                    <!-- Mensajes de éxito/error -->
-                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
-                    </div>
-
-                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
-                    </div>
-
-                    <!-- Small boxes (Stat box) -->
+                    <!-- Estadísticas principales -->
                     <div class="row">
-
-                        <!-- Ventas del día -->
                         <div class="col-lg-3 col-6">
-                            <div class="small-box bg-info">
+                            <div class="small-box gamer-card">
                                 <div class="inner">
                                     <h3
-                                        th:text="${ventasDelDia != null ? 'S/ ' + #numbers.formatDecimal(ventasDelDia, 1, 2) : 'S/ 0.00'}">
+                                        th:text="${'S/ ' + #numbers.formatDecimal(ventasDelDia ?: 0, 1, 'POINT', 2, 'POINT')}">
                                         S/ 0.00</h3>
                                     <p>Ventas del Día</p>
                                 </div>
-                                <div class="icon">
-                                    <i class="fas fa-shopping-cart"></i>
-                                </div>
-                                <a th:href="@{/admin/ventas}" class="small-box-footer">
-                                    Ver más <i class="fas fa-arrow-circle-right"></i>
-                                </a>
+                                <div class="icon"><i class="fas fa-cash-register"></i></div>
+                                <a th:href="@{/admin/ventas}" class="small-box-footer gamer-link">Ver Ventas <i
+                                        class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
 
-                        <!-- Pedidos pendientes -->
                         <div class="col-lg-3 col-6">
-                            <div class="small-box bg-warning">
+                            <div class="small-box gamer-card bg-warning">
                                 <div class="inner">
-                                    <h3 th:text="${pedidosPendientes != null ? pedidosPendientes : 0}">0</h3>
+                                    <h3 th:text="${pedidosPendientes ?: 0}">0</h3>
                                     <p>Pedidos Pendientes</p>
                                 </div>
-                                <div class="icon">
-                                    <i class="fas fa-box"></i>
-                                </div>
-                                <a th:href="@{/admin/pedidos}" class="small-box-footer">
-                                    Ver más <i class="fas fa-arrow-circle-right"></i>
-                                </a>
+                                <div class="icon"><i class="fas fa-shopping-cart"></i></div>
+                                <a th:href="@{/admin/pedidos}" class="small-box-footer">Ver Pedidos <i
+                                        class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
 
-                        <!-- Total Productos -->
                         <div class="col-lg-3 col-6">
-                            <div class="small-box bg-success">
+                            <div class="small-box gamer-card bg-success">
                                 <div class="inner">
-                                    <h3 th:text="${totalProductos != null ? totalProductos : 0}">0</h3>
-                                    <p>Productos Activos</p>
+                                    <h3 th:text="${totalProductos ?: 0}">0</h3>
+                                    <p>Productos en Stock</p>
                                 </div>
-                                <div class="icon">
-                                    <i class="fas fa-cubes"></i>
-                                </div>
-                                <a th:href="@{/admin/productos}" class="small-box-footer">
-                                    Ver más <i class="fas fa-arrow-circle-right"></i>
-                                </a>
+                                <div class="icon"><i class="fas fa-gamepad"></i></div>
+                                <a th:href="@{/admin/productos}" class="small-box-footer">Ver Productos <i
+                                        class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
 
-                        <!-- Total Clientes -->
                         <div class="col-lg-3 col-6">
-                            <div class="small-box bg-danger">
+                            <div class="small-box gamer-card bg-danger">
                                 <div class="inner">
-                                    <h3 th:text="${totalClientes != null ? totalClientes : 0}">0</h3>
+                                    <h3 th:text="${totalClientes ?: 0}">0</h3>
                                     <p>Clientes Registrados</p>
                                 </div>
-                                <div class="icon">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                <a th:href="@{/admin/clientes}" class="small-box-footer">
-                                    Ver más <i class="fas fa-arrow-circle-right"></i>
-                                </a>
+                                <div class="icon"><i class="fas fa-users"></i></div>
+                                <a th:href="@{/admin/clientes}" class="small-box-footer">Ver Clientes <i
+                                        class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
-
                     </div>
 
-                    <!-- Alertas importantes -->
+                    <!-- Alertas-->
                     <div class="row">
-
-                        <!-- Stock bajo -->
-                        <div class="col-lg-4 col-md-6" th:if="${productosStockBajo != null and productosStockBajo > 0}">
-                            <div class="info-box bg-warning">
-                                <span class="info-box-icon"><i class="fas fa-exclamation-triangle"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Stock Bajo</span>
-                                    <span class="info-box-number" th:text="${productosStockBajo} + ' productos'">0
-                                        productos</span>
-                                    <a th:href="@{/admin/inventario}" class="text-white">Ver productos <i
-                                            class="fas fa-arrow-right"></i></a>
+                        <div class="col-lg-3 col-6" th:if="${productosStockBajo > 0}">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3 th:text="${productosStockBajo}">0</h3>
+                                    <p>Productos con Stock Bajo</p>
                                 </div>
+                                <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                                <a th:href="@{/admin/inventario/alertas}" class="small-box-footer">Ver Alertas <i
+                                        class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
 
-                        <!-- Créditos activos -->
-                        <div class="col-lg-4 col-md-6" th:if="${creditosActivos != null and creditosActivos > 0}">
-                            <div class="info-box bg-info">
-                                <span class="info-box-icon"><i class="fas fa-credit-card"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Créditos Activos</span>
-                                    <span class="info-box-number" th:text="${creditosActivos}">0</span>
-                                    <span class="progress-description"
-                                        th:text="'Deuda total: S/ ' + #numbers.formatDecimal(deudaTotal, 1, 2)">S/
-                                        0.00</span>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3 th:text="${creditosActivos ?: 0}">0</h3>
+                                    <p>Créditos Activos</p>
                                 </div>
+                                <div class="icon"><i class="fas fa-credit-card"></i></div>
+                                <a th:href="@{/admin/creditos}" class="small-box-footer">Ver Créditos <i
+                                        class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
 
-                        <!-- Cuotas vencidas -->
-                        <div class="col-lg-4 col-md-6" th:if="${cuotasVencidas != null and cuotasVencidas > 0}">
-                            <div class="info-box bg-danger">
-                                <span class="info-box-icon"><i class="fas fa-calendar-times"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Cuotas Vencidas</span>
-                                    <span class="info-box-number" th:text="${cuotasVencidas} + ' cuotas'">0
-                                        cuotas</span>
-                                    <a th:href="@{/admin/creditos/cuotas-vencidas}" class="text-white">Ver detalles <i
-                                            class="fas fa-arrow-right"></i></a>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-purple">
+                                <div class="inner">
+                                    <h3
+                                        th:text="${'S/ ' + #numbers.formatDecimal(deudaTotal ?: 0, 1, 'POINT', 2, 'POINT')}">
+                                        S/ 0.00</h3>
+                                    <p>Deuda Pendiente Total</p>
                                 </div>
+                                <div class="icon"><i class="fas fa-coins"></i></div>
+                                <a th:href="@{/admin/creditos}" class="small-box-footer">Ver Detalle <i
+                                        class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
 
+                        <div class="col-lg-3 col-6" th:if="${cuotasVencidas > 0}">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3 th:text="${cuotasVencidas}">0</h3>
+                                    <p>Cuotas Vencidas</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-exclamation-circle"></i></div>
+                                <a th:href="@{/admin/creditos/cuotas-vencidas}" class="small-box-footer">Ver Vencidas <i
+                                        class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Gráficos -->
+                    <!-- Gráficas y tablas -->
                     <div class="row">
-
-                        <!-- Ventas del mes -->
                         <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header">
+                            <div class="card gamer-card">
+                                <div class="card-header border-0">
                                     <h3 class="card-title">
-                                        <i class="fas fa-chart-line"></i> Ventas del Mes
+                                        <i class="fas fa-chart-line neon-icon mr-1"></i> Últimas Ventas del Día
                                     </h3>
                                 </div>
-                                <div class="card-body">
-                                    <canvas id="ventasMesChart" style="min-height: 250px; height: 250px;"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Productos más vendidos -->
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">
-                                        <i class="fas fa-chart-bar"></i> Productos Más Vendidos
-                                    </h3>
-                                </div>
-                                <div class="card-body">
-                                    <canvas id="productosTopChart" style="min-height: 250px; height: 250px;"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- Tablas de datos -->
-                    <div class="row">
-
-                        <!-- Últimas ventas -->
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">
-                                        <i class="fas fa-receipt"></i> Últimas Ventas
-                                    </h3>
-                                    <div class="card-tools">
-                                        <a th:href="@{/admin/ventas}" class="btn btn-tool">
-                                            Ver todas <i class="fas fa-arrow-right"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="card-body p-0">
-                                    <table class="table table-striped">
+                                <div class="card-body table-responsive p-0">
+                                    <table class="table table-striped table-valign-middle">
                                         <thead>
                                             <tr>
-                                                <th>N° Venta</th>
+                                                <th>Nº Venta</th>
                                                 <th>Cliente</th>
                                                 <th>Total</th>
-                                                <th>Fecha</th>
+                                                <th>Tipo</th>
+                                                <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr th:each="venta : ${ultimasVentas}" th:if="${ultimasVentas != null}">
+                                            <tr th:if="${#lists.isEmpty(ultimasVentas)}">
+                                                <td colspan="5" class="text-center">
+                                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                                    <p class="text-muted">No hay ventas registradas hoy</p>
+                                                </td>
+                                            </tr>
+                                            <tr th:each="venta : ${ultimasVentas}">
+                                                <td><span class="badge badge-primary"
+                                                        th:text="${venta.numeroVenta}">VEN-001</span></td>
+                                                <td th:text="${venta.cliente.nombreCompleto}">Cliente</td>
+                                                <td><span class="text-success font-weight-bold"
+                                                        th:text="${'S/ ' + #numbers.formatDecimal(venta.total, 1, 'POINT', 2, 'POINT')}">S/
+                                                        0.00</span></td>
+                                                <td>
+                                                    <span
+                                                        th:classappend="${venta.tipoPago.name() == 'CONTADO'} ? 'badge-success' : 'badge-warning'"
+                                                        class="badge" th:text="${venta.tipoPago.nombre}">CONTADO</span>
+                                                </td>
                                                 <td>
                                                     <a th:href="@{/admin/ventas/ver/{id}(id=${venta.id})}"
-                                                        th:text="${venta.numeroVenta}">VEN-001</a>
-                                                </td>
-                                                <td th:text="${venta.cliente.nombreCompleto}">Cliente</td>
-                                                <td th:text="'S/ ' + #numbers.formatDecimal(venta.total, 1, 2)">S/ 0.00
-                                                </td>
-                                                <td
-                                                    th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy HH:mm')}">
-                                                    01/01/2025</td>
-                                            </tr>
-                                            <tr th:if="${ultimasVentas == null or ultimasVentas.isEmpty()}">
-                                                <td colspan="4" class="text-center text-muted">No hay ventas registradas
+                                                        class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -250,47 +196,45 @@
                             </div>
                         </div>
 
-                        <!-- Últimos pedidos -->
                         <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header">
+                            <div class="card gamer-card">
+                                <div class="card-header border-0">
                                     <h3 class="card-title">
-                                        <i class="fas fa-box"></i> Pedidos Pendientes
+                                        <i class="fas fa-shopping-cart neon-icon mr-1"></i> Pedidos Pendientes
                                     </h3>
-                                    <div class="card-tools">
-                                        <a th:href="@{/admin/pedidos}" class="btn btn-tool">
-                                            Ver todos <i class="fas fa-arrow-right"></i>
-                                        </a>
-                                    </div>
                                 </div>
-                                <div class="card-body p-0">
-                                    <table class="table table-striped">
+                                <div class="card-body table-responsive p-0">
+                                    <table class="table table-striped table-valign-middle">
                                         <thead>
                                             <tr>
-                                                <th>N° Pedido</th>
+                                                <th>Nº Pedido</th>
                                                 <th>Cliente</th>
                                                 <th>Total</th>
                                                 <th>Estado</th>
+                                                <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr th:each="pedido : ${ultimosPedidos}" th:if="${ultimosPedidos != null}">
-                                                <td>
-                                                    <a th:href="@{/admin/pedidos/ver/{id}(id=${pedido.id})}"
-                                                        th:text="${pedido.numeroPedido}">PED-001</a>
-                                                </td>
-                                                <td th:text="${pedido.cliente.nombreCompleto}">Cliente</td>
-                                                <td th:text="'S/ ' + #numbers.formatDecimal(pedido.total, 1, 2)">S/ 0.00
-                                                </td>
-                                                <td>
-                                                    <span class="badge" th:classappend="${pedido.estado.classBootstrap}"
-                                                        th:text="${pedido.estado.nombre}">
-                                                        Estado
-                                                    </span>
+                                            <tr th:if="${#lists.isEmpty(ultimosPedidos)}">
+                                                <td colspan="5" class="text-center">
+                                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                                    <p class="text-muted">No hay pedidos pendientes</p>
                                                 </td>
                                             </tr>
-                                            <tr th:if="${ultimosPedidos == null or ultimosPedidos.isEmpty()}">
-                                                <td colspan="4" class="text-center text-muted">No hay pedidos pendientes
+                                            <tr th:each="pedido : ${ultimosPedidos}">
+                                                <td><span class="badge badge-info"
+                                                        th:text="${pedido.numeroPedido}">PED-001</span></td>
+                                                <td th:text="${pedido.cliente.nombreCompleto}">Cliente</td>
+                                                <td><span class="text-primary font-weight-bold"
+                                                        th:text="${'S/ ' + #numbers.formatDecimal(pedido.total, 1, 'POINT', 2, 'POINT')}">S/
+                                                        0.00</span></td>
+                                                <td><span class="badge badge-warning"
+                                                        th:text="${pedido.estado.nombre}">PENDIENTE</span></td>
+                                                <td>
+                                                    <a th:href="@{/admin/pedidos/ver/{id}(id=${pedido.id})}"
+                                                        class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -298,114 +242,73 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
 
+                    <!-- Productos con stock bajo -->
+                    <div class="row" th:if="${not #lists.isEmpty(productosAlerta)}">
+                        <div class="col-12">
+                            <div class="card gamer-card">
+                                <div class="card-header border-0">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-exclamation-triangle text-warning neon-icon mr-1"></i> Alertas
+                                        de Stock Bajo
+                                    </h3>
+                                    <div class="card-tools">
+                                        <a th:href="@{/admin/inventario/alertas}" class="btn btn-sm btn-warning">Ver
+                                            Todas</a>
+                                    </div>
+                                </div>
+                                <div class="card-body table-responsive p-0">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>SKU</th>
+                                                <th>Categoría</th>
+                                                <th>Stock Actual</th>
+                                                <th>Stock Mínimo</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="producto : ${productosAlerta}">
+                                                <td>
+                                                    <img th:if="${producto.imagenPrincipal != null}"
+                                                        th:src="@{'/uploads' + ${producto.imagenPrincipal.url}}"
+                                                        class="img-thumbnail mr-2" style="max-width: 40px;">
+                                                    <span th:text="${producto.nombre}">Producto</span>
+                                                </td>
+                                                <td><span class="badge badge-secondary"
+                                                        th:text="${producto.codigoSku}">SKU-001</span></td>
+                                                <td th:text="${producto.categoria.nombre}">Categoría</td>
+                                                <td><span class="badge badge-danger"
+                                                        th:text="${producto.stockActual}">0</span></td>
+                                                <td><span class="badge badge-info"
+                                                        th:text="${producto.stockMinimo}">10</span></td>
+                                                <td>
+                                                    <a th:href="@{/admin/inventario/registrar-entrada}"
+                                                        class="btn btn-sm btn-success">
+                                                        <i class="fas fa-plus"></i> Registrar Entrada
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
             </section>
-
         </div>
 
         <!-- Footer -->
-        <div th:replace="fragments/footer :: footer"></div>
-
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
 
     <!-- Scripts -->
-    <div th:replace="fragments/scripts :: scripts"></div>
-
-    <script>
-        $(document).ready(function () {
-
-            // ============================================
-            // GRÁFICO: VENTAS DEL MES
-            // ============================================
-            const ventasMesCtx = document.getElementById('ventasMesChart');
-            if (ventasMesCtx) {
-                new Chart(ventasMesCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-                        datasets: [{
-                            label: 'Ventas (S/)',
-                            data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 32000, 38000, 45000, 42000],
-                            backgroundColor: 'rgba(102, 126, 234, 0.2)',
-                            borderColor: 'rgba(102, 126, 234, 1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function (value) {
-                                        return 'S/ ' + value.toLocaleString();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            // ============================================
-            // GRÁFICO: PRODUCTOS MÁS VENDIDOS
-            // ============================================
-            const productosTopCtx = document.getElementById('productosTopChart');
-            if (productosTopCtx) {
-                new Chart(productosTopCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Smart TV Samsung', 'Laptop Dell', 'Auriculares Sony', 'Zapatillas Nike', 'LEGO Star Wars'],
-                        datasets: [{
-                            label: 'Unidades Vendidas',
-                            data: [45, 38, 62, 55, 28],
-                            backgroundColor: [
-                                'rgba(102, 126, 234, 0.8)',
-                                'rgba(230, 126, 34, 0.8)',
-                                'rgba(39, 174, 96, 0.8)',
-                                'rgba(231, 76, 60, 0.8)',
-                                'rgba(241, 196, 15, 0.8)'
-                            ],
-                            borderColor: [
-                                'rgba(102, 126, 234, 1)',
-                                'rgba(230, 126, 34, 1)',
-                                'rgba(39, 174, 96, 1)',
-                                'rgba(231, 76, 60, 1)',
-                                'rgba(241, 196, 15, 1)'
-                            ],
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-
-        });
-    </script>
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
 
 </body>
 

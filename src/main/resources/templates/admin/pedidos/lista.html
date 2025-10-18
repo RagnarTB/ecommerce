@@ -1,90 +1,279 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Pedidos')"></head>
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
-        <div th:replace="fragments/header :: header"></div>
-        <div th:replace="fragments/sidebar :: sidebar"></div>
 
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
-                    <h1 class="m-0"><i class="fas fa-shopping-basket"></i> Pedidos</h1>
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-shopping-bag text-danger"></i>
+                                Gestión de Pedidos
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Pedidos</li>
+                            </ol>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <div class="card">
+
+                    <!-- Mensajes -->
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <!-- Filtros -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-filter"></i> Filtrar Pedidos
+                            </h3>
+                        </div>
                         <div class="card-body">
+                            <form method="get" th:action="@{/admin/pedidos}">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Estado</label>
+                                            <select class="form-control gamer-input" name="estado">
+                                                <option value="">Todos</option>
+                                                <option th:each="est : ${estados}" th:value="${est.name()}"
+                                                    th:text="${est.nombre}"
+                                                    th:selected="${estadoSeleccionado != null && estadoSeleccionado.name() == est.name()}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>&nbsp;</label>
+                                        <button type="submit" class="btn btn-danger btn-block">
+                                            <i class="fas fa-search"></i> Filtrar
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
 
-                            <div class="mb-3">
-                                <input id="pedidoSearch" class="form-control"
-                                    placeholder="Buscar por cliente o número de pedido">
-                            </div>
-
-                            <table class="table table-bordered table-striped datatable">
-                                <thead>
+                    <!-- Tarjeta principal -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list"></i> Lista de Pedidos
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-hover datatable">
+                                <thead class="thead-dark">
                                     <tr>
-                                        <th># Pedido</th>
-                                        <th>Cliente</th>
-                                        <th>Estado</th>
-                                        <th>Total</th>
+                                        <th>Nº Pedido</th>
                                         <th>Fecha</th>
+                                        <th>Cliente</th>
+                                        <th>Total</th>
+                                        <th>Tipo Entrega</th>
+                                        <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="p : ${pedidos}">
-                                        <td th:text="${p.numeroPedido}">PED-001</td>
-                                        <td th:text="${p.cliente.nombreCompleto}">Cliente</td>
+                                    <tr th:each="pedido : ${pedidos}">
                                         <td>
-                                            <span
-                                                th:classappend="${p.estado.name() == 'PENDIENTE'} ? 'badge badge-warning' : (p.estado.name() == 'ENVIADO') ? 'badge badge-info' : (p.estado.name() == 'ENTREGADO') ? 'badge badge-success' : 'badge badge-secondary'"
-                                                th:text="${p.estado.nombre}">Estado</span>
+                                            <strong th:text="${pedido.numeroPedido}"></strong>
                                         </td>
-                                        <td th:text="'S/ ' + #numbers.formatDecimal(p.total,1,2)">S/0.00</td>
-                                        <td th:text="${#temporals.format(p.fechaPedido,'dd/MM/yyyy HH:mm')}">01/01/2025
+                                        <td th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></td>
+                                        <td>
+                                            <i class="fas fa-user text-info"></i>
+                                            <span th:text="${pedido.cliente.nombreCompleto}"></span>
                                         </td>
                                         <td>
-                                            <a th:href="@{/admin/pedidos/ver/{id}(id=${p.id})}"
-                                                class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
-                                            <a th:href="@{/admin/pedidos/aceptar/{id}(id=${p.id})}"
-                                                class="btn btn-sm btn-success"
-                                                th:if="${p.estado.name() == 'PENDIENTE'}"><i
-                                                    class="fas fa-check"></i></a>
-                                            <a th:href="@{/admin/pedidos/enviar/{id}(id=${p.id})}"
-                                                class="btn btn-sm btn-primary"
-                                                th:if="${p.estado.name() == 'ACEPTADO'}"><i
-                                                    class="fas fa-truck"></i></a>
-                                            <a th:href="@{/admin/pedidos/cancelar/{id}(id=${p.id})}"
-                                                class="btn btn-sm btn-danger btn-delete"
-                                                th:data-name="${p.numeroPedido}"
-                                                th:if="${p.estado.name() != 'ENTREGADO'}"><i
-                                                    class="fas fa-times"></i></a>
+                                            <strong class="text-success">S/ </strong>
+                                            <strong th:text="${#numbers.formatDecimal(pedido.total, 1, 2)}"></strong>
+                                        </td>
+                                        <td>
+                                            <span th:if="${pedido.tipoEntrega.name() == 'RECOJO_TIENDA'}"
+                                                class="badge badge-primary">
+                                                <i class="fas fa-store"></i> Recojo en Tienda
+                                            </span>
+                                            <span th:if="${pedido.tipoEntrega.name() == 'DELIVERY'}"
+                                                class="badge badge-info">
+                                                <i class="fas fa-truck"></i> Delivery
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${pedido.estado.name() == 'PENDIENTE'}"
+                                                class="badge badge-warning">
+                                                <i class="fas fa-clock"></i> Pendiente
+                                            </span>
+                                            <span th:if="${pedido.estado.name() == 'CONFIRMADO'}"
+                                                class="badge badge-info">
+                                                <i class="fas fa-check"></i> Confirmado
+                                            </span>
+                                            <span th:if="${pedido.estado.name() == 'COMPLETADO'}"
+                                                class="badge badge-success">
+                                                <i class="fas fa-check-double"></i> Completado
+                                            </span>
+                                            <span th:if="${pedido.estado.name() == 'CANCELADO'}"
+                                                class="badge badge-danger">
+                                                <i class="fas fa-ban"></i> Cancelado
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <!-- Ver Detalle -->
+                                                <a th:href="@{/admin/pedidos/ver/{id}(id=${pedido.id})}"
+                                                    class="btn btn-info btn-sm" data-toggle="tooltip"
+                                                    title="Ver Detalle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+
+                                                <!-- Confirmar (solo pendientes) -->
+                                                <button th:if="${pedido.estado.name() == 'PENDIENTE'}" type="button"
+                                                    class="btn btn-primary btn-sm btn-confirmar"
+                                                    th:data-id="${pedido.id}" th:data-numero="${pedido.numeroPedido}"
+                                                    data-toggle="tooltip" title="Confirmar Pedido">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+
+                                                <!-- Cancelar (solo pendientes/confirmados) -->
+                                                <button
+                                                    th:if="${pedido.estado.name() == 'PENDIENTE' || pedido.estado.name() == 'CONFIRMADO'}"
+                                                    type="button" class="btn btn-danger btn-sm btn-cancelar"
+                                                    th:data-id="${pedido.id}" th:data-numero="${pedido.numeroPedido}"
+                                                    data-toggle="tooltip" title="Cancelar Pedido">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
-
                         </div>
                     </div>
+
                 </div>
             </section>
         </div>
 
-        <div th:replace="fragments/footer :: footer"></div>
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
-    <div th:replace="fragments/scripts :: scripts"></div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <!-- Script para confirmar/cancelar -->
     <script>
         $(document).ready(function () {
-            $('#pedidoSearch').on('keyup', function () {
-                $('.datatable').DataTable().search($(this).val()).draw();
+            // Confirmar pedido
+            $('.btn-confirmar').on('click', function () {
+                const pedidoId = $(this).data('id');
+                const numeroPedido = $(this).data('numero');
+
+                Swal.fire({
+                    title: '¿Confirmar Pedido?',
+                    html: `¿Está seguro de confirmar el pedido <strong>${numeroPedido}</strong>?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, confirmar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Enviar petición
+                        $.ajax({
+                            url: '/admin/pedidos/confirmar/' + pedidoId,
+                            method: 'POST',
+                            success: function (response) {
+                                Swal.fire({
+                                    title: '¡Pedido Confirmado!',
+                                    text: 'El pedido ha sido confirmado correctamente',
+                                    icon: 'success'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function (xhr) {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: xhr.responseJSON?.error || 'Error al confirmar el pedido',
+                                    icon: 'error'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Cancelar pedido
+            $('.btn-cancelar').on('click', function () {
+                const pedidoId = $(this).data('id');
+                const numeroPedido = $(this).data('numero');
+
+                Swal.fire({
+                    title: '¿Cancelar Pedido?',
+                    html: `¿Está seguro de cancelar el pedido <strong>${numeroPedido}</strong>?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, cancelar',
+                    cancelButtonText: 'No'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/admin/pedidos/cancelar/' + pedidoId,
+                            method: 'POST',
+                            success: function (response) {
+                                Swal.fire({
+                                    title: '¡Pedido Cancelado!',
+                                    text: 'El pedido ha sido cancelado',
+                                    icon: 'success'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function (xhr) {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: xhr.responseJSON?.error || 'Error al cancelar el pedido',
+                                    icon: 'error'
+                                });
+                            }
+                        });
+                    }
+                });
             });
         });
     </script>
+
 </body>
 
 </html>

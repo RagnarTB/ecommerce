@@ -2,13 +2,16 @@ package com.miempresa.ecommerce.security;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+
+import com.miempresa.ecommerce.models.User;
 
 /**
  * SECURITY UTILS
  * 
  * Utilidades para obtener información del usuario autenticado.
  * Se usa en los controllers y services para saber quién está logueado.
+ * 
+ * ✅ MEJORADO: Ahora incluye métodos para obtener el objeto User completo
  */
 public class SecurityUtils {
 
@@ -26,11 +29,55 @@ public class SecurityUtils {
 
         Object principal = authentication.getPrincipal();
 
-        if (principal instanceof UserDetails) {
-            return ((UserDetails) principal).getUsername();
+        if (principal instanceof UserDetailsImpl) {
+            return ((UserDetailsImpl) principal).getUsername();
         }
 
         return principal.toString();
+    }
+
+    /**
+     * ✅ NUEVO: Obtiene el objeto User completo del usuario autenticado
+     * 
+     * @return User o null si no hay nadie autenticado
+     */
+    public static User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof UserDetailsImpl) {
+            return ((UserDetailsImpl) principal).getUser();
+        }
+
+        return null;
+    }
+
+    /**
+     * ✅ NUEVO: Obtiene el ID del usuario autenticado
+     * 
+     * @return ID del usuario o null
+     */
+    public static Long getCurrentUserId() {
+        User user = getCurrentUser();
+        return user != null ? user.getId() : null;
+    }
+
+    /**
+     * ✅ NUEVO: Obtiene el nombre completo del usuario autenticado
+     * 
+     * @return Nombre completo o null
+     */
+    public static String getCurrentUserFullName() {
+        User user = getCurrentUser();
+        if (user != null) {
+            return user.getNombre() + " " + user.getApellido();
+        }
+        return null;
     }
 
     /**
@@ -81,44 +128,61 @@ public class SecurityUtils {
     public static boolean hasRole(String role) {
         return hasAuthority("ROLE_" + role);
     }
+
+    /**
+     * ✅ NUEVO: Verifica si el usuario es administrador
+     * 
+     * @return true si es administrador
+     */
+    public static boolean isAdmin() {
+        return hasRole("ADMINISTRADOR");
+    }
+
+    /**
+     * ✅ NUEVO: Verifica si el usuario puede acceder a un módulo
+     * 
+     * @param modulo Nombre del módulo (ej: "PRODUCTOS")
+     * @return true si tiene acceso
+     */
+    public static boolean canAccessModule(String modulo) {
+        return hasAuthority("MODULO_" + modulo);
+    }
 }
 
 /**
- * USO EN LOS CONTROLLERS:
+ * ✅ NUEVOS MÉTODOS - USO EN LOS CONTROLLERS:
  * 
- * // Obtener el username del usuario logueado
- * String username = SecurityUtils.getCurrentUsername();
- * System.out.println("Usuario actual: " + username);
+ * // Obtener el objeto User completo
+ * User currentUser = SecurityUtils.getCurrentUser();
+ * String nombre = currentUser.getNombre();
+ * String email = currentUser.getEmail();
  * 
- * // Verificar si está autenticado
- * if (SecurityUtils.isAuthenticated()) {
- * // Usuario logueado
+ * // Obtener ID del usuario
+ * Long userId = SecurityUtils.getCurrentUserId();
+ * 
+ * // Obtener nombre completo
+ * String fullName = SecurityUtils.getCurrentUserFullName();
+ * 
+ * // Verificar si es admin
+ * if (SecurityUtils.isAdmin()) {
+ * // Código solo para administradores
  * }
  * 
- * // Verificar si tiene un permiso
- * if (SecurityUtils.hasAuthority("MODULO_PRODUCTOS")) {
+ * // Verificar acceso a módulo
+ * if (SecurityUtils.canAccessModule("PRODUCTOS")) {
  * // Puede gestionar productos
  * }
  * 
- * // Verificar si es administrador
- * if (SecurityUtils.hasRole("ADMINISTRADOR")) {
- * // Es admin
+ * EJEMPLO EN UN CONTROLLER:
+ * 
+ * @PostMapping("/productos/guardar")
+ * public String guardar(@Valid Product producto) {
+ * // Obtener usuario que está guardando el producto
+ * User currentUser = SecurityUtils.getCurrentUser();
+ * 
+ * producto.setCreadoPor(currentUser);
+ * productService.guardar(producto);
+ * 
+ * return "redirect:/admin/productos";
  * }
- * 
- * USO EN THYMELEAF:
- * 
- * <!-- Mostrar solo si está autenticado -->
- * <div sec:authorize="isAuthenticated()">
- * Bienvenido <span sec:authentication="name"></span>
- * </div>
- * 
- * <!-- Mostrar solo si tiene el permiso -->
- * <div sec:authorize="hasAuthority('MODULO_PRODUCTOS')">
- * <a href="/admin/productos">Productos</a>
- * </div>
- * 
- * <!-- Mostrar solo si es admin -->
- * <div sec:authorize="hasRole('ADMINISTRADOR')">
- * <a href="/admin/usuarios">Usuarios</a>
- * </div>
  */

@@ -1,55 +1,365 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head('Créditos')"></head>
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
-        <div th:replace="fragments/header :: header"></div>
-        <div th:replace="fragments/sidebar :: sidebar"></div>
 
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
-                    <h1 class="m-0"><i class="fas fa-credit-card"></i> Créditos</h1>
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-credit-card text-danger"></i>
+                                Gestión de Créditos
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Créditos</li>
+                            </ol>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <div class="card">
+
+                    <!-- Mensajes -->
+                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+
+                    <!-- Estadísticas Rápidas -->
+                    <div class="row">
+                        <div class="col-lg-4 col-6">
+                            <div class="small-box bg-info gamer-card">
+                                <div class="inner">
+                                    <h3 th:text="${creditos.size()}">0</h3>
+                                    <p>Créditos Activos</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 col-6">
+                            <div class="small-box bg-warning gamer-card">
+                                <div class="inner">
+                                    <h3 id="totalDeuda">S/ 0.00</h3>
+                                    <p>Deuda Total Pendiente</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 col-6">
+                            <div class="small-box bg-danger gamer-card">
+                                <div class="inner">
+                                    <h3 id="cuotasVencidas">0</h3>
+                                    <p>Cuotas Vencidas</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón Cuotas Vencidas -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <a th:href="@{/admin/creditos/cuotas-vencidas}" class="btn btn-danger btn-lg gamer-btn">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Ver Cuotas Vencidas
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta principal -->
+                    <div class="card card-danger card-outline gamer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list"></i> Lista de Créditos Activos
+                            </h3>
+                        </div>
                         <div class="card-body">
-                            <a th:href="@{/admin/creditos/nuevo}" class="btn btn-success mb-2">Nuevo Crédito</a>
-                            <table class="table datatable">
-                                <thead>
+                            <table class="table table-bordered table-hover datatable">
+                                <thead class="thead-dark">
                                     <tr>
-                                        <th>#</th>
+                                        <th>Venta</th>
                                         <th>Cliente</th>
-                                        <th>Total</th>
-                                        <th>Saldo</th>
+                                        <th>Fecha Inicio</th>
+                                        <th>Monto Total</th>
+                                        <th>Monto Pendiente</th>
+                                        <th>Cuotas</th>
+                                        <th>Próx. Vencimiento</th>
                                         <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="c : ${creditos}">
-                                        <td th:text="${c.id}">1</td>
-                                        <td th:text="${c.cliente.nombreCompleto}">Cliente</td>
-                                        <td th:text="'S/ ' + #numbers.formatDecimal(c.total,1,2)">S/0.00</td>
-                                        <td th:text="'S/ ' + #numbers.formatDecimal(c.saldo,1,2)">S/0.00</td>
-                                        <td th:text="${c.estado.nombre}">ACTIVO</td>
-                                        <td><a th:href="@{/admin/creditos/ver/{id}(id=${c.id})}"
-                                                class="btn btn-sm btn-info">Ver</a></td>
+                                    <tr th:each="credito : ${creditos}">
+                                        <td>
+                                            <strong th:text="${credito.venta.numeroVenta}"></strong>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-user text-info"></i>
+                                            <span th:text="${credito.cliente.nombreCompleto}"></span><br>
+                                            <small class="text-muted"
+                                                th:text="${credito.cliente.numeroDocumento}"></small>
+                                        </td>
+                                        <td th:text="${#temporals.format(credito.fechaInicio, 'dd/MM/yyyy')}"></td>
+                                        <td>
+                                            <strong class="text-primary">
+                                                S/ <span
+                                                    th:text="${#numbers.formatDecimal(credito.montoTotal, 1, 2)}"></span>
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            <strong class="text-danger">
+                                                S/ <span
+                                                    th:text="${#numbers.formatDecimal(credito.montoPendiente, 1, 2)}"></span>
+                                            </strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge badge-info">
+                                                <span th:text="${credito.cuotasPagadas}"></span> /
+                                                <span th:text="${credito.numCuotas}"></span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${credito.proximoVencimiento != null}"
+                                                th:text="${#temporals.format(credito.proximoVencimiento, 'dd/MM/yyyy')}"
+                                                th:classappend="${credito.tieneVencidas ? 'text-danger font-weight-bold' : ''}">
+                                            </span>
+                                            <span th:if="${credito.proximoVencimiento == null}">
+                                                <i class="fas fa-check text-success"></i> Completado
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${credito.estado.name() == 'ACTIVO'}"
+                                                class="badge badge-success">
+                                                <i class="fas fa-check-circle"></i> Activo
+                                            </span>
+                                            <span th:if="${credito.estado.name() == 'COMPLETADO'}"
+                                                class="badge badge-primary">
+                                                <i class="fas fa-check-double"></i> Completado
+                                            </span>
+                                            <span th:if="${credito.estado.name() == 'ANULADO'}"
+                                                class="badge badge-danger">
+                                                <i class="fas fa-ban"></i> Anulado
+                                            </span>
+
+                                            <!-- Indicador de cuotas vencidas -->
+                                            <br th:if="${credito.tieneVencidas}">
+                                            <span th:if="${credito.tieneVencidas}" class="badge badge-danger mt-1">
+                                                <i class="fas fa-exclamation-triangle"></i> Con Vencidas
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <!-- Ver Detalle -->
+                                                <a th:href="@{/admin/creditos/ver/{id}(id=${credito.id})}"
+                                                    class="btn btn-info btn-sm" data-toggle="tooltip"
+                                                    title="Ver Detalle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+
+                                                <!-- Registrar Abono -->
+                                                <button th:if="${credito.estado.name() == 'ACTIVO'}" type="button"
+                                                    class="btn btn-success btn-sm btn-abono" th:data-id="${credito.id}"
+                                                    th:data-venta="${credito.venta.numeroVenta}"
+                                                    th:data-pendiente="${credito.montoPendiente}" data-toggle="tooltip"
+                                                    title="Registrar Abono">
+                                                    <i class="fas fa-money-bill-wave"></i>
+                                                    </a>
+                                            </div>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
+
                 </div>
             </section>
         </div>
-        <div th:replace="fragments/footer :: footer"></div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
-    <div th:replace="fragments/scripts :: scripts"></div>
+
+    <!-- Modal Registrar Abono -->
+    <div class="modal fade" id="modalAbono" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content gamer-card">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title">
+                        <i class="fas fa-money-bill-wave"></i>
+                        Registrar Abono
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form id="formAbono">
+                    <div class="modal-body">
+                        <input type="hidden" id="creditoId" name="creditoId">
+
+                        <div class="alert alert-info">
+                            <strong>Venta:</strong> <span id="infoVenta"></span><br>
+                            <strong>Deuda Pendiente:</strong> S/ <span id="infoPendiente"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Monto a Abonar <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">S/</span>
+                                </div>
+                                <input type="number" class="form-control gamer-input" id="monto" name="monto"
+                                    step="0.01" min="0.01" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Método de Pago <span class="text-danger">*</span></label>
+                            <select class="form-control gamer-input" id="metodoPago" name="metodoPago" required>
+                                <option value="EFECTIVO">Efectivo</option>
+                                <option value="TARJETA">Tarjeta</option>
+                                <option value="TRANSFERENCIA">Transferencia</option>
+                                <option value="YAPE">Yape</option>
+                                <option value="PLIN">Plin</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Referencia / Observaciones</label>
+                            <textarea class="form-control gamer-input" id="referencia" name="referencia" rows="2"
+                                placeholder="Número de operación, observaciones, etc."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success gamer-btn">
+                            <i class="fas fa-check"></i> Registrar Abono
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Calcular estadísticas
+            let totalDeuda = 0;
+            let cuotasVencidas = 0;
+
+            $('tbody tr').each(function () {
+                const montoPendiente = parseFloat($(this).find('td:eq(4) span').text().replace(',', ''));
+                totalDeuda += montoPendiente;
+
+                if ($(this).find('.badge-danger:contains("Con Vencidas")').length > 0) {
+                    cuotasVencidas++;
+                }
+            });
+
+            $('#totalDeuda').text('S/ ' + totalDeuda.toFixed(2));
+            $('#cuotasVencidas').text(cuotasVencidas);
+
+            // Abrir modal abono
+            $('.btn-abono').on('click', function () {
+                const creditoId = $(this).data('id');
+                const venta = $(this).data('venta');
+                const pendiente = $(this).data('pendiente');
+
+                $('#creditoId').val(creditoId);
+                $('#infoVenta').text(venta);
+                $('#infoPendiente').text(pendiente);
+                $('#monto').attr('max', pendiente);
+                $('#monto').val('');
+                $('#metodoPago').val('EFECTIVO');
+                $('#referencia').val('');
+
+                $('#modalAbono').modal('show');
+            });
+
+            // Enviar abono
+            $('#formAbono').on('submit', function (e) {
+                e.preventDefault();
+
+                const formData = {
+                    creditoId: $('#creditoId').val(),
+                    monto: parseFloat($('#monto').val()),
+                    metodoPago: $('#metodoPago').val(),
+                    referencia: $('#referencia').val()
+                };
+
+                const maxMonto = parseFloat($('#monto').attr('max'));
+                if (formData.monto > maxMonto) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'El monto no puede ser mayor a la deuda pendiente',
+                        icon: 'error'
+                    });
+                    return;
+                }
+
+                $.ajax({
+                    url: '/admin/creditos/registrar-abono',
+                    method: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        $('#modalAbono').modal('hide');
+                        Swal.fire({
+                            title: '¡Abono Registrado!',
+                            text: 'El abono se registró correctamente',
+                            icon: 'success'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    },
+                    error: function (xhr) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: xhr.responseJSON?.error || 'Error al registrar el abono',
+                            icon: 'error'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+
 </body>
 
 </html>

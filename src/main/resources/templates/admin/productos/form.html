@@ -1,36 +1,34 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: head(${esNuevo ? 'Nuevo Producto' : 'Editar Producto'})"></head>
+<head th:replace="~{fragments/head :: head(${esNuevo} ? 'Nuevo Producto' : 'Editar Producto')}"></head>
 
 <body class="hold-transition sidebar-mini">
-
     <div class="wrapper">
-
         <!-- Navbar -->
-        <div th:replace="fragments/header :: header"></div>
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
         <!-- Sidebar -->
-        <div th:replace="fragments/sidebar :: sidebar"></div>
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
         <!-- Content Wrapper -->
         <div class="content-wrapper">
-
             <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">
-                                <i th:class="${esNuevo ? 'fas fa-plus' : 'fas fa-edit'}"></i>
-                                <span th:text="${esNuevo ? 'Nuevo Producto' : 'Editar Producto'}">Producto</span>
+                                <i class="fas fa-gamepad neon-icon"></i>
+                                <span class="neon-text" th:text="${esNuevo} ? 'NUEVO' : 'EDITAR'">NUEVO</span>
+                                PRODUCTO
                             </h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Inicio</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
                                 <li class="breadcrumb-item"><a th:href="@{/admin/productos}">Productos</a></li>
-                                <li class="breadcrumb-item active" th:text="${esNuevo ? 'Nuevo' : 'Editar'}">Formulario
+                                <li class="breadcrumb-item active" th:text="${esNuevo} ? 'Nuevo' : 'Editar'">Nuevo
                                 </li>
                             </ol>
                         </div>
@@ -41,345 +39,264 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-
-                    <!-- Formulario -->
                     <form
-                        th:action="${esNuevo ? '/admin/productos/guardar' : '/admin/productos/actualizar/' + producto.id}"
-                        th:object="${producto}" method="post" enctype="multipart/form-data">
+                        th:action="${esNuevo} ? @{/admin/productos/guardar} : @{/admin/productos/actualizar/{id}(id=${producto.id})}"
+                        th:object="${producto}" method="post" enctype="multipart/form-data" class="needs-validation"
+                        novalidate>
 
                         <div class="row">
-
-                            <!-- Columna izquierda -->
+                            <!-- Columna Izquierda: Datos Básicos -->
                             <div class="col-md-8">
-
-                                <!-- Información básica -->
-                                <div class="card">
+                                <div class="card gamer-card">
                                     <div class="card-header">
                                         <h3 class="card-title">
-                                            <i class="fas fa-info-circle"></i> Información Básica
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Información del Producto
                                         </h3>
                                     </div>
                                     <div class="card-body">
-
                                         <!-- Nombre -->
                                         <div class="form-group">
                                             <label for="nombre">Nombre del Producto <span
                                                     class="text-danger">*</span></label>
                                             <input type="text" class="form-control" id="nombre" th:field="*{nombre}"
-                                                placeholder="Ej: Laptop HP Pavilion 15" required>
-                                            <small class="form-text text-muted">Ingrese un nombre descriptivo del
-                                                producto</small>
+                                                placeholder="Ej: PlayStation 5 Digital Edition" required>
+                                            <div class="invalid-feedback">
+                                                El nombre es obligatorio
+                                            </div>
                                         </div>
 
                                         <!-- Descripción -->
                                         <div class="form-group">
                                             <label for="descripcion">Descripción</label>
                                             <textarea class="form-control" id="descripcion" th:field="*{descripcion}"
-                                                rows="4" placeholder="Descripción detallada del producto"></textarea>
+                                                rows="4"
+                                                placeholder="Describe las características del producto..."></textarea>
                                         </div>
 
-                                        <!-- SKU -->
-                                        <div class="form-group">
-                                            <label for="codigoSku">Código SKU</label>
-                                            <input type="text" class="form-control" id="codigoSku"
-                                                th:field="*{codigoSku}"
-                                                placeholder="Se genera automáticamente si se deja vacío">
-                                            <small class="form-text text-muted">Código único de identificación
-                                                (opcional)</small>
-                                        </div>
-
-                                        <!-- Categoría y Marca -->
                                         <div class="row">
+                                            <!-- Categoría -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="categoria">Categoría <span
                                                             class="text-danger">*</span></label>
                                                     <select class="form-control select2" id="categoria"
-                                                        th:field="*{categoria.id}" required>
-                                                        <option value="">-- Seleccione --</option>
+                                                        th:field="*{categoria}" required>
+                                                        <option value="">Seleccione...</option>
                                                         <option th:each="cat : ${categorias}" th:value="${cat.id}"
                                                             th:text="${cat.nombre}">
                                                             Categoría
                                                         </option>
                                                     </select>
+                                                    <div class="invalid-feedback">
+                                                        Seleccione una categoría
+                                                    </div>
                                                 </div>
                                             </div>
+
+                                            <!-- Marca -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="marca">Marca</label>
-                                                    <select class="form-control select2" id="marca"
-                                                        th:field="*{marca.id}">
-                                                        <option value="">-- Seleccione --</option>
-                                                        <option th:each="marca : ${marcas}" th:value="${marca.id}"
-                                                            th:text="${marca.nombre}">
+                                                    <label for="marca">Marca <span class="text-danger">*</span></label>
+                                                    <select class="form-control select2" id="marca" th:field="*{marca}"
+                                                        required>
+                                                        <option value="">Seleccione...</option>
+                                                        <option th:each="mar : ${marcas}" th:value="${mar.id}"
+                                                            th:text="${mar.nombre}">
                                                             Marca
                                                         </option>
                                                     </select>
+                                                    <div class="invalid-feedback">
+                                                        Seleccione una marca
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
 
+                                        <!-- SKU (solo si es edición) -->
+                                        <div class="form-group" th:unless="${esNuevo}">
+                                            <label for="codigoSku">Código SKU</label>
+                                            <input type="text" class="form-control" id="codigoSku"
+                                                th:field="*{codigoSku}" readonly>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <!-- Precios e Inventario -->
-                                <div class="card">
+                                <!-- Card Precios -->
+                                <div class="card gamer-card">
                                     <div class="card-header">
                                         <h3 class="card-title">
-                                            <i class="fas fa-dollar-sign"></i> Precios e Inventario
+                                            <i class="fas fa-tag mr-1"></i>
+                                            Precios
                                         </h3>
                                     </div>
                                     <div class="card-body">
-
                                         <div class="row">
                                             <!-- Precio Base -->
-                                            <div class="col-md-4">
+                                            <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="precioBase">Precio Base <span
+                                                    <label for="precioBase">Precio Base (S/) <span
                                                             class="text-danger">*</span></label>
-                                                    <div class="input-group">
-                                                        <div class="input-group-prepend">
-                                                            <span class="input-group-text">S/</span>
-                                                        </div>
-                                                        <input type="number" class="form-control" id="precioBase"
-                                                            th:field="*{precioBase}" step="0.01" min="0"
-                                                            placeholder="0.00" required>
+                                                    <input type="number" class="form-control" id="precioBase"
+                                                        th:field="*{precioBase}" step="0.01" min="0" placeholder="0.00"
+                                                        required>
+                                                    <div class="invalid-feedback">
+                                                        Ingrese un precio válido
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <!-- Precio Oferta -->
-                                            <div class="col-md-4">
+                                            <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="precioOferta">Precio Oferta</label>
-                                                    <div class="input-group">
-                                                        <div class="input-group-prepend">
-                                                            <span class="input-group-text">S/</span>
-                                                        </div>
-                                                        <input type="number" class="form-control" id="precioOferta"
-                                                            th:field="*{precioOferta}" step="0.01" min="0"
-                                                            placeholder="0.00">
-                                                    </div>
-                                                    <small class="form-text text-muted">Opcional (para ofertas)</small>
+                                                    <label for="precioOferta">Precio en Oferta (S/)</label>
+                                                    <input type="number" class="form-control" id="precioOferta"
+                                                        th:field="*{precioOferta}" step="0.01" min="0"
+                                                        placeholder="Opcional">
+                                                    <small class="form-text text-muted">
+                                                        Dejar vacío si no tiene oferta
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card Stock -->
+                                <div class="card gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-boxes mr-1"></i>
+                                            Inventario
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <!-- Stock Actual (solo si es edición) -->
+                                            <div class="col-md-6" th:unless="${esNuevo}">
+                                                <div class="form-group">
+                                                    <label for="stockActual">Stock Actual</label>
+                                                    <input type="number" class="form-control" id="stockActual"
+                                                        th:field="*{stockActual}" readonly>
+                                                    <small class="form-text text-muted">
+                                                        Usa el módulo de Inventario para modificar
+                                                    </small>
                                                 </div>
                                             </div>
 
                                             <!-- Stock Mínimo -->
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="stockMinimo">Stock Mínimo <span
-                                                            class="text-danger">*</span></label>
-                                                    <input type="number" class="form-control" id="stockMinimo"
-                                                        th:field="*{stockMinimo}" min="0" placeholder="5" required>
-                                                    <small class="form-text text-muted">Alerta cuando stock esté
-                                                        bajo</small>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Stock Actual (solo en edición) -->
-                                        <div class="row" th:if="${!esNuevo}">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label>Stock Actual</label>
-                                                    <input type="text" class="form-control"
-                                                        th:value="${producto.stockActual}" readonly>
-                                                    <small class="form-text text-muted">Para modificar, usar módulo de
-                                                        Inventario</small>
+                                                    <label for="stockMinimo">Stock Mínimo</label>
+                                                    <input type="number" class="form-control" id="stockMinimo"
+                                                        th:field="*{stockMinimo}" min="0" value="10">
+                                                    <small class="form-text text-muted">
+                                                        Para alertas de stock bajo
+                                                    </small>
                                                 </div>
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
-
                             </div>
 
-                            <!-- Columna derecha -->
+                            <!-- Columna Derecha: Opciones e Imágenes -->
                             <div class="col-md-4">
-
-                                <!-- Imágenes -->
-                                <div class="card">
+                                <!-- Card Opciones -->
+                                <div class="card gamer-card">
                                     <div class="card-header">
                                         <h3 class="card-title">
-                                            <i class="fas fa-images"></i> Imágenes
+                                            <i class="fas fa-cog mr-1"></i>
+                                            Opciones
                                         </h3>
                                     </div>
                                     <div class="card-body">
-
-                                        <!-- Vista previa -->
-                                        <div class="text-center mb-3" th:if="${producto.imagenPrincipal != null}">
-                                            <img th:src="@{${producto.imagenPrincipal.urlCompleta}}" alt="Imagen actual"
-                                                class="img-fluid rounded" style="max-height: 200px;">
-                                            <p class="text-muted mt-2">Imagen actual</p>
-                                        </div>
-
-                                        <!-- Subir imágenes -->
+                                        <!-- Estado -->
                                         <div class="form-group">
-                                            <label for="imagenes">
-                                                Subir Imágenes
-                                                <span th:if="${esNuevo}" class="text-danger">*</span>
-                                            </label>
-                                            <div class="custom-file">
-                                                <input type="file" class="custom-file-input" id="imagenes"
-                                                    name="imagenes" accept="image/*" multiple th:required="${esNuevo}">
-                                                <label class="custom-file-label" for="imagenes">Seleccionar
-                                                    imágenes</label>
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="activo"
+                                                    th:field="*{activo}" checked>
+                                                <label class="custom-control-label" for="activo">
+                                                    Producto Activo
+                                                </label>
                                             </div>
-                                            <small class="form-text text-muted">
-                                                Máximo 5 imágenes. Formatos: JPG, PNG, GIF, WEBP (máx. 5MB c/u)
-                                            </small>
-                                        </div>
-
-                                        <!-- Preview de nuevas imágenes -->
-                                        <div id="imagePreview" class="mt-3"></div>
-
-                                        <!-- Imágenes existentes (en edición) -->
-                                        <div
-                                            th:if="${!esNuevo and producto.imagenes != null and !producto.imagenes.isEmpty()}">
-                                            <hr>
-                                            <h6>Imágenes actuales:</h6>
-                                            <div class="row">
-                                                <div class="col-6 mb-2" th:each="img : ${producto.imagenes}">
-                                                    <img th:src="@{${img.urlCompleta}}" class="img-fluid rounded"
-                                                        alt="Imagen">
-                                                    <small th:if="${img.esPrincipal}"
-                                                        class="badge badge-primary">Principal</small>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-
-                                <!-- Opciones -->
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h3 class="card-title">
-                                            <i class="fas fa-cog"></i> Opciones
-                                        </h3>
-                                    </div>
-                                    <div class="card-body">
-
-                                        <!-- Activo -->
-                                        <div class="custom-control custom-switch mb-3">
-                                            <input type="checkbox" class="custom-control-input" id="activo"
-                                                th:field="*{activo}">
-                                            <label class="custom-control-label" for="activo">
-                                                <strong>Producto Activo</strong>
-                                                <br>
-                                                <small class="text-muted">Visible en el catálogo público</small>
-                                            </label>
                                         </div>
 
                                         <!-- Destacado -->
-                                        <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" id="esDestacado"
-                                                th:field="*{esDestacado}">
-                                            <label class="custom-control-label" for="esDestacado">
-                                                <strong>Producto Destacado</strong>
-                                                <br>
-                                                <small class="text-muted">Se mostrará en la página principal</small>
-                                            </label>
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="esDestacado"
+                                                    th:field="*{esDestacado}">
+                                                <label class="custom-control-label" for="esDestacado">
+                                                    <i class="fas fa-star text-warning"></i> Destacar en Home
+                                                </label>
+                                            </div>
                                         </div>
-
                                     </div>
                                 </div>
 
-                            </div>
-
-                        </div>
-
-                        <!-- Botones -->
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="card">
+                                <!-- Card Imágenes -->
+                                <div class="card gamer-card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-images mr-1"></i>
+                                            Imágenes
+                                        </h3>
+                                    </div>
                                     <div class="card-body">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-save"></i> Guardar Producto
+                                        <div class="form-group">
+                                            <label for="imagenes">Subir Imágenes (Max. 5)</label>
+                                            <input type="file" class="form-control-file" id="imagenes" name="imagenes"
+                                                accept="image/*" multiple>
+                                            <small class="form-text text-muted">
+                                                Formatos: JPG, PNG, GIF, WEBP (Max. 5MB cada una)
+                                            </small>
+                                        </div>
+
+                                        <!-- Preview de imágenes actuales (solo edición) -->
+
+                                        <div th:if="${!esNuevo} and ${#lists.size(producto.imagenes) > 0}">
+                                            <label>Imágenes Actuales:</label>
+                                            <div class="row">
+                                                <div class="col-6 mb-2" th:each="img : ${producto.imagenes}">
+                                                    <img th:src="@{'/uploads' + ${img.url}}" class="img-thumbnail"
+                                                        style="width: 100%;">
+                                                    <span class="badge badge-primary badge-sm"
+                                                        th:if="${img.esPrincipal}">
+                                                        Principal
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Botones de Acción -->
+                                <div class="card gamer-card">
+                                    <div class="card-body">
+                                        <button type="submit" class="btn btn-success btn-block gamer-btn">
+                                            <i class="fas fa-save"></i>
+                                            <span th:text="${esNuevo} ? 'Guardar Producto' : 'Actualizar Producto'">
+                                                Guardar
+                                            </span>
                                         </button>
-                                        <a th:href="@{/admin/productos}" class="btn btn-secondary">
+                                        <a th:href="@{/admin/productos}" class="btn btn-secondary btn-block">
                                             <i class="fas fa-times"></i> Cancelar
                                         </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </form>
-
                 </div>
             </section>
-
         </div>
 
         <!-- Footer -->
-        <div th:replace="fragments/footer :: footer"></div>
-
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
-
     <!-- Scripts -->
-    <div th:replace="fragments/scripts :: scripts"></div>
-
-    <script>
-        $(document).ready(function () {
-
-            // ============================================
-            // PREVIEW DE IMÁGENES
-            // ============================================
-            $('#imagenes').on('change', function (e) {
-                const files = e.target.files;
-                const previewContainer = $('#imagePreview');
-                previewContainer.empty();
-
-                if (files.length > 5) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Demasiadas imágenes',
-                        text: 'Solo puede subir máximo 5 imágenes',
-                        confirmButtonColor: '#f7971e'
-                    });
-                    $(this).val('');
-                    return;
-                }
-
-                Array.from(files).forEach((file, index) => {
-                    // Validar tamaño
-                    if (file.size > 5 * 1024 * 1024) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Archivo muy grande',
-                            text: `La imagen "${file.name}" supera los 5MB`,
-                            confirmButtonColor: '#ee0979'
-                        });
-                        return;
-                    }
-
-                    // Crear preview
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        const col = $('<div class="col-6 col-md-4 mb-2"></div>');
-                        const img = $('<img class="img-fluid rounded" style="max-height: 150px;">');
-                        img.attr('src', e.target.result);
-                        col.append(img);
-
-                        if (index === 0) {
-                            col.append('<small class="badge badge-primary">Principal</small>');
-                        }
-
-                        previewContainer.append(col);
-                    };
-                    reader.readAsDataURL(file);
-                });
-
-                // Actualizar label
-                const fileLabel = $(this).siblings('.custom-file-label');
-                fileLabel.text(files.length + ' archivo(s) seleccionado(s)');
-            });
-
-        });
-    </script>
-
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
 </body>
 
 </html>
