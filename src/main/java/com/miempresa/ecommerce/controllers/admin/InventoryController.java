@@ -1,28 +1,25 @@
 package com.miempresa.ecommerce.controllers.admin;
 
-import com.miempresa.ecommerce.security.SecurityUtils;
-import com.miempresa.ecommerce.services.*;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
-
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.miempresa.ecommerce.models.InventoryMovement;
 import com.miempresa.ecommerce.models.enums.MotivoMovimiento;
 import com.miempresa.ecommerce.models.enums.TipoMovimiento;
+import com.miempresa.ecommerce.security.SecurityUtils;
+import com.miempresa.ecommerce.services.InventoryMovementService;
+import com.miempresa.ecommerce.services.ProductService;
+import com.miempresa.ecommerce.services.UserService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/admin/inventario")
@@ -49,7 +46,7 @@ public class InventoryController {
         }
 
         model.addAttribute("movimientos", movimientos);
-        model.addAttribute("productos", productService.obtenerActivos());
+        model.addAttribute("productos", productService.obtenerTodos());
         model.addAttribute("titulo", "Movimientos de Inventario");
         return "admin/inventario/lista";
     }

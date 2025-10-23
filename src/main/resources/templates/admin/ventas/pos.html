@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="~{fragments/head :: head('Punto de Venta - POS'))}"></head>
+<head th:replace="~{fragments/head :: head('Punto de Venta - POS')}"></head>
+
+
 
 <body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
@@ -263,131 +265,142 @@
 
         <!-- Footer -->
         <footer th:replace="~{fragments/footer :: footer}"></footer>
-    </div>
+        <!-- Scripts base (jQuery, Bootstrap, etc.) -->
+        <th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
 
-    <!-- Scripts -->
-    <div th:replace="~{fragments/scripts :: scripts}"></div>
+        <script th:inline="javascript">
+            (function () {
+                // ============================================
+                // VARIABLES GLOBALES
+                // ============================================
+                let productos = /*[[${productos}]]*/[];
+                let carrito = [];
+                let clienteSeleccionado = null;
 
-    <!-- Script Específico del POS -->
-    <script th:inline="javascript">
-        $(document).ready(function () {
-            // ============================================
-            // VARIABLES GLOBALES
-            // ============================================
-            let productos = /*[[${productos}]]*/[];
-            let carrito = [];
-            let clienteSeleccionado = null;
+                // ============================================
+                // INICIALIZACIÓN
+                // ============================================
+                $(document).ready(function () {
+                    cargarProductos();
+                    configurarEventos();
+                });
 
-            // ============================================
-            // INICIALIZACIÓN
-            // ============================================
-            cargarProductos();
-            configurarEventos();
-
-            // ============================================
-            // CARGAR PRODUCTOS
-            // ============================================
-            function cargarProductos() {
-                if (productos.length > 0) {
-                    mostrarProductos(productos);
-                }
-            }
-
-            // ============================================
-            // CONFIGURAR EVENTOS
-            // ============================================
-            function configurarEventos() {
-                // Búsqueda de productos
-                $('#searchProduct').on('keyup', function () {
-                    const query = $(this).val().toLowerCase();
-                    if (query.length >= 2) {
-                        const filtrados = productos.filter(p =>
-                            p.nombre.toLowerCase().includes(query) ||
-                            (p.codigoSku && p.codigoSku.toLowerCase().includes(query))
-                        );
-                        mostrarProductos(filtrados);
-                    } else if (query.length === 0) {
+                // ============================================
+                // CARGAR PRODUCTOS
+                // ============================================
+                function cargarProductos() {
+                    if (productos.length > 0) {
                         mostrarProductos(productos);
                     }
-                });
+                }
 
-                // Búsqueda de cliente
-                $('#btnBuscarCliente').on('click', buscarCliente);
-                $('#clienteDocumento').on('keypress', function (e) {
-                    if (e.which === 13) buscarCliente();
-                });
+                // ============================================
+                // CONFIGURAR EVENTOS
+                // ============================================
+                function configurarEventos() {
+                    console.log("🎯 Eventos POS configurados correctamente");
 
-                // Limpiar carrito
-                $('#btnLimpiarCarrito').on('click', function () {
-                    if (confirm('¿Seguro que deseas limpiar el carrito?')) {
-                        carrito = [];
-                        actualizarCarrito();
-                    }
-                });
+                    // Búsqueda de productos
+                    $('#searchProduct').on('keyup', function () {
+                        const query = $(this).val().toLowerCase();
+                        if (query.length >= 2) {
+                            const filtrados = productos.filter(p =>
+                                p.nombre.toLowerCase().includes(query) ||
+                                (p.codigoSku && p.codigoSku.toLowerCase().includes(query))
+                            );
+                            mostrarProductos(filtrados);
+                        } else if (query.length === 0) {
+                            mostrarProductos(productos);
+                        }
+                    });
 
-                // Cambio de tipo de pago
-                $('#tipoPago').on('change', function () {
-                    if ($(this).val() === 'CREDITO') {
-                        $('#numCuotasGroup').show();
-                        $('#metodoPagoGroup').hide();
-                        $('#montoRecibidoGroup').hide();
-                    } else {
-                        $('#numCuotasGroup').hide();
-                        $('#metodoPagoGroup').show();
-                        $('#montoRecibidoGroup').show();
-                    }
-                });
+                    // Búsqueda de cliente
+                    $('#btnBuscarCliente').on('click', buscarCliente);
+                    $('#clienteDocumento').on('keypress', function (e) {
+                        if (e.which === 13) buscarCliente();
+                    });
 
-                // Cambio de método de pago
-                $('input[name="metodoPago"]').on('change', function () {
-                    if ($(this).val() === 'EFECTIVO') {
-                        $('#montoRecibidoGroup').show();
-                    } else {
-                        $('#montoRecibidoGroup').hide();
-                        $('#vueltoGroup').hide();
-                    }
-                });
+                    // Limpiar carrito
+                    $('#btnLimpiarCarrito').on('click', function () {
+                        if (confirm('¿Seguro que deseas limpiar el carrito?')) {
+                            carrito = [];
+                            clienteSeleccionado = null;
+                            $('#clienteInfo').hide();
+                            $('#clienteDocumento').val('');
+                            actualizarCarrito();
+                        }
+                    });
 
-                // Cálculo de vuelto
-                $('#montoRecibido').on('keyup', calcularVuelto);
+                    // Cambio de tipo de pago
+                    $('#tipoPago').on('change', function () {
+                        if ($(this).val() === 'CREDITO') {
+                            $('#numCuotasGroup').show();
+                            $('#metodoPagoGroup').hide();
+                            $('#montoRecibidoGroup').hide();
+                            $('#vueltoGroup').hide();
+                        } else {
+                            $('#numCuotasGroup').hide();
+                            $('#metodoPagoGroup').show();
+                            $('#montoRecibidoGroup').show();
+                        }
+                    });
 
-                // Cambios en descuento y envío
-                $('#descuento, #costoEnvio').on('keyup change', calcularTotales);
+                    // Cambio de método de pago
+                    $('input[name="metodoPago"]').on('change', function () {
+                        if ($(this).val() === 'EFECTIVO') {
+                            $('#montoRecibidoGroup').show();
+                        } else {
+                            $('#montoRecibidoGroup').hide();
+                            $('#vueltoGroup').hide();
+                        }
+                    });
 
-                // Procesar venta
-                $('#btnProcesarVenta').on('click', procesarVenta);
-            }
+                    // Cálculo de vuelto
+                    $('#montoRecibido').on('keyup', calcularVuelto);
 
-            // ============================================
-            // MOSTRAR PRODUCTOS
-            // ============================================
-            function mostrarProductos(lista) {
-                const grid = $('#productGrid');
-                grid.empty();
+                    // Cambios en descuento y envío
+                    $('#descuento, #costoEnvio').on('keyup change', calcularTotales);
 
-                if (lista.length === 0) {
-                    grid.html(`
+                    // ✅ CORRECCIÓN: Usar selector directo
+                    $('#btnProcesarVenta').off('click').on('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log("🟢 Click detectado en Procesar Venta");
+                        procesarVenta();
+                    });
+                }
+
+                // ============================================
+                // MOSTRAR PRODUCTOS - ✅ CORREGIDO SIN BUCLE
+                // ============================================
+                function mostrarProductos(lista) {
+                    const grid = $('#productGrid');
+                    grid.empty();
+
+                    if (lista.length === 0) {
+                        grid.html(`
                 <div class="col-12 text-center text-muted py-5">
                     <i class="fas fa-search fa-3x mb-3"></i>
                     <p>No se encontraron productos</p>
                 </div>
             `);
-                    return;
-                }
+                        return;
+                    }
 
-                lista.forEach(producto => {
-                    const imagenUrl = producto.imagenPrincipal || '/img/placeholder-game.jpg';
-                    const stock = producto.stockActual || 0;
-                    const sinStock = stock <= 0;
+                    lista.forEach(producto => {
+                        // ✅ Usar una imagen base64 transparente como fallback
+                        const imagenUrl = producto.imagenPrincipal || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23ddd" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="14" fill="%23999" text-anchor="middle" dy=".3em"%3ESin imagen%3C/text%3E%3C/svg%3E';
+                        const stock = producto.stockActual || 0;
+                        const sinStock = stock <= 0;
 
-                    grid.append(`
+                        grid.append(`
                 <div class="col-md-6 col-lg-4 mb-3">
                     <div class="card gamer-card product-card ${sinStock ? 'sin-stock' : ''}" 
-                         onclick="agregarAlCarrito(${producto.id})">
+                        onclick="agregarAlCarrito(${producto.id})">
                         <img src="${imagenUrl}" 
-                             class="card-img-top" 
-                             alt="${producto.nombre}"
-                             style="height: 150px; object-fit: cover;">
+                            class="card-img-top" 
+                            alt="${producto.nombre}"
+                            style="height: 150px; object-fit: cover;">
                         <div class="card-body p-2">
                             <h6 class="card-title mb-1" style="font-size: 0.9rem;">
                                 ${producto.nombre}
@@ -404,63 +417,60 @@
                     </div>
                 </div>
             `);
-                });
-            }
-
-            // ============================================
-            // AGREGAR AL CARRITO
-            // ============================================
-            window.agregarAlCarrito = function (productoId) {
-                const producto = productos.find(p => p.id === productoId);
-
-                if (!producto) return;
-
-                if (producto.stockActual <= 0) {
-                    showAlert('No hay stock disponible', 'warning');
-                    return;
-                }
-
-                const itemExistente = carrito.find(item => item.id === productoId);
-
-                if (itemExistente) {
-                    if (itemExistente.cantidad >= producto.stockActual) {
-                        showAlert('No hay más stock disponible', 'warning');
-                        return;
-                    }
-                    itemExistente.cantidad++;
-                } else {
-                    carrito.push({
-                        id: producto.id,
-                        nombre: producto.nombre,
-                        precio: producto.precioActual,
-                        cantidad: 1,
-                        stockMax: producto.stockActual
                     });
                 }
 
-                actualizarCarrito();
-            };
+                // ============================================
+                // AGREGAR AL CARRITO
+                // ============================================
+                window.agregarAlCarrito = function (productoId) {
+                    const producto = productos.find(p => p.id === productoId);
+                    if (!producto) return;
 
-            // ============================================
-            // ACTUALIZAR CARRITO
-            // ============================================
-            function actualizarCarrito() {
-                const container = $('#cartItems');
-                container.empty();
+                    if (producto.stockActual <= 0) {
+                        showAlert('No hay stock disponible', 'warning');
+                        return;
+                    }
 
-                if (carrito.length === 0) {
-                    container.html(`
+                    const itemExistente = carrito.find(item => item.id === productoId);
+                    if (itemExistente) {
+                        if (itemExistente.cantidad >= producto.stockActual) {
+                            showAlert('No hay más stock disponible', 'warning');
+                            return;
+                        }
+                        itemExistente.cantidad++;
+                    } else {
+                        carrito.push({
+                            id: producto.id,
+                            nombre: producto.nombre,
+                            precio: producto.precioActual,
+                            cantidad: 1,
+                            stockMax: producto.stockActual
+                        });
+                    }
+                    actualizarCarrito();
+                };
+
+                // ============================================
+                // ACTUALIZAR CARRITO
+                // ============================================
+                function actualizarCarrito() {
+                    const container = $('#cartItems');
+                    container.empty();
+
+                    if (carrito.length === 0) {
+                        container.html(`
                 <div class="text-center text-muted py-5" id="emptyCart">
                     <i class="fas fa-shopping-cart fa-3x mb-3"></i>
                     <p>Carrito vacío</p>
                 </div>
             `);
-                    calcularTotales();
-                    return;
-                }
+                        calcularTotales();
+                        return;
+                    }
 
-                carrito.forEach((item, index) => {
-                    container.append(`
+                    carrito.forEach((item, index) => {
+                        container.append(`
                 <div class="cart-item p-3 border-bottom">
                     <div class="row align-items-center">
                         <div class="col-6">
@@ -477,9 +487,9 @@
                                     </button>
                                 </div>
                                 <input type="text" 
-                                       class="form-control text-center" 
-                                       value="${item.cantidad}" 
-                                       readonly>
+                                    class="form-control text-center" 
+                                    value="${item.cantidad}" 
+                                    readonly>
                                 <div class="input-group-append">
                                     <button class="btn btn-outline-secondary" 
                                             type="button"
@@ -503,310 +513,315 @@
                     </div>
                 </div>
             `);
-                });
+                    });
 
-                calcularTotales();
-            }
-
-            // ============================================
-            // CAMBIAR CANTIDAD
-            // ============================================
-            window.cambiarCantidad = function (index, cambio) {
-                const item = carrito[index];
-                const nuevaCantidad = item.cantidad + cambio;
-
-                if (nuevaCantidad <= 0) {
-                    eliminarDelCarrito(index);
-                    return;
+                    calcularTotales();
                 }
 
-                if (nuevaCantidad > item.stockMax) {
-                    showAlert('No hay más stock disponible', 'warning');
-                    return;
-                }
-
-                item.cantidad = nuevaCantidad;
-                actualizarCarrito();
-            };
-
-            // ============================================
-            // ELIMINAR DEL CARRITO
-            // ============================================
-            window.eliminarDelCarrito = function (index) {
-                carrito.splice(index, 1);
-                actualizarCarrito();
-            };
-
-            // ============================================
-            // CALCULAR TOTALES
-            // ============================================
-            function calcularTotales() {
-                const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
-                const descuento = parseFloat($('#descuento').val()) || 0;
-                const costoEnvio = parseFloat($('#costoEnvio').val()) || 0;
-                const total = subtotal - descuento + costoEnvio;
-
-                $('#subtotal').text(subtotal.toFixed(2));
-                $('#total').text(total.toFixed(2));
-
-                calcularVuelto();
-            }
-
-            // ============================================
-            // CALCULAR VUELTO
-            // ============================================
-            function calcularVuelto() {
-                const total = parseFloat($('#total').text()) || 0;
-                const recibido = parseFloat($('#montoRecibido').val()) || 0;
-
-                if (recibido > 0 && recibido >= total) {
-                    const vuelto = recibido - total;
-                    $('#vuelto').text(vuelto.toFixed(2));
-                    $('#vueltoGroup').show();
-                } else {
-                    $('#vueltoGroup').hide();
-                }
-            }
-
-            // ============================================
-            // BUSCAR CLIENTE
-            // ============================================
-            function buscarCliente() {
-                const documento = $('#clienteDocumento').val().trim();
-
-                if (!documento) {
-                    showAlert('Ingrese un documento', 'warning');
-                    return;
-                }
-
-                // Mostrar loading
-                Swal.fire({
-                    title: 'Buscando cliente...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                // Llamada AJAX
-                $.ajax({
-                    url: '/admin/clientes/buscar',
-                    method: 'GET',
-                    data: { documento: documento },
-                    success: function (response) {
-                        Swal.close();
-
-                        if (response.success) {
-                            clienteSeleccionado = response.cliente;
-                            $('#clienteId').val(response.cliente.id);
-                            $('#clienteNombre').text(response.cliente.nombre);
-                            $('#clienteDocumentoCompleto').text(response.cliente.tipoDocumento + ': ' + response.cliente.numeroDocumento);
-                            $('#clienteInfo').show();
-                            showAlert('Cliente encontrado', 'success');
-                        } else {
-                            showAlert(response.error || 'Cliente no encontrado', 'error');
-                        }
-                    },
-                    error: function () {
-                        Swal.close();
-                        showAlert('Error al buscar cliente', 'error');
-                    }
-                });
-            }
-
-            // ============================================
-            // PROCESAR VENTA
-            // ============================================
-            function procesarVenta() {
-                // Validaciones
-                if (carrito.length === 0) {
-                    showAlert('El carrito está vacío', 'warning');
-                    return;
-                }
-
-                if (!clienteSeleccionado) {
-                    showAlert('Debe seleccionar un cliente', 'warning');
-                    return;
-                }
-
-                const tipoPago = $('#tipoPago').val();
-                const metodoPago = $('input[name="metodoPago"]:checked').val();
-                const total = parseFloat($('#total').text());
-
-                // Validar pago
-                if (tipoPago === 'CONTADO') {
-                    if (metodoPago === 'EFECTIVO') {
-                        const recibido = parseFloat($('#montoRecibido').val()) || 0;
-                        if (recibido < total) {
-                            showAlert('El monto recibido es insuficiente', 'warning');
-                            return;
-                        }
-                    }
-                } else {
-                    const numCuotas = parseInt($('#numCuotas').val());
-                    if (!numCuotas || numCuotas < 1 || numCuotas > 24) {
-                        showAlert('Ingrese un número de cuotas válido (1-24)', 'warning');
+                window.cambiarCantidad = function (index, cambio) {
+                    const item = carrito[index];
+                    const nuevaCantidad = item.cantidad + cambio;
+                    if (nuevaCantidad <= 0) {
+                        eliminarDelCarrito(index);
                         return;
                     }
-                }
-
-                // Confirmar venta
-                Swal.fire({
-                    title: '¿Procesar venta?',
-                    text: `Total: S/ ${total.toFixed(2)}`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Sí, procesar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        enviarVenta();
+                    if (nuevaCantidad > item.stockMax) {
+                        showAlert('No hay más stock disponible', 'warning');
+                        return;
                     }
-                });
-            }
-
-            // ============================================
-            // ENVIAR VENTA
-            // ============================================
-            function enviarVenta() {
-                const tipoPago = $('#tipoPago').val();
-                const metodoPago = tipoPago === 'CONTADO' ? $('input[name="metodoPago"]:checked').val() : null;
-                const numCuotas = tipoPago === 'CREDITO' ? parseInt($('#numCuotas').val()) : null;
-
-                // Preparar datos
-                const ventaData = {
-                    clienteDocumento: clienteSeleccionado.numeroDocumento,
-                    productos: carrito.map(item => ({
-                        id: item.id,
-                        cantidad: item.cantidad,
-                        precio: item.precio
-                    })),
-                    tipoPago: tipoPago,
-                    numCuotas: numCuotas,
-                    pagos: tipoPago === 'CONTADO' ? [{
-                        metodo: metodoPago,
-                        monto: parseFloat($('#total').text())
-                    }] : []
+                    item.cantidad = nuevaCantidad;
+                    actualizarCarrito();
                 };
 
-                // Mostrar loading
-                Swal.fire({
-                    title: 'Procesando venta...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
+                window.eliminarDelCarrito = function (index) {
+                    carrito.splice(index, 1);
+                    actualizarCarrito();
+                };
+
+                function calcularTotales() {
+                    const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+                    const descuento = parseFloat($('#descuento').val()) || 0;
+                    const costoEnvio = parseFloat($('#costoEnvio').val()) || 0;
+                    const total = subtotal - descuento + costoEnvio;
+                    $('#subtotal').text(subtotal.toFixed(2));
+                    $('#total').text(total.toFixed(2));
+                    calcularVuelto();
+                }
+
+                function calcularVuelto() {
+                    const total = parseFloat($('#total').text()) || 0;
+                    const recibido = parseFloat($('#montoRecibido').val()) || 0;
+                    if (recibido > 0 && recibido >= total) {
+                        const vuelto = recibido - total;
+                        $('#vuelto').text(vuelto.toFixed(2));
+                        $('#vueltoGroup').show();
+                    } else {
+                        $('#vueltoGroup').hide();
                     }
-                });
+                }
 
-                // Enviar al servidor
-                $.ajax({
-                    url: '/admin/ventas/pos/registrar',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(ventaData),
-                    success: function (response) {
-                        Swal.close();
+                function buscarCliente() {
+                    const documento = $('#clienteDocumento').val().trim();
+                    if (!documento) {
+                        showAlert('Ingrese un documento', 'warning');
+                        return;
+                    }
 
-                        if (response.success) {
-                            Swal.fire({
-                                title: '¡Venta Exitosa!',
-                                html: `
-                            <p>Venta: <strong>${response.numeroVenta}</strong></p>
-                            <p>Total: <strong>S/ ${response.total.toFixed(2)}</strong></p>
-                            ${response.vuelto ? `<p>Vuelto: <strong>S/ ${response.vuelto.toFixed(2)}</strong></p>` : ''}
-                        `,
-                                icon: 'success',
-                                confirmButtonText: 'Ver Detalle',
-                                showCancelButton: true,
-                                cancelButtonText: 'Nueva Venta'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    window.location.href = '/admin/ventas/ver/' + response.ventaId;
-                                } else {
-                                    location.reload();
-                                }
-                            });
-                        } else {
-                            showAlert(response.error || 'Error al procesar venta', 'error');
+                    Swal.fire({
+                        title: 'Buscando cliente...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    $.ajax({
+                        url: '/admin/clientes/buscar',
+                        method: 'GET',
+                        data: { documento: documento },
+                        success: function (response) {
+                            Swal.close();
+                            if (response.success) {
+                                clienteSeleccionado = response.cliente;
+                                $('#clienteId').val(response.cliente.id);
+                                $('#clienteNombre').text(response.cliente.nombre);
+                                $('#clienteDocumentoCompleto').text(`${response.cliente.tipoDocumento}: ${response.cliente.numeroDocumento}`);
+                                $('#clienteInfo').show();
+                                showAlert('Cliente encontrado', 'success');
+                            } else {
+                                showAlert(response.error || 'Cliente no encontrado', 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.close();
+                            showAlert('Error al buscar cliente', 'error');
                         }
-                    },
-                    error: function (xhr) {
-                        Swal.close();
-                        const error = xhr.responseJSON?.error || 'Error al procesar venta';
-                        showAlert(error, 'error');
+                    });
+                }
+
+                // ============================================
+                // ✅ PROCESAR VENTA - CORREGIDO CON TRY-CATCH
+                // ============================================
+                function procesarVenta() {
+                    try {
+                        console.log("📦 Iniciando procesarVenta()");
+
+                        // Validaciones
+                        if (carrito.length === 0) {
+                            showAlert('El carrito está vacío', 'warning');
+                            return;
+                        }
+
+                        if (!clienteSeleccionado) {
+                            showAlert('Debe seleccionar un cliente', 'warning');
+                            return;
+                        }
+
+                        const tipoPago = $('#tipoPago').val();
+                        const metodoPago = $('input[name="metodoPago"]:checked').val();
+                        const total = parseFloat($('#total').text());
+
+                        console.log("📊 Validando pago...", { tipoPago, metodoPago, total });
+
+                        // Validar pago en efectivo
+                        if (tipoPago === 'CONTADO' && metodoPago === 'EFECTIVO') {
+                            const recibido = parseFloat($('#montoRecibido').val()) || 0;
+                            if (recibido < total) {
+                                showAlert('El monto recibido es insuficiente', 'warning');
+                                return;
+                            }
+                        }
+
+                        // Validar crédito
+                        if (tipoPago === 'CREDITO') {
+                            const numCuotas = parseInt($('#numCuotas').val());
+                            if (!numCuotas || numCuotas < 1 || numCuotas > 24) {
+                                showAlert('Ingrese un número de cuotas válido (1-24)', 'warning');
+                                return;
+                            }
+                        }
+
+                        console.log("✅ Validaciones pasadas, mostrando confirmación...");
+
+                        // Confirmación
+                        Swal.fire({
+                            title: '¿Procesar venta?',
+                            text: `Total: S/ ${total.toFixed(2)}`,
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#28a745',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Sí, procesar',
+                            cancelButtonText: 'Cancelar'
+                        }).then(result => {
+                            console.log("🔔 SweetAlert result:", result);
+                            if (result.isConfirmed) {
+                                console.log("✅ Usuario confirmó, enviando venta...");
+                                try {
+                                    enviarVenta();
+                                } catch (error) {
+                                    console.error("❌ Error al llamar enviarVenta():", error);
+                                    showAlert('Error: ' + error.message, 'error');
+                                }
+                            } else {
+                                console.log("❌ Usuario canceló");
+                            }
+                        }).catch(error => {
+                            console.error("❌ Error en SweetAlert:", error);
+                        });
+                    } catch (error) {
+                        console.error("❌ Error en procesarVenta():", error);
+                        showAlert('Error al procesar la venta: ' + error.message, 'error');
                     }
-                });
-            }
+                }
 
-            // ============================================
-            // MOSTRAR ALERTAS
-            // ============================================
-            function showAlert(message, type) {
-                const alertClass = type === 'success' ? 'alert-success' :
-                    type === 'warning' ? 'alert-warning' : type === 'warning' ? 'alert-warning' :
-                        'alert-danger';
+                // ============================================
+                // ✅ ENVIAR VENTA - CORREGIDO
+                // ============================================
+                function enviarVenta() {
+                    try {
+                        const tipoPago = $('#tipoPago').val();
+                        const metodoPago = tipoPago === 'CONTADO' ? $('input[name="metodoPago"]:checked').val() : null;
+                        const numCuotas = tipoPago === 'CREDITO' ? parseInt($('#numCuotas').val()) : null;
+                        const total = parseFloat($('#total').text());
 
-                const alertHTML = `
+                        Swal.fire({
+                            title: 'Procesando venta...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        // ✅ JSON CORREGIDO
+                        const data = {
+                            clienteDocumento: $('#clienteDocumento').val(),
+                            tipoPago: tipoPago,
+                            productos: carrito.map(item => ({
+                                id: item.id,
+                                cantidad: item.cantidad,
+                                precio: item.precio
+                            })),
+                            pagos: tipoPago === 'CONTADO' ? [{
+                                metodoPago: metodoPago,
+                                monto: total
+                            }] : [],
+                            numCuotas: numCuotas
+                        };
+
+                        console.log("📤 Enviando JSON al backend:", JSON.stringify(data, null, 2));
+
+                        $.ajax({
+                            url: '/admin/ventas/pos/registrar',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(data),
+                            success: function (response) {
+                                Swal.close();
+                                console.log("✅ Respuesta del backend:", response);
+
+                                if (response.success) {
+                                    Swal.fire({
+                                        title: '¡Venta Exitosa!',
+                                        html: `
+                                <p>${response.mensaje}</p>
+                                <p><strong>N° Venta:</strong> ${response.numeroVenta || 'N/A'}</p>
+                                <p><strong>Total:</strong> S/ ${response.total?.toFixed(2) || total.toFixed(2)}</p>
+                            `,
+                                        icon: 'success',
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        // Limpiar formulario
+                                        carrito = [];
+                                        clienteSeleccionado = null;
+                                        $('#clienteInfo').hide();
+                                        $('#clienteDocumento').val('');
+                                        $('#descuento').val(0);
+                                        $('#costoEnvio').val(0);
+                                        $('#montoRecibido').val('');
+                                        actualizarCarrito();
+                                    });
+                                } else {
+                                    Swal.fire('Error', response.error || 'No se pudo registrar la venta', 'error');
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                Swal.close();
+                                console.error("❌ Error AJAX:", { xhr, status, error });
+                                console.error("❌ Response:", xhr.responseText);
+
+                                let errorMsg = 'No se pudo procesar la venta';
+                                try {
+                                    const errorResponse = JSON.parse(xhr.responseText);
+                                    errorMsg = errorResponse.error || errorMsg;
+                                } catch (e) {
+                                    errorMsg = xhr.responseText || errorMsg;
+                                }
+
+                                Swal.fire('Error', errorMsg, 'error');
+                            }
+                        });
+                    } catch (error) {
+                        Swal.close();
+                        console.error("❌ Error en enviarVenta():", error);
+                        showAlert('Error al enviar la venta: ' + error.message, 'error');
+                    }
+                }
+
+                function showAlert(message, type) {
+                    const alertClass = type === 'success' ? 'alert-success' :
+                        type === 'warning' ? 'alert-warning' : 'alert-danger';
+                    const icon = type === 'success' ? 'check-circle' :
+                        type === 'warning' ? 'exclamation-triangle' : 'times-circle';
+
+                    const alertHTML = `
             <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i>
-                ${message}
+                <i class="fas fa-${icon}"></i> ${message}
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
-            </div>
-        `;
+            </div>`;
+                    $('#alertContainer').html(alertHTML);
+                    setTimeout(() => {
+                        $('#alertContainer').fadeOut(() => $('#alertContainer').html('').show());
+                    }, 3000);
+                }
+            })();
+        </script>
 
-                $('#alertContainer').html(alertHTML);
-
-                // Auto-cerrar después de 3 segundos
-                setTimeout(() => {
-                    $('#alertContainer').fadeOut(() => {
-                        $('#alertContainer').html('').show();
-                    });
-                }, 3000);
+        <!-- Estilos Específicos del POS -->
+        <style>
+            .product-card {
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 2px solid transparent;
             }
-        });
-    </script>
 
-    <!-- Estilos Específicos del POS -->
-    <style>
-        .product-card {
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
+            .product-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(220, 53, 69, 0.3);
+                border-color: #dc3545;
+            }
 
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(220, 53, 69, 0.3);
-            border-color: #dc3545;
-        }
+            .product-card.sin-stock {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
 
-        .product-card.sin-stock {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+            .product-card.sin-stock:hover {
+                transform: none;
+                box-shadow: none;
+            }
 
-        .product-card.sin-stock:hover {
-            transform: none;
-            box-shadow: none;
-        }
+            .cart-item {
+                transition: background-color 0.3s ease;
+            }
 
-        .cart-item {
-            transition: background-color 0.3s ease;
-        }
+            .cart-item:hover {
+                background-color: rgba(220, 53, 69, 0.1);
+            }
 
-        .cart-item:hover {
-            background-color: rgba(220, 53, 69, 0.1);
-        }
-
-        #searchProduct:focus {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-        }
-    </style>
+            #searchProduct:focus {
+                border-color: #dc3545;
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+            }
+        </style>
 
 </body>
 

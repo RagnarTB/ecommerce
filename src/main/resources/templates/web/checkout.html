@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout - Ecommerce Gamer</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="dark-mode">
+    <header th:replace="fragments/navbar :: navbar"></header>
+
+    <section class="product-detail-section">
+        <div class="container">
+            <h2 class="section-title">Checkout</h2>
+
+            <div class="form-gamer">
+                <form th:action="@{/checkout/procesar}" method="post">
+                    <div class="form-group">
+                        <label class="form-label">Documento</label>
+                        <input type="text" name="documento" class="form-control-gamer" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de entrega</label>
+                        <select name="tipoEntrega" class="form-control-gamer" required>
+                            <option value="DOMICILIO">Domicilio</option>
+                            <option value="RECOGER">Recoger en tienda</option>
+                        </select>
+                    </div>
+                    <div class="form-group" th:if="${tipoEntrega == 'DOMICILIO'}">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" name="direccion" class="form-control-gamer">
+                    </div>
+                    <button type="submit" class="btn-gamer">Procesar Pedido</button>
+                </form>
+            </div>
+
+            <div th:if="${error}" class="text-neon-red" style="margin-top: 1rem;">
+                <p th:text="${error}"></p>
+            </div>
+        </div>
+    </section>
+
+    <footer th:replace="fragments/footer :: footer"></footer>
+</body>
+
+</html>

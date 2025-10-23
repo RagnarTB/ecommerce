@@ -2,16 +2,20 @@
 package com.miempresa.ecommerce.config;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+import com.miempresa.ecommerce.models.Installment;
 import com.miempresa.ecommerce.models.User;
 import com.miempresa.ecommerce.security.UserDetailsImpl;
+import com.miempresa.ecommerce.services.CreditService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 @ControllerAdvice
 @Slf4j
 public class UserPermissionsControllerAdvice {
+    @Autowired
+    private CreditService creditService;
 
     /**
      * Agrega los permisos del usuario al modelo en cada petición
@@ -128,6 +134,18 @@ public class UserPermissionsControllerAdvice {
         } catch (Exception e) {
             log.error("Error al cargar username: {}", e.getMessage());
             return "Invitado";
+        }
+    }
+
+    @ModelAttribute("cuotasVencidas")
+    public Long addCuotasVencidas() {
+        try {
+            // Assuming creditService is an injected instance of CreditService
+            List<Installment> cuotas = creditService.obtenerCuotasVencidas();
+            return (long) cuotas.size(); // Returns the count as Long
+        } catch (Exception e) {
+            log.warn("No se pudo cargar el contador de cuotas vencidas: {}", e.getMessage());
+            return 0L;
         }
     }
 }

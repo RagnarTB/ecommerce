@@ -2,10 +2,15 @@ package com.miempresa.ecommerce.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 /**
  * ENTIDAD: PROVEEDOR
@@ -39,6 +44,9 @@ public class Provider {
      * Número de RUC del proveedor
      * Debe ser único
      */
+
+    @NotBlank(message = "RUC es obligatorio")
+    @Pattern(regexp = "\\d{11}", message = "RUC debe tener 11 dígitos")
     @Column(name = "ruc", nullable = false, unique = true, length = 11)
     private String ruc;
 
@@ -46,6 +54,7 @@ public class Provider {
      * Razón social del proveedor
      */
     @Column(name = "razon_social", nullable = false, length = 200)
+    @NotBlank(message = "Razón Social es obligatoria")
     private String razonSocial;
 
     // ========================================
@@ -62,12 +71,14 @@ public class Provider {
      * Teléfono del proveedor
      */
     @Column(name = "telefono", length = 20)
+    @Pattern(regexp = "\\+?\\d{7,15}", message = "Teléfono inválido")
     private String telefono;
 
     /**
      * Email del proveedor
      */
     @Column(name = "email", length = 150)
+    @Email(message = "Email inválido")
     private String email;
 
     /**
@@ -91,6 +102,8 @@ public class Provider {
      */
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
+
+    private String notas;
 
     // ========================================
     // AUDITORÍA

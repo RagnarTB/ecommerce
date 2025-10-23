@@ -1,0 +1,35 @@
+<section class="product-detail-section">
+    <div class="product-gallery">
+
+        <!-- ⭐ Imagen principal -->
+        <img th:if="${producto.imagenPrincipal != null}"
+            th:src="@{/uploads/productos/{filename}(filename=${producto.imagenPrincipal.url})}" class="main-image"
+            th:alt="'Imagen de ' + ${producto.nombre}" />
+
+        <!-- 🧩 Imagen por defecto si no hay -->
+        <img th:if="${producto.imagenPrincipal == null}" th:src="@{/images/default-product.png}" class="main-image"
+            alt="Imagen por defecto" />
+
+
+        <!-- 🖼️ Miniaturas -->
+        <div class="thumbnail-images">
+            <img th:each="img : ${producto.imagenes}" th:src="@{/uploads/productos/{filename}(filename=${img.url})}"
+                class="thumbnail" th:alt="'Miniatura de ' + ${producto.nombre}" />
+        </div>
+    </div>
+
+    <div class="product-info">
+        <h2 class="product-detail-title" th:text="${producto.nombre}"></h2>
+        <p class="product-description" th:text="${producto.descripcion}"></p>
+
+        <div class="product-price">
+            <span class="price-current" th:text="${producto.precioActual} + ' S/'"></span>
+        </div>
+
+        <form action="/carrito/agregar" method="post">
+            <input type="hidden" name="productoId" th:value="${producto.id}">
+            <input type="number" name="cantidad" value="1" min="1" class="quantity-input">
+            <button type="submit" class="btn-gamer">Agregar al Carrito</button>
+        </form>
+    </div>
+</section>

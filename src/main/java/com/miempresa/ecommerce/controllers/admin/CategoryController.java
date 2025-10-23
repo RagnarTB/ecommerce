@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.miempresa.ecommerce.models.Category;
 import com.miempresa.ecommerce.services.CategoryService;
 
@@ -24,7 +25,7 @@ public class CategoryController {
 
     @GetMapping
     public String listar(Model model) {
-        model.addAttribute("categorias", categoryService.obtenerActivas());
+        model.addAttribute("categorias", categoryService.obtenerTodas());
         model.addAttribute("titulo", "Gestión de Categorías");
         return "admin/categorias/lista";
     }

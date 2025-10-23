@@ -408,5 +408,5 @@ $(document).ready(function () {
 // UTILIDADES GLOBALES
 // ============================================
 window.AdminGamer = AdminGamer;
-window.POS = POS;
+//window.POS = POS;
 window.Productos = Productos;

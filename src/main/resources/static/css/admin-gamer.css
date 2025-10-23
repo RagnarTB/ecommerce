@@ -383,7 +383,7 @@ body {
 
 /* Select2 personalizado */
 .select2-container--default .select2-selection--single {
-    background: rgba(255, 255, 255, 0.05);
+    background: black;
     border-color: rgba(255, 0, 128, 0.3);
     border-radius: 8px;
     height: calc(2.25rem + 2px);

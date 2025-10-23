@@ -1,0 +1,41 @@
+<!-- Sidebar de filtros -->
+<section class="filters-sidebar">
+    <h3 class="filter-title">Categorías</h3>
+    <form action="/catalogo" method="get">
+        <div th:each="categoria : ${categorias}" class="filter-option">
+            <input type="checkbox" name="categoriaId" th:value="${categoria.id}" class="filter-checkbox"
+                th:checked="${categoria.id == categoriaSeleccionada}">
+            <span th:text="${categoria.nombre}"></span>
+        </div>
+        <button type="submit" class="btn-gamer-secondary">Filtrar</button>
+    </form>
+</section>
+
+<!-- Sección de productos filtrados -->
+<section class="featured-section">
+    <h2 class="section-title">Productos</h2>
+    <div class="grid-container">
+        <div th:each="producto : ${productos}" class="product-card">
+            <div class="product-image">
+
+                <!-- ✅ Mostrar imagen principal si existe -->
+                <img th:if="${producto.imagenPrincipal != null}"
+                    th:src="@{/uploads/productos/{filename}(filename=${producto.imagenPrincipal.url})}"
+                    th:alt="'Imagen de ' + ${producto.nombre}" />
+
+                <!-- ❌ Si no tiene imagen, usar placeholder -->
+                <img th:if="${producto.imagenPrincipal == null}" th:src="@{/images/default-product.png}"
+                    alt="Imagen por defecto" />
+            </div>
+
+            <div class="product-body">
+                <h3 class="product-title" th:text="${producto.nombre}"></h3>
+                <p class="product-category" th:text="${producto.categoria.nombre}"></p>
+                <div class="product-price">
+                    <span class="price-current" th:text="${producto.precioActual} + ' S/'"></span>
+                </div>
+                <a th:href="@{'/producto/' + ${producto.id}}" class="btn-outline-gamer">Ver Detalle</a>
+            </div>
+        </div>
+    </div>
+</section>

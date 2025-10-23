@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pedido Exitoso - Ecommerce Gamer</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="dark-mode">
+    <header th:replace="fragments/navbar :: navbar"></header>
+
+    <section class="success-section">
+        <div class="container">
+            <div class="success-icon">&#10003;</div>
+            <h2 class="success-title">¡Pedido realizado con éxito!</h2>
+            <p class="order-number">Pedido #: <span th:text="${pedido.numeroPedido}"></span></p>
+
+            <div class="order-details-card">
+                <h3>Detalle del pedido</h3>
+                <div th:each="item : ${pedido.detalles}">
+                    <p><strong th:text="${item.producto.nombre}"></strong> x <span th:text="${item.cantidad}"></span> =
+                        <span th:text="${item.producto.precioActual}"></span></p>
+                </div>
+                <p><strong>Total:</strong> <span th:text="${pedido.total}"></span></p>
+            </div>
+
+            <a th:href="@{/catalogo}" class="btn-gamer-secondary" style="margin-top: 2rem;">Seguir Comprando</a>
+        </div>
+    </section>
+
+    <footer th:replace="fragments/footer :: footer"></footer>
+</body>
+
+</html>

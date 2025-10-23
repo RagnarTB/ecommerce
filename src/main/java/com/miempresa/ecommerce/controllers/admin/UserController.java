@@ -32,7 +32,7 @@ public class UserController {
 
     @GetMapping
     public String listar(Model model) {
-        model.addAttribute("usuarios", userService.obtenerActivos());
+        model.addAttribute("usuarios", userService.obtenerTodos());
         model.addAttribute("titulo", "Gestión de Usuarios");
         return "admin/usuarios/lista";
     }

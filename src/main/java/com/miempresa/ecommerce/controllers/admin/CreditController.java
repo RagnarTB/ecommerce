@@ -1,14 +1,24 @@
 package com.miempresa.ecommerce.controllers.admin;
 
-import com.miempresa.ecommerce.services.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.math.BigDecimal;
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.math.BigDecimal;
+import com.miempresa.ecommerce.models.Credit;
+import com.miempresa.ecommerce.models.Installment;
+import com.miempresa.ecommerce.services.CreditService;
+import com.miempresa.ecommerce.services.UserService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * CONTROLLER: CRÉDITOS
@@ -25,8 +35,15 @@ public class CreditController {
 
     @GetMapping
     public String listar(Model model) {
-        model.addAttribute("creditos", creditService.obtenerActivos());
+        List<Credit> creditosActivos = creditService.obtenerActivos();
+        BigDecimal deudaTotal = creditService.obtenerTotalDeudaPendiente();
+        List<Installment> cuotasVencidas = creditService.obtenerCuotasVencidas();
+
+        model.addAttribute("creditosActivos", creditosActivos);
+        model.addAttribute("deudaTotal", deudaTotal != null ? deudaTotal : BigDecimal.ZERO);
+        model.addAttribute("cuotasVencidasCount", cuotasVencidas.size());
         model.addAttribute("titulo", "Gestión de Créditos");
+
         return "admin/creditos/lista";
     }
 

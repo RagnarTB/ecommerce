@@ -1,12 +1,6 @@
 # ============================================
 # DOCKER COMPOSE PARA E-COMMERCE
 # ============================================
-# Este archivo crea automáticamente:
-# 1. Un contenedor con MySQL
-# 2. Un contenedor con tu aplicación Spring Boot
-# 3. Una red para que se comuniquen entre sí
-
-version: '3.8'
 
 services:
   # ==========================================
@@ -26,11 +20,8 @@ services:
     ports:
       - "3306:3306"
 
-    # Volumen para persistir los datos
     volumes:
       - mysql_data:/var/lib/mysql
-      # ❌ ELIMINADO: No usar initdb.d, Spring Boot manejará la inicialización
-      # - ./src/main/resources/data.sql:/docker-entrypoint-initdb.d/data.sql
 
     networks:
       - ecommerce_network
@@ -55,47 +46,44 @@ services:
       - "8080:8080"
 
     environment:
-      # Configuración de Spring
       SPRING_APPLICATION_NAME: ecommerce
       SPRING_PROFILES_ACTIVE: prod
 
-      # Configuración de base de datos
+      # Base de datos
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecommerce_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root123
 
-      # Configuración de JPA
+      # JPA
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "false"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "false"
 
-      # ✅ Configuración de inicialización de datos
+      # Inicialización
       SPRING_SQL_INIT_MODE: always
       SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
 
-      # ✅ Directorio de uploads en Docker
-      APP_UPLOAD_DIR: /app/uploads/
+      # ✅ CRÍTICO: Directorio de uploads (se mapea al volumen)
+      APP_UPLOAD_DIR: /app/uploads/productos/
 
-      # Configuración de la empresa
+      # Empresa
       EMPRESA_NOMBRE: Game Store SAC
       EMPRESA_RUC: 22345678901
       EMPRESA_DIRECCION: Las Ñustas 240, La Victoria, Lima
       EMPRESA_TELEFONO: 01-1234567
       EMPRESA_EMAIL: ventas@gamestore.com
 
-      # API Decolecta
+      # API
       API_DECOLECTA_TOKEN: sk_9739.xfKEozZkKVg69oje8RACY8preIWY6nwh
 
     depends_on:
       mysql:
         condition: service_healthy
 
-    # Volúmenes para archivos subidos
     volumes:
-      # ✅ Volumen persistente para uploads
-      - uploads_data:/app/uploads
-      # ✅ Mapear directorio local para desarrollo (opcional, comentar en producción)
-      # - ./uploads:/app/uploads
+      # ✅ SOLUCIÓN: Mapear directorio local para que las imágenes persistan
+      # Esto crea/usa la carpeta "uploads" en el mismo directorio del docker-compose.yml
+      - ./uploads:/app/uploads
 
     networks:
       - ecommerce_network
@@ -106,12 +94,13 @@ services:
 volumes:
   mysql_data:
     driver: local
-  uploads_data:
-    driver: local
+  # ❌ ELIMINADO: Ya no necesitamos uploads_data porque usamos mapeo directo
+  # uploads_data:
+  #   driver: local
 
-# ==========================================
-# RED DE COMUNICACIÓN
-# ==========================================
+  # ==========================================
+  # RED DE COMUNICACIÓN
+  # ==========================================
 networks:
   ecommerce_network:
     driver: bridge

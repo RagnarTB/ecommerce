@@ -205,6 +205,9 @@ public class ProductService {
     /**
      * Sube una imagen para un producto
      */
+    /**
+     * Sube una imagen para un producto
+     */
     public ProductImage subirImagen(Long productoId, MultipartFile file, boolean esPrincipal) {
         log.info("Subiendo imagen para producto ID: {}", productoId);
 
@@ -216,27 +219,27 @@ public class ProductService {
 
         Product product = productOpt.get();
 
-        // Validar que no tenga más de 5 imágenes
+        // Validar máximo 5 imágenes
         if (product.getImagenes().size() >= 5) {
             throw new RuntimeException("El producto ya tiene el máximo de 5 imágenes");
         }
 
         try {
-            // Guardar archivo físico
-            String nombreArchivo = guardarArchivo(file);
+            // Guardar archivo físico y obtener nombre único
+            String nombreArchivoUnico = guardarArchivo(file); // o FileUploadUtil.saveFile()
 
             // Si es principal, desmarcar otras
             if (esPrincipal) {
                 product.getImagenes().forEach(img -> img.setEsPrincipal(false));
             }
 
-            // Si no hay imágenes, esta será la principal
+            // Si no hay imágenes aún → esta será la principal
             boolean seraPrincipal = esPrincipal || product.getImagenes().isEmpty();
 
-            // Crear registro de imagen
+            // ✅ Guardar solo el nombre del archivo, NO la ruta
             ProductImage imagen = ProductImage.builder()
                     .producto(product)
-                    .url("/productos/" + nombreArchivo)
+                    .url(nombreArchivoUnico) // <-- solo 'nombrexxx.jpg'
                     .orden(product.getImagenes().size() + 1)
                     .esPrincipal(seraPrincipal)
                     .build();
@@ -244,7 +247,7 @@ public class ProductService {
             product.agregarImagen(imagen);
             productRepository.save(product);
 
-            log.info("Imagen subida exitosamente: {}", nombreArchivo);
+            log.info("Imagen subida exitosamente: {}", nombreArchivoUnico);
             return imagen;
 
         } catch (IOException e) {

@@ -46,10 +46,12 @@
                                 </div>
                                 <div class="card-body">
                                     <!-- Imagen Principal -->
+                                    <!-- Imagen Principal -->
                                     <div class="text-center mb-3">
                                         <img th:if="${producto.imagenPrincipal != null}"
-                                            th:src="@{'/uploads' + ${producto.imagenPrincipal.url}}"
+                                            th:src="@{'/uploads/' + ${producto.imagenPrincipal.url}}"
                                             class="img-fluid rounded" id="imagen-principal" style="max-height: 400px;">
+
                                         <img th:unless="${producto.imagenPrincipal != null}"
                                             th:src="@{/img/placeholder-game.jpg}" class="img-fluid rounded"
                                             style="max-height: 400px;">
@@ -59,10 +61,11 @@
                                     <div class="row"
                                         th:if="${producto.imagenes != null and !producto.imagenes.isEmpty()}">
                                         <div class="col-3 mb-2" th:each="img : ${producto.imagenes}">
-                                            <img th:src="@{'/uploads' + ${img.url}}" class="img-thumbnail"
+                                            <img th:src="@{'/uploads/' + ${img.url}}" class="img-thumbnail"
                                                 onclick="cambiarImagen(this.src)" style="cursor: pointer;">
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
 

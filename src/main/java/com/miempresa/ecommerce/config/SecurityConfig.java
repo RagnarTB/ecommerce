@@ -32,165 +32,170 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserDetailsServiceImpl userDetailsService;
+        private final UserDetailsServiceImpl userDetailsService;
 
-    // ========================================
-    // CONFIGURACIÓN DE SEGURIDAD
-    // ========================================
+        // ========================================
+        // CONFIGURACIÓN DE SEGURIDAD
+        // ========================================
 
-    /**
-     * Configuración principal de seguridad
-     * Define qué rutas están protegidas y cuáles son públicas
-     */
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                // Configuración de autorización de peticiones
-                .authorizeHttpRequests(auth -> auth
-                        // ========================================
-                        // RUTAS PÚBLICAS (sin login)
-                        // ========================================
+        /**
+         * Configuración principal de seguridad
+         * Define qué rutas están protegidas y cuáles son públicas
+         */
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                // Configuración de autorización de peticiones
+                                .authorizeHttpRequests(auth -> auth
+                                                // ========================================
+                                                // RUTAS PÚBLICAS (sin login)
+                                                // ========================================
 
-                        // Página principal y catálogo público
-                        .requestMatchers(
-                                "/",
-                                "/home",
-                                "/catalogo/**",
-                                "/producto/**",
-                                "/carrito/**",
-                                "/checkout/**")
-                        .permitAll()
+                                                // Página principal y catálogo público
+                                                .requestMatchers(
+                                                                "/",
+                                                                "/home",
+                                                                "/catalogo/**",
+                                                                "/producto/**",
+                                                                "/carrito/**",
+                                                                "/checkout/**")
+                                                .permitAll()
 
-                        // Recursos estáticos (CSS, JS, imágenes)
-                        .requestMatchers(
-                                "/css/**",
-                                "/js/**",
-                                "/img/**",
-                                "/uploads/**",
-                                "/webjars/**",
-                                "/adminlte/**")
-                        .permitAll()
+                                                // Recursos estáticos (CSS, JS, imágenes)
+                                                .requestMatchers(
+                                                                "/css/**",
+                                                                "/js/**",
+                                                                "/img/**",
+                                                                "/uploads/**",
+                                                                "/webjars/**",
+                                                                "/adminlte/**")
+                                                .permitAll()
 
-                        // Login y registro
-                        .requestMatchers(
-                                "/login",
-                                "/logout",
-                                "/error")
-                        .permitAll()
+                                                // Login y registro
+                                                .requestMatchers(
+                                                                "/login",
+                                                                "/logout",
+                                                                "/error")
+                                                .permitAll()
 
-                        // ========================================
-                        // RUTAS DEL ADMIN PANEL (requieren login)
-                        // ========================================
+                                                // ========================================
+                                                // RUTAS DEL ADMIN PANEL (requieren login)
+                                                // ========================================
 
-                        // Dashboard principal
-                        .requestMatchers("/admin/dashboard").authenticated()
+                                                // Dashboard principal
+                                                .requestMatchers("/admin/dashboard").authenticated()
 
-                        // Módulo de productos (requiere permiso MODULO_PRODUCTOS)
-                        .requestMatchers("/admin/productos/**").hasAuthority("MODULO_PRODUCTOS")
-                        .requestMatchers("/admin/categorias/**").hasAuthority("MODULO_PRODUCTOS")
-                        .requestMatchers("/admin/marcas/**").hasAuthority("MODULO_PRODUCTOS")
+                                                // Módulo de productos (requiere permiso MODULO_PRODUCTOS)
+                                                .requestMatchers("/admin/productos/**").hasAuthority("MODULO_PRODUCTOS")
+                                                .requestMatchers("/admin/categorias/**")
+                                                .hasAuthority("MODULO_PRODUCTOS")
+                                                .requestMatchers("/admin/marcas/**").hasAuthority("MODULO_PRODUCTOS")
 
-                        // Módulo de ventas (requiere permiso MODULO_VENTAS)
-                        .requestMatchers("/admin/ventas/**").hasAuthority("MODULO_VENTAS")
-                        .requestMatchers("/admin/pedidos/**").hasAuthority("MODULO_VENTAS")
-                        .requestMatchers("/admin/pos/**").hasAuthority("MODULO_VENTAS")
-                        .requestMatchers("/admin/creditos/**").hasAuthority("MODULO_VENTAS")
+                                                // Módulo de ventas (requiere permiso MODULO_VENTAS)
+                                                .requestMatchers("/admin/ventas/**").hasAuthority("MODULO_VENTAS")
+                                                .requestMatchers("/admin/pedidos/**").hasAuthority("MODULO_VENTAS")
+                                                .requestMatchers("/admin/pos/**").hasAuthority("MODULO_VENTAS")
+                                                .requestMatchers("/admin/creditos/**").hasAuthority("MODULO_VENTAS")
 
-                        // Módulo de clientes (requiere permiso MODULO_CLIENTES)
-                        .requestMatchers("/admin/clientes/**").hasAuthority("MODULO_CLIENTES")
+                                                // Módulo de clientes (requiere permiso MODULO_CLIENTES)
+                                                .requestMatchers("/admin/clientes/**").hasAuthority("MODULO_CLIENTES")
 
-                        // Módulo de reportes (requiere permiso MODULO_REPORTES)
-                        .requestMatchers("/admin/reportes/**").hasAuthority("MODULO_REPORTES")
+                                                // Módulo de reportes (requiere permiso MODULO_REPORTES)
+                                                .requestMatchers("/admin/reportes/**").hasAuthority("MODULO_REPORTES")
 
-                        // Módulo de inventario (requiere permiso MODULO_INVENTARIO)
-                        .requestMatchers("/admin/inventario/**").hasAuthority("MODULO_INVENTARIO")
+                                                // Módulo de inventario (requiere permiso MODULO_INVENTARIO)
+                                                .requestMatchers("/admin/inventario/**")
+                                                .hasAuthority("MODULO_INVENTARIO")
 
-                        // Módulo de usuarios (SOLO ADMIN)
-                        .requestMatchers("/admin/usuarios/**").hasAuthority("MODULO_USUARIOS")
-                        .requestMatchers("/admin/perfiles/**").hasAuthority("MODULO_USUARIOS")
+                                                // Módulo de usuarios (SOLO ADMIN)
+                                                .requestMatchers("/admin/usuarios/**").hasAuthority("MODULO_USUARIOS")
+                                                .requestMatchers("/admin/perfiles/**").hasAuthority("MODULO_USUARIOS")
 
-                        // Módulo de proveedores (SOLO ADMIN)
-                        .requestMatchers("/admin/proveedores/**").hasAuthority("MODULO_PROVEEDORES")
+                                                // Módulo de proveedores (SOLO ADMIN)
+                                                .requestMatchers("/admin/proveedores/**")
+                                                .hasAuthority("MODULO_PROVEEDORES")
 
-                        // Módulo de configuración (SOLO ADMIN)
-                        .requestMatchers("/admin/configuracion/**").hasAuthority("MODULO_CONFIGURACION")
+                                                // Módulo de configuración (SOLO ADMIN)
+                                                .requestMatchers("/admin/configuracion/**")
+                                                .hasAuthority("MODULO_CONFIGURACION")
 
-                        // Cualquier otra ruta requiere autenticación
-                        .anyRequest().authenticated())
+                                                // Cualquier otra ruta requiere autenticación
+                                                .anyRequest().authenticated())
 
-                // ========================================
-                // CONFIGURACIÓN DE LOGIN
-                // ========================================
-                .formLogin(form -> form
-                        .loginPage("/login") // Página personalizada de login
-                        .loginProcessingUrl("/login") // URL que procesa el login
-                        .defaultSuccessUrl("/admin/dashboard", true) // Redirige aquí tras login exitoso
-                        .failureUrl("/login?error=true") // Redirige aquí si falla el login
-                        .usernameParameter("username") // Nombre del campo username en el form
-                        .passwordParameter("password") // Nombre del campo password en el form
-                        .permitAll())
+                                // ========================================
+                                // CONFIGURACIÓN DE LOGIN
+                                // ========================================
+                                .formLogin(form -> form
+                                                .loginPage("/login") // Página personalizada de login
+                                                .loginProcessingUrl("/login") // URL que procesa el login
+                                                .defaultSuccessUrl("/admin/dashboard", true) // Redirige aquí tras login
+                                                                                             // exitoso
+                                                .failureUrl("/login?error=true") // Redirige aquí si falla el login
+                                                .usernameParameter("username") // Nombre del campo username en el form
+                                                .passwordParameter("password") // Nombre del campo password en el form
+                                                .permitAll())
 
-                // ========================================
-                // CONFIGURACIÓN DE LOGOUT
-                // ========================================
-                .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                        .logoutSuccessUrl("/login?logout=true") // Redirige aquí tras logout
-                        .deleteCookies("JSESSIONID") // Elimina la cookie de sesión
-                        .invalidateHttpSession(true) // Invalida la sesión
-                        .clearAuthentication(true) // Limpia la autenticación
-                        .permitAll())
+                                // ========================================
+                                // CONFIGURACIÓN DE LOGOUT
+                                // ========================================
+                                .logout(logout -> logout
+                                                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                                                .logoutSuccessUrl("/login?logout=true") // Redirige aquí tras logout
+                                                .deleteCookies("JSESSIONID") // Elimina la cookie de sesión
+                                                .invalidateHttpSession(true) // Invalida la sesión
+                                                .clearAuthentication(true) // Limpia la autenticación
+                                                .permitAll())
 
-                // ========================================
-                // CONFIGURACIÓN ADICIONAL
-                // ========================================
+                                // ========================================
+                                // CONFIGURACIÓN ADICIONAL
+                                // ========================================
 
-                // Página de acceso denegado personalizada
-                .exceptionHandling(exception -> exception
-                        .accessDeniedPage("/error/403"))
+                                // Página de acceso denegado personalizada
+                                .exceptionHandling(exception -> exception
+                                                .accessDeniedPage("/error/403"))
 
-                // Configuración de sesiones
-                .sessionManagement(session -> session
-                        .maximumSessions(1) // Solo una sesión por usuario
-                        .maxSessionsPreventsLogin(false) // La nueva sesión cierra la anterior
-                );
+                                // Configuración de sesiones
+                                .sessionManagement(session -> session
+                                                .maximumSessions(1) // Solo una sesión por usuario
+                                                .maxSessionsPreventsLogin(false) // La nueva sesión cierra la anterior
+                                );
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    // ========================================
-    // BEANS DE SEGURIDAD
-    // ========================================
+        // ========================================
+        // BEANS DE SEGURIDAD
+        // ========================================
 
-    /**
-     * PasswordEncoder para encriptar contraseñas con BCrypt
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        /**
+         * PasswordEncoder para encriptar contraseñas con BCrypt
+         */
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    /**
-     * Authentication Provider
-     * Conecta el UserDetailsService con el PasswordEncoder
-     */
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
+        /**
+         * Authentication Provider
+         * Conecta el UserDetailsService con el PasswordEncoder
+         */
+        @Bean
+        public DaoAuthenticationProvider authenticationProvider() {
+                DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+                authProvider.setUserDetailsService(userDetailsService);
+                authProvider.setPasswordEncoder(passwordEncoder());
+                return authProvider;
+        }
 
-    /**
-     * Authentication Manager
-     * Gestiona el proceso de autenticación
-     */
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
-            throws Exception {
-        return authConfig.getAuthenticationManager();
-    }
+        /**
+         * Authentication Manager
+         * Gestiona el proceso de autenticación
+         */
+        @Bean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+                        throws Exception {
+                return authConfig.getAuthenticationManager();
+        }
 }
 
 /**

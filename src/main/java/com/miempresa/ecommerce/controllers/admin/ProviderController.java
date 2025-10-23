@@ -28,7 +28,7 @@ public class ProviderController {
 
     @GetMapping
     public String listar(Model model) {
-        model.addAttribute("proveedores", providerService.obtenerActivos());
+        model.addAttribute("proveedores", providerService.obtenerTodos());
         model.addAttribute("titulo", "Gestión de Proveedores");
         return "admin/proveedores/lista";
     }

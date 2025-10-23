@@ -21,6 +21,7 @@ COPY src ./src
 # Compilar el proyecto y generar el archivo .jar
 RUN mvn clean package -DskipTests
 
+
 # ============================================
 # ETAPA 2: EJECUCIÓN (Runtime)
 # ============================================
@@ -33,24 +34,20 @@ LABEL description="Sistema E-commerce GAMER con Spring Boot y Thymeleaf"
 # Instalar wget para health check
 RUN apk add --no-cache wget
 
-# Crear un usuario no-root por seguridad
+# ✅ Crear usuario no-root por seguridad
 RUN addgroup -S spring && adduser -S spring -G spring
 
 # Establecer directorio de trabajo
 WORKDIR /app
 
-# ✅ Crear directorios necesarios con permisos correctos
-RUN mkdir -p /app/uploads/productos && \
-    mkdir -p /app/uploads/categorias && \
-    mkdir -p /app/uploads/marcas && \
-    mkdir -p /app/uploads/boletas && \
-    mkdir -p /app/logs && \
+# ✅ Crear directorios necesarios y dar permisos al usuario 'spring'
+RUN mkdir -p /app/uploads/productos /app/uploads/categorias /app/uploads/marcas /app/uploads/boletas /app/logs && \
     chown -R spring:spring /app
 
-# Copiar el archivo .jar generado en la etapa de build
+# ✅ Copiar el .jar asignando propiedad al usuario 'spring'
 COPY --chown=spring:spring --from=build /app/target/*.jar app.jar
 
-# Cambiar al usuario no-root
+# ✅ Ejecutar como usuario no-root
 USER spring:spring
 
 # Exponer el puerto 8080

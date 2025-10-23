@@ -25,7 +25,7 @@ public class BrandController {
 
     @GetMapping
     public String listar(Model model) {
-        model.addAttribute("marcas", brandService.obtenerActivas());
+        model.addAttribute("marcas", brandService.obtenerTodas());
         model.addAttribute("titulo", "Gestión de Marcas");
         return "admin/marcas/lista";
     }

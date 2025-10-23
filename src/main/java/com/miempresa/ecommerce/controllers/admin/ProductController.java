@@ -6,7 +6,9 @@ import java.util.Optional;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,13 +27,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * CONTROLLER: PRODUCTOS
- * 
- * Gestiona el CRUD de productos.
- * Ahora usa FileUploadUtil para mantener coherencia.
- */
-
 @Controller
 @RequestMapping("/admin/productos")
 @RequiredArgsConstructor
@@ -42,28 +37,29 @@ public class ProductController {
     private final CategoryService categoryService;
     private final BrandService brandService;
 
-    // Configuración de validación de imágenes
     private static final int MAX_IMAGENES = 5;
     private static final long MAX_SIZE_MB = 5;
     private static final List<String> EXTENSIONES_PERMITIDAS = List.of("jpg", "jpeg", "png", "gif", "webp");
 
     // ========================================
+    // ✅ CRÍTICO: Evitar binding del campo 'imagenes'
+    // ========================================
+    @InitBinder("producto")
+    public void initBinder(WebDataBinder binder) {
+        // Evita que Spring intente bindear el campo 'imagenes'
+        // porque lo manejamos por separado con MultipartFile[]
+        binder.setDisallowedFields("imagenes");
+    }
+
+    // ========================================
     // LISTAR PRODUCTOS
     // ========================================
 
-    /**
-     * Lista todos los productos
-     * 
-     * URL: GET /admin/productos
-     * Vista: admin/productos/lista.html
-     */
     @GetMapping
     public String listar(Model model) {
         log.debug("Listando productos");
-
-        model.addAttribute("productos", productService.obtenerActivos());
+        model.addAttribute("productos", productService.obtenerTodos());
         model.addAttribute("titulo", "Gestión de Productos");
-
         return "admin/productos/lista";
     }
 
@@ -71,17 +67,15 @@ public class ProductController {
     // CREAR PRODUCTO
     // ========================================
 
-    /**
-     * Muestra el formulario para crear un producto
-     * 
-     * URL: GET /admin/productos/nuevo
-     * Vista: admin/productos/form.html
-     */
     @GetMapping("/nuevo")
     public String mostrarFormularioNuevo(Model model) {
         log.debug("Mostrando formulario de nuevo producto");
 
-        model.addAttribute("producto", new Product());
+        Product producto = new Product();
+        producto.setActivo(true);
+        producto.setStockMinimo(10);
+
+        model.addAttribute("producto", producto);
         model.addAttribute("categorias", categoryService.obtenerActivas());
         model.addAttribute("marcas", brandService.obtenerActivas());
         model.addAttribute("titulo", "Nuevo Producto");
@@ -90,38 +84,27 @@ public class ProductController {
         return "admin/productos/form";
     }
 
-    /**
-     * Procesa el formulario de creación
-     * 
-     * URL: POST /admin/productos/guardar
-     * Redirige a: /admin/productos
-     */
     @PostMapping("/guardar")
     public String guardar(
             @Valid @ModelAttribute("producto") Product producto,
             BindingResult result,
-            @RequestParam(value = "imagenes", required = false) MultipartFile[] imagenes,
+            @RequestParam(value = "imagenesFile", required = false) MultipartFile[] imagenesFile,
             RedirectAttributes redirectAttributes,
             Model model) {
 
         log.info("Guardando producto: {}", producto.getNombre());
 
-        // Validar errores del formulario
         if (result.hasErrors()) {
-            log.warn("Errores de validación en el formulario");
+            log.warn("Errores de validación: {}", result.getAllErrors());
             cargarDatosFormulario(model);
             model.addAttribute("esNuevo", true);
             return "admin/productos/form";
         }
 
         try {
-            // ========================================
-            // ✅ VALIDAR IMÁGENES usando FileUploadUtil
-            // ========================================
-
-            if (imagenes != null && imagenes.length > 0) {
-                String errorValidacion = validarImagenes(imagenes);
-
+            // Validar imágenes
+            if (imagenesFile != null && imagenesFile.length > 0) {
+                String errorValidacion = validarImagenes(imagenesFile);
                 if (errorValidacion != null) {
                     model.addAttribute("error", errorValidacion);
                     cargarDatosFormulario(model);
@@ -130,33 +113,31 @@ public class ProductController {
                 }
             }
 
-            // ========================================
-            // GUARDAR PRODUCTO
-            // ========================================
-
+            // Guardar producto
             Product productoGuardado = productService.guardar(producto);
+            log.info("Producto guardado con ID: {}", productoGuardado.getId());
 
-            // ========================================
-            // SUBIR IMÁGENES
-            // ========================================
-
-            if (imagenes != null && imagenes.length > 0) {
-                int imagenesSubidas = subirImagenesProducto(productoGuardado.getId(), imagenes);
-
-                if (imagenesSubidas > 0) {
-                    log.info("Se subieron {} imágenes correctamente", imagenesSubidas);
-                }
+            // Subir imágenes
+            if (imagenesFile != null && imagenesFile.length > 0) {
+                int imagenesSubidas = subirImagenesProducto(productoGuardado.getId(), imagenesFile);
+                log.info("Se subieron {} imágenes correctamente", imagenesSubidas);
             }
 
             redirectAttributes.addFlashAttribute("success", "Producto creado correctamente");
-            log.info("Producto guardado con ID: {}", productoGuardado.getId());
 
         } catch (RuntimeException e) {
-            log.error("Error de negocio al guardar producto: {}", e.getMessage());
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            log.error("Error al guardar producto: {}", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            cargarDatosFormulario(model);
+            model.addAttribute("esNuevo", true);
+            return "admin/productos/form";
+
         } catch (Exception e) {
-            log.error("Error inesperado al guardar producto: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("error", "Error al guardar el producto. Intente nuevamente.");
+            log.error("Error inesperado: {}", e.getMessage(), e);
+            model.addAttribute("error", "Error al guardar el producto");
+            cargarDatosFormulario(model);
+            model.addAttribute("esNuevo", true);
+            return "admin/productos/form";
         }
 
         return "redirect:/admin/productos";
@@ -166,12 +147,6 @@ public class ProductController {
     // EDITAR PRODUCTO
     // ========================================
 
-    /**
-     * Muestra el formulario para editar un producto
-     * 
-     * URL: GET /admin/productos/editar/{id}
-     * Vista: admin/productos/form.html
-     */
     @GetMapping("/editar/{id}")
     public String mostrarFormularioEditar(@PathVariable Long id, Model model,
             RedirectAttributes redirectAttributes) {
@@ -192,79 +167,99 @@ public class ProductController {
         return "admin/productos/form";
     }
 
-    /**
-     * Procesa el formulario de edición
-     * 
-     * URL: POST /admin/productos/actualizar/{id}
-     */
     @PostMapping("/actualizar/{id}")
     public String actualizar(
             @PathVariable Long id,
             @Valid @ModelAttribute("producto") Product producto,
             BindingResult result,
-            @RequestParam(value = "imagenes", required = false) MultipartFile[] imagenes,
+            @RequestParam(value = "imagenesFile", required = false) MultipartFile[] imagenesFile,
             RedirectAttributes redirectAttributes,
             Model model) {
 
         log.info("Actualizando producto ID: {}", id);
 
         if (result.hasErrors()) {
+            log.warn("Errores de validación: {}", result.getAllErrors());
+
+            // Recargar producto desde BD para mostrar imágenes
+            Optional<Product> productoOpt = productService.buscarPorId(id);
+            if (productoOpt.isPresent()) {
+                model.addAttribute("producto", productoOpt.get());
+            }
+
             cargarDatosFormulario(model);
+            model.addAttribute("esNuevo", false);
             return "admin/productos/form";
         }
 
         try {
-            // ✅ Validar imágenes si hay
-            if (imagenes != null && imagenes.length > 0) {
-                String errorValidacion = validarImagenes(imagenes);
-
+            if (imagenesFile != null && imagenesFile.length > 0) {
+                String errorValidacion = validarImagenes(imagenesFile);
                 if (errorValidacion != null) {
                     model.addAttribute("error", errorValidacion);
+
+                    Optional<Product> productoOpt = productService.buscarPorId(id);
+                    if (productoOpt.isPresent()) {
+                        model.addAttribute("producto", productoOpt.get());
+                    }
+
                     cargarDatosFormulario(model);
+                    model.addAttribute("esNuevo", false);
                     return "admin/productos/form";
                 }
             }
 
-            // Actualizar producto
-            productService.actualizar(id, producto);
+            Product productoActualizado = productService.actualizar(id, producto);
+            log.info("Producto actualizado: {}", id);
 
-            // Subir nuevas imágenes si las hay
-            if (imagenes != null && imagenes.length > 0) {
-                int imagenesSubidas = subirImagenesProducto(id, imagenes);
-                log.info("Se actualizaron {} imágenes", imagenesSubidas);
+            if (imagenesFile != null && imagenesFile.length > 0) {
+                int imagenesSubidas = subirImagenesProducto(id, imagenesFile);
+                log.info("Se subieron {} imágenes nuevas", imagenesSubidas);
             }
 
             redirectAttributes.addFlashAttribute("success", "Producto actualizado correctamente");
-            log.info("Producto actualizado: {}", id);
+
+        } catch (RuntimeException e) {
+            log.error("Error al actualizar: {}", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+
+            Optional<Product> productoOpt = productService.buscarPorId(id);
+            if (productoOpt.isPresent()) {
+                model.addAttribute("producto", productoOpt.get());
+            }
+
+            cargarDatosFormulario(model);
+            model.addAttribute("esNuevo", false);
+            return "admin/productos/form";
 
         } catch (Exception e) {
-            log.error("Error al actualizar producto: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("error", "Error al actualizar el producto: " + e.getMessage());
+            log.error("Error inesperado: {}", e.getMessage(), e);
+            model.addAttribute("error", "Error al actualizar el producto");
+
+            Optional<Product> productoOpt = productService.buscarPorId(id);
+            if (productoOpt.isPresent()) {
+                model.addAttribute("producto", productoOpt.get());
+            }
+
+            cargarDatosFormulario(model);
+            model.addAttribute("esNuevo", false);
+            return "admin/productos/form";
         }
 
         return "redirect:/admin/productos";
     }
 
     // ========================================
-    // CAMBIAR ESTADO PRODUCTO
+    // OTROS MÉTODOS (sin cambios)
     // ========================================
 
-    /**
-     * Cambia el estado de un producto (activo/inactivo)
-     * 
-     * URL: GET /admin/productos/cambiar-estado/{id}
-     */
     @GetMapping("/cambiar-estado/{id}")
-    public String cambiarEstado(
-            @PathVariable Long id,
-            @RequestParam Boolean activo,
+    public String cambiarEstado(@PathVariable Long id, @RequestParam Boolean activo,
             RedirectAttributes redirectAttributes) {
-
         log.info("Cambiando estado de producto ID: {} a {}", id, activo ? "ACTIVO" : "INACTIVO");
 
         try {
             Optional<Product> productoOpt = productService.buscarPorId(id);
-
             if (productoOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "Producto no encontrado");
                 return "redirect:/admin/productos";
@@ -274,28 +269,17 @@ public class ProductController {
             producto.setActivo(activo);
             productService.actualizar(id, producto);
 
-            String mensaje = activo ? "Producto activado correctamente" : "Producto desactivado correctamente";
+            String mensaje = activo ? "Producto activado" : "Producto desactivado";
             redirectAttributes.addFlashAttribute("success", mensaje);
 
-            log.info("Estado actualizado exitosamente para producto ID: {}", id);
-
         } catch (Exception e) {
-            log.error("Error al cambiar estado del producto: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("error", "Error al cambiar el estado: " + e.getMessage());
+            log.error("Error al cambiar estado: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Error al cambiar el estado");
         }
 
         return "redirect:/admin/productos";
     }
 
-    // ========================================
-    // ELIMINAR PRODUCTO
-    // ========================================
-
-    /**
-     * Elimina (desactiva) un producto
-     * 
-     * URL: GET /admin/productos/eliminar/{id}
-     */
     @GetMapping("/eliminar/{id}")
     public String eliminar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         log.info("Eliminando producto ID: {}", id);
@@ -303,32 +287,19 @@ public class ProductController {
         try {
             productService.eliminar(id);
             redirectAttributes.addFlashAttribute("success", "Producto eliminado correctamente");
-
         } catch (Exception e) {
-            log.error("Error al eliminar producto: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("error", "Error al eliminar el producto: " + e.getMessage());
+            log.error("Error al eliminar: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Error al eliminar el producto");
         }
 
         return "redirect:/admin/productos";
     }
 
-    // ========================================
-    // VER DETALLE
-    // ========================================
-
-    /**
-     * Muestra el detalle de un producto
-     * 
-     * URL: GET /admin/productos/ver/{id}
-     * Vista: admin/productos/detalle.html
-     */
     @GetMapping("/ver/{id}")
-    public String verDetalle(@PathVariable Long id, Model model,
-            RedirectAttributes redirectAttributes) {
+    public String verDetalle(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         log.debug("Mostrando detalle de producto ID: {}", id);
 
         Optional<Product> productoOpt = productService.buscarPorId(id);
-
         if (productoOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Producto no encontrado");
             return "redirect:/admin/productos";
@@ -341,76 +312,54 @@ public class ProductController {
     }
 
     // ========================================
-    // MÉTODOS AUXILIARES PRIVADOS
+    // MÉTODOS AUXILIARES
     // ========================================
 
-    /**
-     * Carga los datos necesarios para el formulario
-     */
     private void cargarDatosFormulario(Model model) {
         model.addAttribute("categorias", categoryService.obtenerActivas());
         model.addAttribute("marcas", brandService.obtenerActivas());
     }
 
-    /**
-     * Valida las imágenes usando FileUploadUtil
-     * 
-     * @param imagenes Array de archivos a validar
-     * @return Mensaje de error o null si todo está correcto
-     */
     private String validarImagenes(MultipartFile[] imagenes) {
-        // Validar cantidad máxima
         if (imagenes.length > MAX_IMAGENES) {
             return "Solo se permiten máximo " + MAX_IMAGENES + " imágenes";
         }
 
-        // Validar cada imagen
         for (MultipartFile imagen : imagenes) {
             if (!imagen.isEmpty()) {
-                // ✅ Validar que sea una imagen usando FileUploadUtil
                 if (!FileUploadUtil.isImageFile(imagen)) {
                     return "Solo se permiten archivos de imagen (JPG, PNG, GIF, WEBP)";
                 }
 
-                // ✅ Validar tamaño usando FileUploadUtil
                 if (!FileUploadUtil.isValidFileSize(imagen, MAX_SIZE_MB)) {
-                    return "Cada imagen no puede superar " + MAX_SIZE_MB + "MB de tamaño";
+                    return "Cada imagen no puede superar " + MAX_SIZE_MB + "MB";
                 }
 
-                // Validar extensión
                 String filename = imagen.getOriginalFilename();
                 if (filename != null) {
                     String extension = obtenerExtension(filename).toLowerCase();
                     if (!EXTENSIONES_PERMITIDAS.contains(extension)) {
-                        return "Extensión no permitida. Use: "
-                                + String.join(", ", EXTENSIONES_PERMITIDAS).toUpperCase();
+                        return "Extensión no permitida. Use: " +
+                                String.join(", ", EXTENSIONES_PERMITIDAS).toUpperCase();
                     }
                 }
             }
         }
 
-        return null; // Todo correcto
+        return null;
     }
 
-    /**
-     * Sube las imágenes de un producto
-     * 
-     * @param productoId ID del producto
-     * @param imagenes   Array de imágenes a subir
-     * @return Cantidad de imágenes subidas exitosamente
-     */
     private int subirImagenesProducto(Long productoId, MultipartFile[] imagenes) {
         int imagenesSubidas = 0;
 
         for (int i = 0; i < imagenes.length && i < MAX_IMAGENES; i++) {
             if (!imagenes[i].isEmpty()) {
                 try {
-                    boolean esPrincipal = (i == 0); // Primera imagen es principal
+                    boolean esPrincipal = (i == 0);
                     productService.subirImagen(productoId, imagenes[i], esPrincipal);
                     imagenesSubidas++;
                 } catch (Exception e) {
                     log.error("Error al subir imagen {}: {}", i, e.getMessage());
-                    // Continuar con las demás imágenes
                 }
             }
         }
@@ -418,12 +367,6 @@ public class ProductController {
         return imagenesSubidas;
     }
 
-    /**
-     * Obtiene la extensión de un archivo
-     * 
-     * @param filename Nombre del archivo
-     * @return Extensión sin el punto
-     */
     private String obtenerExtension(String filename) {
         if (filename == null || filename.isEmpty()) {
             return "";
@@ -437,22 +380,3 @@ public class ProductController {
         return filename.substring(lastDotIndex + 1);
     }
 }
-
-/**
- * MEJORAS IMPLEMENTADAS:
- * 
- * ✅ Usa FileUploadUtil.isImageFile() en lugar de validación manual
- * ✅ Usa FileUploadUtil.isValidFileSize() para validar tamaño
- * ✅ Extraídas validaciones a método privado validarImagenes()
- * ✅ Extraída subida de imágenes a método privado subirImagenesProducto()
- * ✅ Método auxiliar cargarDatosFormulario() para DRY
- * ✅ Constantes configurables al inicio de la clase
- * ✅ Eliminadas 60+ líneas de código duplicado
- * ✅ Más fácil de mantener y testear
- * ✅ Coherencia total con FileUploadUtil
- * 
- * ANTES: 40+ líneas de validación manual duplicadas
- * DESPUÉS: 2 llamadas a FileUploadUtil + validación de extensión
- * 
- * Resultado: Código más limpio, mantenible y coherente
- */

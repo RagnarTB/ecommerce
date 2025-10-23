@@ -29,7 +29,7 @@ public class CustomerController {
 
     @GetMapping
     public String listar(Model model) {
-        model.addAttribute("clientes", customerService.obtenerActivos());
+        model.addAttribute("clientes", customerService.obtenerTodos());
         model.addAttribute("titulo", "Gestión de Clientes");
         return "admin/clientes/lista";
     }
@@ -61,5 +61,11 @@ public class CustomerController {
         } catch (Exception e) {
             return "{\"success\": false, \"error\": \"" + e.getMessage() + "\"}";
         }
+    }
+
+    @GetMapping("/cambiar-estado/{id}")
+    public String cambiarEstado(@PathVariable Long id, @RequestParam boolean activo) {
+        customerService.cambiarEstado(id, activo);
+        return "redirect:/admin/clientes"; // vuelve a la lista
     }
 }

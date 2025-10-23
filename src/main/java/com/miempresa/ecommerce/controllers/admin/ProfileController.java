@@ -29,7 +29,7 @@ public class ProfileController {
 
     @GetMapping
     public String listar(Model model) {
-        model.addAttribute("perfiles", profileService.obtenerActivos());
+        model.addAttribute("perfiles", profileService.obtenerTodos());
         model.addAttribute("titulo", "Gestión de Perfiles");
         return "admin/perfiles/lista";
     }

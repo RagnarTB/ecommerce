@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-arrow-down text-success"></i>
+                                Registrar Entrada de Inventario
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/admin/inventario}">Inventario</a></li>
+                                <li class="breadcrumb-item active">Registrar Entrada</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div class="row">
+                        <div class="col-md-8 offset-md-2">
+                            <!-- Formulario -->
+                            <div class="card card-success card-outline gamer-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-plus-circle"></i> Nueva Entrada
+                                    </h3>
+                                </div>
+                                <form method="post" th:action="@{/admin/inventario/registrar-entrada}">
+                                    <div class="card-body">
+
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            <strong>Entrada de Inventario:</strong> Aumenta el stock del producto.
+                                            Usado para compras, devoluciones o ajustes positivos.
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Producto <span class="text-danger">*</span></label>
+                                            <select class="form-control gamer-input select2" name="productoId"
+                                                id="productoId" required style="width: 100%;">
+                                                <option value="">Seleccione un producto...</option>
+                                                <option th:each="producto : ${productos}" th:value="${producto.id}"
+                                                    th:text="${producto.nombre + ' - Stock Actual: ' + producto.stockActual}"
+                                                    th:data-stock="${producto.stockActual}">
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Info Stock Actual -->
+                                        <div id="infoStock" class="alert alert-secondary" style="display: none;">
+                                            <strong>Stock Actual:</strong> <span id="stockActual">0</span> unidades
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Cantidad <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control gamer-input" name="cantidad"
+                                                id="cantidad" min="1" required placeholder="Ingrese la cantidad">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Motivo <span class="text-danger">*</span></label>
+                                            <select class="form-control gamer-input" name="motivo" required>
+                                                <option value="">Seleccione el motivo...</option>
+                                                <option th:each="motivo : ${motivos}"
+                                                    th:if="${motivo.name() == 'COMPRA' || motivo.name() == 'DEVOLUCION' || motivo.name() == 'AJUSTE_POSITIVO'}"
+                                                    th:value="${motivo.name()}" th:text="${motivo.nombre}">
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Observaciones</label>
+                                            <textarea class="form-control gamer-input" name="observaciones" rows="3"
+                                                placeholder="Detalles adicionales sobre esta entrada (opcional)"></textarea>
+                                        </div>
+
+                                        <!-- Previsualización -->
+                                        <div id="preview" class="alert alert-success" style="display: none;">
+                                            <h5><i class="fas fa-calculator"></i> Resultado:</h5>
+                                            <p class="mb-0">
+                                                Stock actual: <strong id="prevStockActual">0</strong> →
+                                                Nuevo stock: <strong id="prevStockNuevo" class="text-success">0</strong>
+                                            </p>
+                                        </div>
+
+                                    </div>
+                                    <div class="card-footer">
+                                        <button type="submit" class="btn btn-success btn-lg gamer-btn">
+                                            <i class="fas fa-check"></i> Registrar Entrada
+                                        </button>
+                                        <a th:href="@{/admin/inventario}" class="btn btn-secondary btn-lg">
+                                            <i class="fas fa-times"></i> Cancelar
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Inicializar Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Seleccione un producto'
+            });
+
+            let stockActual = 0;
+
+            // Al seleccionar producto
+            $('#productoId').on('change', function () {
+                const selectedOption = $(this).find(':selected');
+                stockActual = parseInt(selectedOption.data('stock')) || 0;
+
+                if (stockActual >= 0) {
+                    $('#stockActual').text(stockActual);
+                    $('#infoStock').show();
+                    calcularNuevoStock();
+                } else {
+                    $('#infoStock').hide();
+                    $('#preview').hide();
+                }
+            });
+
+            // Al cambiar cantidad
+            $('#cantidad').on('input', function () {
+                calcularNuevoStock();
+            });
+
+            function calcularNuevoStock() {
+                const cantidad = parseInt($('#cantidad').val()) || 0;
+
+                if (cantidad > 0 && stockActual >= 0) {
+                    const nuevoStock = stockActual + cantidad;
+
+                    $('#prevStockActual').text(stockActual);
+                    $('#prevStockNuevo').text(nuevoStock);
+                    $('#preview').show();
+                } else {
+                    $('#preview').hide();
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>
