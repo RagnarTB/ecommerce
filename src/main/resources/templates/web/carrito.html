@@ -1,46 +1,42 @@
 <section>
     <h2 class="section-title">Tu Carrito</h2>
 
-    <!-- Carrito vacío -->
     <div th:if="${carritoVacio}" class="empty-cart">
         <p class="empty-title">Tu carrito está vacío</p>
         <a href="/catalogo" class="btn-gamer">Explorar Productos</a>
     </div>
 
-    <!-- Carrito con productos -->
     <div th:if="${!carritoVacio}">
         <div th:each="item : ${items}" class="cart-item">
 
-            <!-- ✅ Imagen del producto -->
+            >
             <img th:if="${item.producto.imagenPrincipal != null}"
                 th:src="@{/uploads/productos/{filename}(filename=${item.producto.imagenPrincipal.url})}"
                 class="cart-item-image" th:alt="'Imagen de ' + ${item.producto.nombre}" />
-
-            <!-- 🧩 Placeholder si no tiene imagen -->
-            <img th:if="${item.producto.imagenPrincipal == null}" th:src="@{/images/default-product.png}"
+            <img th:if="${item.producto.imagenPrincipal == null}" th:src="@{/img/placeholder-game.jpg}"
                 class="cart-item-image" alt="Imagen por defecto" />
 
             <div class="cart-item-details">
                 <h3 class="cart-item-title" th:text="${item.producto.nombre}"></h3>
-                <p class="cart-item-price" th:text="${item.subtotal} + ' S/'"></p>
-
+                <p class="cart-item-price"
+                    th:text="'S/ ' + ${#numbers.formatDecimal(item.subtotal, 1, 'POINT', 2, 'POINT')}"></p>
                 <form action="/carrito/actualizar" method="post" class="quantity-controls">
                     <input type="hidden" name="productoId" th:value="${item.producto.id}">
                     <input type="number" name="cantidad" th:value="${item.cantidad}" min="1" class="quantity-input">
                     <button type="submit" class="quantity-btn">✔</button>
                 </form>
 
-                <form th:action="@{'/carrito/eliminar/' + ${item.producto.id}}" method="post">
+                <form th:action="@{'/carrito/eliminar/{productoId}'(productoId=${item.producto.id})}" method="post">
                     <button type="submit" class="btn-gamer-secondary">Eliminar</button>
                 </form>
             </div>
         </div>
 
-        <!-- Resumen -->
         <div class="order-summary">
+            <h3 class="summary-title">Resumen</h3>
             <div class="summary-row total">
                 <span>Total:</span>
-                <span th:text="${total} + ' S/'"></span>
+                <span th:text="'S/ ' + ${#numbers.formatDecimal(total, 1, 'POINT', 2, 'POINT')}"></span>
             </div>
             <a href="/checkout" class="btn-gamer">Ir al Checkout</a>
         </div>

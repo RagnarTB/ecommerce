@@ -87,4 +87,6 @@ public interface CustomerService {
      * Cuenta clientes activos
      */
     long contarActivos();
+
+    Customer obtenerClienteGenerico();
 }

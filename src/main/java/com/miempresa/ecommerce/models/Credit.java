@@ -1,8 +1,11 @@
 package com.miempresa.ecommerce.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference; // Importar
 import com.miempresa.ecommerce.models.enums.EstadoCredito;
+
 import jakarta.persistence.*;
 import lombok.*;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -11,19 +14,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
-/**
- * ENTIDAD: CRÉDITO
- * 
- * Representa un crédito (venta a cuotas).
- * Se crea cuando una venta es de tipo CREDITO.
- * 
- * El crédito tiene:
- * - Monto total a pagar
- * - Número de cuotas
- * - Lista de cuotas con fechas de vencimiento
- * - Monto pendiente
- */
+import org.springframework.transaction.annotation.Transactional;
 
 @Entity
 @Table(name = "creditos")
@@ -33,89 +27,46 @@ import java.util.List;
 @Builder
 public class Credit {
 
-    // ========================================
-    // CLAVE PRIMARIA
-    // ========================================
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    // ========================================
-    // RELACIONES
-    // ========================================
-
-    /**
-     * Venta asociada al crédito
-     * Relación uno a uno: una venta tiene un crédito
-     */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "venta_id", nullable = false, unique = true)
     @ToString.Exclude
     private Sale venta;
 
-    /**
-     * Cliente que debe el crédito
-     */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cliente_id", nullable = false)
     private Customer cliente;
 
-    /**
-     * Lista de cuotas del crédito
-     */
+    // <<--- ANOTACIÓN AÑADIDA AQUÍ --->>
+    @JsonManagedReference("credit-installments")
     @OneToMany(mappedBy = "credito", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("numeroCuota ASC")
     @Builder.Default
     private List<Installment> cuotas = new ArrayList<>();
 
-    // ========================================
-    // INFORMACIÓN DEL CRÉDITO
-    // ========================================
-
-    /**
-     * Monto total del crédito
-     */
     @Column(name = "monto_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal montoTotal;
 
-    /**
-     * Monto pendiente por pagar
-     * Se actualiza con cada abono
-     */
     @Column(name = "monto_pendiente", nullable = false, precision = 10, scale = 2)
     private BigDecimal montoPendiente;
 
-    /**
-     * Número de cuotas
-     * Máximo 24 cuotas
-     */
     @Column(name = "num_cuotas", nullable = false)
     private Integer numCuotas;
 
-    /**
-     * Monto de cada cuota (todas iguales)
-     */
     @Column(name = "monto_cuota", nullable = false, precision = 10, scale = 2)
     private BigDecimal montoCuota;
 
-    /**
-     * Fecha de inicio del crédito
-     */
     @Column(name = "fecha_inicio", nullable = false)
     private LocalDate fechaInicio;
 
-    /**
-     * Estado del crédito (ACTIVO, COMPLETADO, ANULADO)
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 20)
+    @Builder.Default
     private EstadoCredito estado = EstadoCredito.ACTIVO;
-
-    // ========================================
-    // AUDITORÍA
-    // ========================================
 
     @CreationTimestamp
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
@@ -125,14 +76,14 @@ public class Credit {
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;
 
-    // ========================================
-    // MÉTODOS ÚTILES
-    // ========================================
-
+    // Métodos útiles (sin cambios)...
+    // <<--- CÓDIGO DE MÉTODOS ÚTILES OMITIDO POR BREVEDAD --->>
     /**
      * Agrega una cuota al crédito
      */
     public void agregarCuota(Installment cuota) {
+        if (this.cuotas == null)
+            this.cuotas = new ArrayList<>();
         this.cuotas.add(cuota);
         cuota.setCredito(this);
     }
@@ -142,6 +93,12 @@ public class Credit {
      * Crea todas las cuotas con fechas de vencimiento cada 30 días
      */
     public void generarCuotas() {
+        if (this.numCuotas == null || this.numCuotas <= 0 || this.montoCuota == null || this.fechaInicio == null) {
+            log.warn("No se pueden generar cuotas: datos incompletos en el crédito.");
+            return; // O lanzar excepción
+        }
+        if (this.cuotas == null)
+            this.cuotas = new ArrayList<>();
         this.cuotas.clear();
 
         for (int i = 1; i <= this.numCuotas; i++) {
@@ -151,11 +108,13 @@ public class Credit {
                     .monto(this.montoCuota)
                     .montoPagado(BigDecimal.ZERO)
                     .montoPendiente(this.montoCuota)
-                    .fechaVencimiento(this.fechaInicio.plusMonths(i))
+                    .fechaVencimiento(this.fechaInicio.plusMonths(i)) // Vencimiento mensual
+                    .estado(com.miempresa.ecommerce.models.enums.EstadoCuota.PENDIENTE) // Estado inicial
                     .build();
-
             this.agregarCuota(cuota);
         }
+        // Asegurarse de que el monto pendiente inicial sea el total
+        this.montoPendiente = this.montoTotal;
     }
 
     /**
@@ -164,61 +123,110 @@ public class Credit {
     public void calcularMontoCuota() {
         if (this.montoTotal != null && this.numCuotas != null && this.numCuotas > 0) {
             this.montoCuota = this.montoTotal
-                    .divide(BigDecimal.valueOf(this.numCuotas), 2, BigDecimal.ROUND_HALF_UP);
+                    .divide(BigDecimal.valueOf(this.numCuotas), 2, java.math.RoundingMode.HALF_UP);
+        } else {
+            this.montoCuota = BigDecimal.ZERO;
         }
     }
 
     /**
-     * Aplica un pago al crédito (distribución proporcional)
-     * 
-     * @param montoPago Monto del pago a distribuir
+     * Aplica un pago al crédito, priorizando cuotas vencidas y luego las más
+     * antiguas.
+     * Crea los registros PaymentInstallment para trazabilidad.
+     *
+     * @param pago El objeto Payment que representa el abono.
+     * @return Lista de PaymentInstallment creados.
      */
-    public void aplicarPago(BigDecimal montoPago) {
-        if (montoPago == null || montoPago.compareTo(BigDecimal.ZERO) <= 0) {
-            return;
+    @Transactional // Asegura atomicidad
+    public List<com.miempresa.ecommerce.models.PaymentInstallment> aplicarPagoConDetalle(Payment pago) {
+        BigDecimal montoAplicar = pago.getMonto();
+        List<com.miempresa.ecommerce.models.PaymentInstallment> distribucion = new ArrayList<>();
+
+        if (montoAplicar == null || montoAplicar.compareTo(BigDecimal.ZERO) <= 0) {
+            return distribucion;
         }
 
-        // Distribuir proporcionalmente entre todas las cuotas pendientes
-        List<Installment> cuotasPendientes = this.cuotas.stream()
-                .filter(c -> c.getMontoPendiente().compareTo(BigDecimal.ZERO) > 0)
+        // 1. Obtener cuotas ordenadas: vencidas primero, luego por número de cuota
+        List<Installment> cuotasOrdenadas = this.cuotas.stream()
+                .filter(c -> c.getMontoPendiente() != null && c.getMontoPendiente().compareTo(BigDecimal.ZERO) > 0)
+                .sorted((c1, c2) -> {
+                    boolean c1Vencida = c1.estaVencida();
+                    boolean c2Vencida = c2.estaVencida();
+                    if (c1Vencida && !c2Vencida)
+                        return -1; // Vencidas primero
+                    if (!c1Vencida && c2Vencida)
+                        return 1;
+                    // Si ambas son vencidas o ninguna lo es, ordenar por fecha de vencimiento
+                    int cmpFecha = c1.getFechaVencimiento().compareTo(c2.getFechaVencimiento());
+                    if (cmpFecha != 0)
+                        return cmpFecha;
+                    // Si vencen el mismo día, ordenar por número de cuota
+                    return c1.getNumeroCuota().compareTo(c2.getNumeroCuota());
+                })
                 .toList();
 
-        if (cuotasPendientes.isEmpty()) {
+        // 2. Aplicar el monto a las cuotas en orden
+        for (Installment cuota : cuotasOrdenadas) {
+            if (montoAplicar.compareTo(BigDecimal.ZERO) <= 0) {
+                break; // No hay más monto para aplicar
+            }
+
+            BigDecimal montoAAplicarEnCuota = montoAplicar.min(cuota.getMontoPendiente());
+
+            // Aplicar pago a la cuota
+            cuota.aplicarPago(montoAAplicarEnCuota);
+
+            // Crear registro de distribución
+            com.miempresa.ecommerce.models.PaymentInstallment detallePago = com.miempresa.ecommerce.models.PaymentInstallment
+                    .builder()
+                    .pago(pago)
+                    .cuota(cuota)
+                    .montoAplicado(montoAAplicarEnCuota)
+                    .build();
+            distribucion.add(detallePago);
+            // ¡Importante! Añadir al lado inverso de la relación si no se guarda
+            // automáticamente
+            // pago.agregarDistribucion(detallePago); // <-- Asegúrate de que esto se guarde
+
+            montoAplicar = montoAplicar.subtract(montoAAplicarEnCuota);
+        }
+
+        // 3. Recalcular monto pendiente del crédito
+        recalcularMontoPendiente();
+
+        // 4. Actualizar estado del crédito si ya se pagó todo
+        if (this.montoPendiente.compareTo(BigDecimal.ZERO) <= 0) {
+            this.estado = EstadoCredito.COMPLETADO;
+            log.info("Crédito ID {} marcado como COMPLETADO", this.id);
+        }
+
+        // Persistir cambios en las cuotas (si no se hace por cascada)
+        // this.cuotas.forEach(installmentRepository::save); // Si es necesario
+
+        return distribucion; // Devolver los detalles creados
+    }
+
+    /**
+     * Recalcula el monto pendiente sumando los pendientes de las cuotas.
+     */
+    public void recalcularMontoPendiente() {
+        if (this.cuotas == null || this.cuotas.isEmpty()) {
+            this.montoPendiente = this.montoTotal;
             return;
         }
-
-        // Calcular monto por cuota
-        BigDecimal montoPorCuota = montoPago
-                .divide(BigDecimal.valueOf(cuotasPendientes.size()), 2, BigDecimal.ROUND_HALF_UP);
-
-        BigDecimal montoRestante = montoPago;
-
-        // Aplicar a cada cuota
-        for (Installment cuota : cuotasPendientes) {
-            BigDecimal montoAAplicar = montoPorCuota.min(cuota.getMontoPendiente()).min(montoRestante);
-            cuota.aplicarPago(montoAAplicar);
-            montoRestante = montoRestante.subtract(montoAAplicar);
-
-            if (montoRestante.compareTo(BigDecimal.ZERO) <= 0) {
-                break;
-            }
-        }
-
-        // Actualizar monto pendiente del crédito
         this.montoPendiente = this.cuotas.stream()
                 .map(Installment::getMontoPendiente)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // Si no hay monto pendiente, marcar como completado
-        if (this.montoPendiente.compareTo(BigDecimal.ZERO) == 0) {
-            this.estado = EstadoCredito.COMPLETADO;
-        }
+                .filter(Objects::nonNull) // Evitar NPE si alguna cuota no tiene monto pendiente
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, java.math.RoundingMode.HALF_UP); // Asegurar escala
     }
 
     /**
      * Obtiene el número de cuotas pagadas
      */
     public long getCuotasPagadas() {
+        if (this.cuotas == null)
+            return 0;
         return this.cuotas.stream()
                 .filter(Installment::estaPagada)
                 .count();
@@ -228,6 +236,8 @@ public class Credit {
      * Obtiene el número de cuotas pendientes
      */
     public long getCuotasPendientes() {
+        if (this.cuotas == null)
+            return this.numCuotas != null ? this.numCuotas : 0;
         return this.cuotas.stream()
                 .filter(c -> !c.estaPagada())
                 .count();
@@ -237,9 +247,35 @@ public class Credit {
      * Obtiene el número de cuotas vencidas
      */
     public long getCuotasVencidas() {
+        if (this.cuotas == null)
+            return 0;
         return this.cuotas.stream()
                 .filter(Installment::estaVencida)
                 .count();
+    }
+
+    /**
+     * Verifica si el crédito tiene alguna cuota vencida.
+     */
+    public boolean getTieneVencidas() {
+        return getCuotasVencidas() > 0;
+    }
+
+    /**
+     * Obtiene la fecha del próximo vencimiento de una cuota pendiente.
+     */
+    public LocalDate getProximoVencimiento() {
+        if (this.cuotas == null)
+            return null;
+        return this.cuotas.stream()
+                .filter(c -> c.getEstado() == com.miempresa.ecommerce.models.enums.EstadoCuota.PENDIENTE ||
+                        c.getEstado() == com.miempresa.ecommerce.models.enums.EstadoCuota.PAGADA_PARCIAL ||
+                        c.getEstado() == com.miempresa.ecommerce.models.enums.EstadoCuota.VENCIDA) // Incluir vencidas
+                                                                                                   // también
+                .map(Installment::getFechaVencimiento)
+                .filter(Objects::nonNull)
+                .min(LocalDate::compareTo)
+                .orElse(null);
     }
 
     /**
@@ -262,59 +298,8 @@ public class Credit {
     public void anular() {
         this.estado = EstadoCredito.ANULADO;
     }
-}
 
-/**
- * EXPLICACIÓN ADICIONAL:
- * 
- * 1. ¿Cómo se crea un crédito?
- * 
- * Ejemplo: Venta de S/ 1200 en 12 cuotas
- * 
- * Paso 1: Crear el crédito
- * ```java
- * Credit credito = Credit.builder()
- * .venta(venta)
- * .cliente(cliente)
- * .montoTotal(new BigDecimal("1200"))
- * .montoPendiente(new BigDecimal("1200"))
- * .numCuotas(12)
- * .fechaInicio(LocalDate.now())
- * .build();
- * 
- * credito.calcularMontoCuota(); // 1200 ÷ 12 = 100
- * credito.generarCuotas(); // Crea 12 cuotas de S/ 100 c/u
- * ```
- * 
- * Paso 2: Se crean automáticamente 12 cuotas:
- * - Cuota 1: S/ 100, vence en 30 días
- * - Cuota 2: S/ 100, vence en 60 días
- * - ...
- * - Cuota 12: S/ 100, vence en 360 días
- * 
- * 2. ¿Cómo funciona el método aplicarPago()?
- * 
- * Ejemplo: Cliente abona S/ 300
- * 
- * Crédito tiene 12 cuotas de S/ 100 cada una (todas pendientes)
- * 
- * Se distribuye proporcionalmente:
- * S/ 300 ÷ 12 = S/ 25 por cuota
- * 
- * Resultado:
- * - Cuota 1: pendiente S/ 75 (pagó S/ 25)
- * - Cuota 2: pendiente S/ 75
- * - ...
- * - Cuota 12: pendiente S/ 75
- * 
- * Monto pendiente del crédito: S/ 900
- * 
- * 3. ¿Cuándo se marca como COMPLETADO?
- * - Cuando montoPendiente = 0
- * - Todas las cuotas están pagadas
- * 
- * 4. Relación con otras tablas:
- * - 1 Venta → 1 Crédito (si es venta a crédito)
- * - 1 Crédito → N Cuotas (12 cuotas, 24 cuotas, etc.)
- * - 1 Crédito → N Pagos (abonos del cliente)
- */
+    // Logger para métodos internos si es necesario
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Credit.class);
+
+}

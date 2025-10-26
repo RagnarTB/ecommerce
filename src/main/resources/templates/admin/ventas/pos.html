@@ -3,20 +3,14 @@
 
 <head th:replace="~{fragments/head :: head('Punto de Venta - POS')}"></head>
 
-
-
 <body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
 
-        <!-- Navbar -->
         <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
-        <!-- Sidebar -->
         <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-        <!-- Content Wrapper -->
         <div class="content-wrapper">
-            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
@@ -36,17 +30,13 @@
                 </div>
             </div>
 
-            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
 
-                    <!-- Mensajes -->
                     <div id="alertContainer"></div>
 
                     <div class="row">
-                        <!-- COLUMNA IZQUIERDA: BÚSQUEDA DE PRODUCTOS -->
                         <div class="col-lg-7">
-                            <!-- Búsqueda de Productos -->
                             <div class="card card-danger card-outline gamer-card">
                                 <div class="card-header">
                                     <h3 class="card-title">
@@ -54,7 +44,6 @@
                                     </h3>
                                 </div>
                                 <div class="card-body">
-                                    <!-- Buscador -->
                                     <div class="input-group mb-3">
                                         <div class="input-group-prepend">
                                             <span class="input-group-text bg-danger">
@@ -67,9 +56,7 @@
                                             autocomplete="off">
                                     </div>
 
-                                    <!-- Grid de Productos -->
                                     <div id="productGrid" class="row" style="max-height: 500px; overflow-y: auto;">
-                                        <!-- Productos se cargarán aquí dinámicamente -->
                                         <div class="col-12 text-center text-muted py-5" id="noProducts">
                                             <i class="fas fa-box-open fa-3x mb-3"></i>
                                             <p>Comienza a buscar productos...</p>
@@ -79,9 +66,7 @@
                             </div>
                         </div>
 
-                        <!-- COLUMNA DERECHA: CARRITO Y PAGO -->
                         <div class="col-lg-5">
-                            <!-- Información del Cliente -->
                             <div class="card card-danger card-outline gamer-card">
                                 <div class="card-header">
                                     <h3 class="card-title">
@@ -99,7 +84,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Información del cliente encontrado -->
                                     <div id="clienteInfo" class="alert alert-info" style="display: none;">
                                         <strong id="clienteNombre"></strong><br>
                                         <small id="clienteDocumentoCompleto"></small>
@@ -108,7 +92,6 @@
                                 </div>
                             </div>
 
-                            <!-- Carrito de Compras -->
                             <div class="card card-danger card-outline gamer-card">
                                 <div class="card-header">
                                     <h3 class="card-title">
@@ -121,7 +104,6 @@
                                     </div>
                                 </div>
                                 <div class="card-body p-0">
-                                    <!-- Lista de productos en el carrito -->
                                     <div id="cartItems" style="max-height: 300px; overflow-y: auto;">
                                         <div class="text-center text-muted py-5" id="emptyCart">
                                             <i class="fas fa-shopping-cart fa-3x mb-3"></i>
@@ -130,7 +112,6 @@
                                     </div>
                                 </div>
                                 <div class="card-footer">
-                                    <!-- Resumen de Totales -->
                                     <table class="table table-sm">
                                         <tr>
                                             <td><strong>Subtotal:</strong></td>
@@ -168,7 +149,6 @@
                                 </div>
                             </div>
 
-                            <!-- Opciones de Pago -->
                             <div class="card card-danger card-outline gamer-card">
                                 <div class="card-header">
                                     <h3 class="card-title">
@@ -176,7 +156,6 @@
                                     </h3>
                                 </div>
                                 <div class="card-body">
-                                    <!-- Tipo de Pago -->
                                     <div class="form-group">
                                         <label>Tipo de Pago</label>
                                         <select class="form-control gamer-input" id="tipoPago">
@@ -185,14 +164,12 @@
                                         </select>
                                     </div>
 
-                                    <!-- Número de Cuotas (solo si es crédito) -->
                                     <div class="form-group" id="numCuotasGroup" style="display: none;">
                                         <label>Número de Cuotas</label>
                                         <input type="number" class="form-control gamer-input" id="numCuotas" min="1"
                                             max="24" value="12">
                                     </div>
 
-                                    <!-- Métodos de Pago -->
                                     <div id="metodoPagoGroup">
                                         <label>Método de Pago</label>
                                         <div class="row">
@@ -235,14 +212,12 @@
                                         </div>
                                     </div>
 
-                                    <!-- Monto Recibido (solo efectivo) -->
                                     <div class="form-group mt-3" id="montoRecibidoGroup">
                                         <label>Monto Recibido</label>
                                         <input type="number" class="form-control form-control-lg gamer-input"
                                             id="montoRecibido" placeholder="0.00" step="0.01">
                                     </div>
 
-                                    <!-- Vuelto -->
                                     <div id="vueltoGroup" style="display: none;">
                                         <div class="alert alert-success text-center">
                                             <h4>Vuelto: S/ <span id="vuelto">0.00</span></h4>
@@ -263,9 +238,7 @@
             </section>
         </div>
 
-        <!-- Footer -->
         <footer th:replace="~{fragments/footer :: footer}"></footer>
-        <!-- Scripts base (jQuery, Bootstrap, etc.) -->
         <th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
 
         <script th:inline="javascript">
@@ -281,6 +254,8 @@
                 // INICIALIZACIÓN
                 // ============================================
                 $(document).ready(function () {
+                    console.log("🚀 POS Inicializado");
+                    console.log("📦 Productos cargados:", productos); // Verificar que productos tenga datos
                     cargarProductos();
                     configurarEventos();
                 });
@@ -289,8 +264,16 @@
                 // CARGAR PRODUCTOS
                 // ============================================
                 function cargarProductos() {
-                    if (productos.length > 0) {
+                    if (productos && productos.length > 0) { // Verificar si productos existe y no está vacío
                         mostrarProductos(productos);
+                    } else {
+                        console.warn("⚠️ No hay productos para mostrar o la variable 'productos' es inválida.");
+                        $('#productGrid').html(`
+                            <div class="col-12 text-center text-muted py-5">
+                                <i class="fas fa-box-open fa-3x mb-3"></i>
+                                <p>No hay productos disponibles para mostrar.</p>
+                            </div>
+                         `);
                     }
                 }
 
@@ -303,6 +286,7 @@
                     // Búsqueda de productos
                     $('#searchProduct').on('keyup', function () {
                         const query = $(this).val().toLowerCase();
+                        if (!productos) return; // Salir si no hay productos
                         if (query.length >= 2) {
                             const filtrados = productos.filter(p =>
                                 p.nombre.toLowerCase().includes(query) ||
@@ -322,46 +306,67 @@
 
                     // Limpiar carrito
                     $('#btnLimpiarCarrito').on('click', function () {
-                        if (confirm('¿Seguro que deseas limpiar el carrito?')) {
-                            carrito = [];
-                            clienteSeleccionado = null;
-                            $('#clienteInfo').hide();
-                            $('#clienteDocumento').val('');
-                            actualizarCarrito();
-                        }
+                        Swal.fire({
+                            title: '¿Limpiar Carrito?',
+                            text: "Se eliminarán todos los productos del carrito.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Sí, limpiar',
+                            cancelButtonText: 'Cancelar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                carrito = [];
+                                clienteSeleccionado = null;
+                                $('#clienteInfo').hide();
+                                $('#clienteDocumento').val('');
+                                actualizarCarrito();
+                                showAlert('Carrito limpiado', 'info');
+                            }
+                        });
                     });
+
 
                     // Cambio de tipo de pago
                     $('#tipoPago').on('change', function () {
                         if ($(this).val() === 'CREDITO') {
-                            $('#numCuotasGroup').show();
-                            $('#metodoPagoGroup').hide();
-                            $('#montoRecibidoGroup').hide();
-                            $('#vueltoGroup').hide();
+                            $('#numCuotasGroup').slideDown();
+                            $('#metodoPagoGroup').slideUp();
+                            $('#montoRecibidoGroup').slideUp();
+                            $('#vueltoGroup').slideUp();
                         } else {
-                            $('#numCuotasGroup').hide();
-                            $('#metodoPagoGroup').show();
-                            $('#montoRecibidoGroup').show();
+                            $('#numCuotasGroup').slideUp();
+                            $('#metodoPagoGroup').slideDown();
+                            // Mostrar monto recibido solo si es efectivo
+                            if ($('input[name="metodoPago"]:checked').val() === 'EFECTIVO') {
+                                $('#montoRecibidoGroup').slideDown();
+                            } else {
+                                $('#montoRecibidoGroup').slideUp();
+                                $('#vueltoGroup').slideUp(); // Ocultar vuelto si no es efectivo
+                            }
                         }
                     });
 
                     // Cambio de método de pago
                     $('input[name="metodoPago"]').on('change', function () {
                         if ($(this).val() === 'EFECTIVO') {
-                            $('#montoRecibidoGroup').show();
+                            $('#montoRecibidoGroup').slideDown();
                         } else {
-                            $('#montoRecibidoGroup').hide();
-                            $('#vueltoGroup').hide();
+                            $('#montoRecibidoGroup').slideUp();
+                            $('#montoRecibido').val(''); // Limpiar monto recibido
+                            $('#vueltoGroup').slideUp(); // Ocultar vuelto
                         }
                     });
 
+
                     // Cálculo de vuelto
-                    $('#montoRecibido').on('keyup', calcularVuelto);
+                    $('#montoRecibido').on('keyup change', calcularVuelto);
 
                     // Cambios en descuento y envío
                     $('#descuento, #costoEnvio').on('keyup change', calcularTotales);
 
-                    // ✅ CORRECCIÓN: Usar selector directo
+                    // Procesar venta
                     $('#btnProcesarVenta').off('click').on('click', function (e) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -371,75 +376,88 @@
                 }
 
                 // ============================================
-                // MOSTRAR PRODUCTOS - ✅ CORREGIDO SIN BUCLE
+                // MOSTRAR PRODUCTOS
                 // ============================================
                 function mostrarProductos(lista) {
                     const grid = $('#productGrid');
                     grid.empty();
 
-                    if (lista.length === 0) {
+                    if (!lista || lista.length === 0) {
                         grid.html(`
-                <div class="col-12 text-center text-muted py-5">
-                    <i class="fas fa-search fa-3x mb-3"></i>
-                    <p>No se encontraron productos</p>
-                </div>
-            `);
+                            <div class="col-12 text-center text-muted py-5" id="noProductsFound">
+                                <i class="fas fa-search fa-3x mb-3"></i>
+                                <p>No se encontraron productos con ese criterio.</p>
+                            </div>
+                        `);
+                        $('#noProducts').hide(); // Ocultar el mensaje inicial
                         return;
                     }
+                    $('#noProducts').hide(); // Ocultar el mensaje inicial
 
                     lista.forEach(producto => {
-                        // ✅ Usar una imagen base64 transparente como fallback
-                        const imagenUrl = producto.imagenPrincipal || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23ddd" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="14" fill="%23999" text-anchor="middle" dy=".3em"%3ESin imagen%3C/text%3E%3C/svg%3E';
+                        // <<--- CORRECCIÓN DE RUTA --->>
+                        const imagenUrl = (producto.imagenPrincipal && producto.imagenPrincipal.url)
+                            ? `/uploads/productos/${producto.imagenPrincipal.url}`
+                            : '/img/placeholder-game.jpg';
                         const stock = producto.stockActual || 0;
                         const sinStock = stock <= 0;
 
                         grid.append(`
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card gamer-card product-card ${sinStock ? 'sin-stock' : ''}" 
-                        onclick="agregarAlCarrito(${producto.id})">
-                        <img src="${imagenUrl}" 
-                            class="card-img-top" 
-                            alt="${producto.nombre}"
-                            style="height: 150px; object-fit: cover;">
-                        <div class="card-body p-2">
-                            <h6 class="card-title mb-1" style="font-size: 0.9rem;">
-                                ${producto.nombre}
-                            </h6>
-                            <p class="mb-1">
-                                <span class="badge badge-${sinStock ? 'danger' : 'success'}">
-                                    Stock: ${stock}
-                                </span>
-                            </p>
-                            <p class="text-danger mb-0">
-                                <strong>S/ ${producto.precioActual.toFixed(2)}</strong>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `);
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card gamer-card product-card ${sinStock ? 'sin-stock' : ''}"
+                                    ${sinStock ? '' : `onclick="agregarAlCarrito(${producto.id})"`}>
+                                    <img src="${imagenUrl}"
+                                        class="card-img-top"
+                                        alt="${producto.nombre}"
+                                        style="height: 150px; object-fit: cover;">
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title mb-1" style="font-size: 0.9rem; min-height: 40px;">
+                                            ${producto.nombre}
+                                        </h6>
+                                        <p class="mb-1">
+                                            <span class="badge badge-${sinStock ? 'danger' : 'success'}">
+                                                Stock: ${stock}
+                                            </span>
+                                        </p>
+                                        <p class="text-danger mb-0">
+                                            <strong>S/ ${producto.precioActual ? producto.precioActual.toFixed(2) : 'N/A'}</strong>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
                     });
                 }
+
 
                 // ============================================
                 // AGREGAR AL CARRITO
                 // ============================================
                 window.agregarAlCarrito = function (productoId) {
+                    if (!productos) return; // Seguridad extra
                     const producto = productos.find(p => p.id === productoId);
                     if (!producto) return;
 
-                    if (producto.stockActual <= 0) {
-                        showAlert('No hay stock disponible', 'warning');
+                    if (producto.stockActual == null || producto.stockActual <= 0) {
+                        showAlert('No hay stock disponible para ' + producto.nombre, 'warning');
                         return;
                     }
 
                     const itemExistente = carrito.find(item => item.id === productoId);
                     if (itemExistente) {
                         if (itemExistente.cantidad >= producto.stockActual) {
-                            showAlert('No hay más stock disponible', 'warning');
+                            showAlert('No hay más stock disponible para ' + producto.nombre, 'warning');
                             return;
                         }
                         itemExistente.cantidad++;
                     } else {
+                        // Validar que el precio sea un número válido
+                        const precioValido = typeof producto.precioActual === 'number' && !isNaN(producto.precioActual);
+                        if (!precioValido) {
+                            console.error("Precio inválido para producto:", producto);
+                            showAlert('El producto seleccionado tiene un precio inválido.', 'error');
+                            return;
+                        }
                         carrito.push({
                             id: producto.id,
                             nombre: producto.nombre,
@@ -449,7 +467,9 @@
                         });
                     }
                     actualizarCarrito();
+                    showAlert(`${producto.nombre} agregado al carrito`, 'success');
                 };
+
 
                 // ============================================
                 // ACTUALIZAR CARRITO
@@ -460,73 +480,76 @@
 
                     if (carrito.length === 0) {
                         container.html(`
-                <div class="text-center text-muted py-5" id="emptyCart">
-                    <i class="fas fa-shopping-cart fa-3x mb-3"></i>
-                    <p>Carrito vacío</p>
-                </div>
-            `);
+                            <div class="text-center text-muted py-5" id="emptyCart">
+                                <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                                <p>Carrito vacío</p>
+                            </div>
+                        `);
                         calcularTotales();
                         return;
                     }
 
                     carrito.forEach((item, index) => {
+                        const subtotalItem = (item.precio * item.cantidad).toFixed(2);
                         container.append(`
-                <div class="cart-item p-3 border-bottom">
-                    <div class="row align-items-center">
-                        <div class="col-6">
-                            <small><strong>${item.nombre}</strong></small><br>
-                            <small class="text-muted">S/ ${item.precio.toFixed(2)}</small>
-                        </div>
-                        <div class="col-4">
-                            <div class="input-group input-group-sm">
-                                <div class="input-group-prepend">
-                                    <button class="btn btn-outline-secondary" 
-                                            type="button"
-                                            onclick="cambiarCantidad(${index}, -1)">
-                                        <i class="fas fa-minus"></i>
-                                    </button>
+                            <div class="cart-item p-3 border-bottom">
+                                <div class="row align-items-center">
+                                    <div class="col-5">
+                                        <small><strong>${item.nombre}</strong></small><br>
+                                        <small class="text-muted">S/ ${item.precio ? item.precio.toFixed(2) : 'N/A'}</small>
+                                    </div>
+                                    <div class="col-5">
+                                        <div class="input-group input-group-sm">
+                                            <div class="input-group-prepend">
+                                                <button class="btn btn-outline-secondary"
+                                                        type="button"
+                                                        onclick="cambiarCantidad(${index}, -1)">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                            </div>
+                                            <input type="text"
+                                                class="form-control text-center"
+                                                value="${item.cantidad}"
+                                                readonly>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary"
+                                                        type="button"
+                                                        onclick="cambiarCantidad(${index}, 1)">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2 text-right">
+                                        <button class="btn btn-sm btn-danger"
+                                                onclick="eliminarDelCarrito(${index})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                <input type="text" 
-                                    class="form-control text-center" 
-                                    value="${item.cantidad}" 
-                                    readonly>
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary" 
-                                            type="button"
-                                            onclick="cambiarCantidad(${index}, 1)">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
+                                <div class="row mt-1">
+                                    <div class="col-12 text-right">
+                                        <small>Subtotal: S/ ${subtotalItem}</small>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-2 text-right">
-                            <button class="btn btn-sm btn-danger" 
-                                    onclick="eliminarDelCarrito(${index})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-12 text-right">
-                            <strong>Subtotal: S/ ${(item.precio * item.cantidad).toFixed(2)}</strong>
-                        </div>
-                    </div>
-                </div>
-            `);
+                        `);
                     });
 
                     calcularTotales();
                 }
 
+
                 window.cambiarCantidad = function (index, cambio) {
                     const item = carrito[index];
+                    if (!item) return; // Seguridad
                     const nuevaCantidad = item.cantidad + cambio;
                     if (nuevaCantidad <= 0) {
                         eliminarDelCarrito(index);
                         return;
                     }
                     if (nuevaCantidad > item.stockMax) {
-                        showAlert('No hay más stock disponible', 'warning');
+                        showAlert('No hay más stock disponible para ' + item.nombre, 'warning');
                         return;
                     }
                     item.cantidad = nuevaCantidad;
@@ -534,21 +557,32 @@
                 };
 
                 window.eliminarDelCarrito = function (index) {
-                    carrito.splice(index, 1);
-                    actualizarCarrito();
+                    if (index >= 0 && index < carrito.length) {
+                        const nombreEliminado = carrito[index].nombre;
+                        carrito.splice(index, 1);
+                        actualizarCarrito();
+                        showAlert(`${nombreEliminado} eliminado del carrito`, 'info');
+                    }
                 };
 
                 function calcularTotales() {
                     const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
                     const descuento = parseFloat($('#descuento').val()) || 0;
                     const costoEnvio = parseFloat($('#costoEnvio').val()) || 0;
-                    const total = subtotal - descuento + costoEnvio;
+                    let total = subtotal - descuento + costoEnvio;
+                    total = Math.max(0, total); // Asegurar que el total no sea negativo
+
                     $('#subtotal').text(subtotal.toFixed(2));
                     $('#total').text(total.toFixed(2));
-                    calcularVuelto();
+                    calcularVuelto(); // Recalcular vuelto cada vez que cambie el total
                 }
 
                 function calcularVuelto() {
+                    if ($('#tipoPago').val() === 'CREDITO' || $('input[name="metodoPago"]:checked').val() !== 'EFECTIVO') {
+                        $('#vueltoGroup').hide();
+                        return;
+                    }
+
                     const total = parseFloat($('#total').text()) || 0;
                     const recibido = parseFloat($('#montoRecibido').val()) || 0;
                     if (recibido > 0 && recibido >= total) {
@@ -560,45 +594,70 @@
                     }
                 }
 
+                // ============================================
+                // BUSCAR CLIENTE - MEJORADO
+                // ============================================
                 function buscarCliente() {
                     const documento = $('#clienteDocumento').val().trim();
                     if (!documento) {
-                        showAlert('Ingrese un documento', 'warning');
+                        showAlert('Ingrese un documento (DNI o RUC)', 'warning');
+                        return;
+                    }
+
+                    // Simple validación de longitud
+                    if (documento.length !== 8 && documento.length !== 11) {
+                        showAlert('El DNI debe tener 8 dígitos y el RUC 11 dígitos.', 'warning');
                         return;
                     }
 
                     Swal.fire({
                         title: 'Buscando cliente...',
+                        text: 'Consultando base de datos y API externa si es necesario.',
                         allowOutsideClick: false,
                         didOpen: () => Swal.showLoading()
                     });
 
+                    // Usar la ruta API que busca o crea
                     $.ajax({
-                        url: '/admin/clientes/buscar',
-                        method: 'GET',
-                        data: { documento: documento },
+                        url: '/api/clientes/obtener-o-crear', // Usar la ruta correcta
+                        method: 'POST', // Es POST según tu API
+                        contentType: 'application/json',
+                        data: JSON.stringify({ numeroDocumento: documento }),
                         success: function (response) {
                             Swal.close();
-                            if (response.success) {
-                                clienteSeleccionado = response.cliente;
-                                $('#clienteId').val(response.cliente.id);
-                                $('#clienteNombre').text(response.cliente.nombre);
-                                $('#clienteDocumentoCompleto').text(`${response.cliente.tipoDocumento}: ${response.cliente.numeroDocumento}`);
-                                $('#clienteInfo').show();
-                                showAlert('Cliente encontrado', 'success');
+                            if (response.success && response.data) {
+                                clienteSeleccionado = response.data; // Guardar el objeto cliente completo
+                                $('#clienteId').val(response.data.id);
+                                $('#clienteNombre').text(response.data.nombreCompleto || response.data.razonSocial); // Mostrar nombre o razón social
+                                $('#clienteDocumentoCompleto').text(`${response.data.tipoDocumento}: ${response.data.numeroDocumento}`);
+                                $('#clienteInfo').slideDown();
+                                showAlert('Cliente encontrado/creado: ' + (response.data.nombreCompleto || response.data.razonSocial), 'success');
                             } else {
-                                showAlert(response.error || 'Cliente no encontrado', 'error');
+                                // Limpiar datos si no se encontró
+                                clienteSeleccionado = null;
+                                $('#clienteId').val('');
+                                $('#clienteInfo').slideUp();
+                                showAlert(response.error || 'Cliente no encontrado o DNI/RUC inválido.', 'error');
                             }
                         },
-                        error: function () {
+                        error: function (xhr) {
                             Swal.close();
-                            showAlert('Error al buscar cliente', 'error');
+                            clienteSeleccionado = null; // Limpiar en caso de error
+                            $('#clienteId').val('');
+                            $('#clienteInfo').slideUp();
+                            let errorMsg = 'Error al buscar/crear cliente.';
+                            try {
+                                const errorResponse = JSON.parse(xhr.responseText);
+                                errorMsg = errorResponse.error || errorMsg;
+                            } catch (e) { /* Ignorar error de parseo */ }
+                            showAlert(errorMsg, 'error');
                         }
                     });
                 }
 
+
                 // ============================================
-                // ✅ PROCESAR VENTA - CORREGIDO CON TRY-CATCH
+                // PROCESAR VENTA
                 // ============================================
                 function procesarVenta() {
                     try {
@@ -610,14 +669,32 @@
                             return;
                         }
 
-                        if (!clienteSeleccionado) {
-                            showAlert('Debe seleccionar un cliente', 'warning');
+                        // Cliente es opcional para POS, si no hay, se crea como "Cliente Varios" o similar en backend si es necesario
+                        const clienteDoc = $('#clienteDocumento').val().trim();
+                        // if (!clienteSeleccionado && clienteDoc) {
+                        //     showAlert('Busque y confirme el cliente primero, o deje el campo vacío para "Cliente Varios"', 'warning');
+                        //     return;
+                        // }
+                        if (!clienteDoc) {
+                            if (!confirm('No se ha especificado un cliente. ¿Desea continuar como "Cliente Varios"?')) {
+                                return;
+                            }
+                            clienteSeleccionado = null; // Asegurar que sea null si no hay doc
+                        } else if (!clienteSeleccionado || clienteSeleccionado.numeroDocumento !== clienteDoc) {
+                            // Si hay un documento pero no coincide con el cliente buscado (o no se buscó)
+                            showAlert('El documento ingresado no coincide con el cliente buscado/confirmado. Por favor, busque de nuevo o borre el documento.', 'warning');
                             return;
                         }
 
+
                         const tipoPago = $('#tipoPago').val();
                         const metodoPago = $('input[name="metodoPago"]:checked').val();
-                        const total = parseFloat($('#total').text());
+                        const total = parseFloat($('#total').text()) || 0;
+
+                        if (total <= 0) {
+                            showAlert('El total de la venta debe ser mayor a cero.', 'warning');
+                            return;
+                        }
 
                         console.log("📊 Validando pago...", { tipoPago, metodoPago, total });
 
@@ -632,8 +709,12 @@
 
                         // Validar crédito
                         if (tipoPago === 'CREDITO') {
+                            if (!clienteSeleccionado) {
+                                showAlert('Se requiere un cliente registrado para ventas a crédito.', 'warning');
+                                return;
+                            }
                             const numCuotas = parseInt($('#numCuotas').val());
-                            if (!numCuotas || numCuotas < 1 || numCuotas > 24) {
+                            if (isNaN(numCuotas) || numCuotas < 1 || numCuotas > 24) { // Validar NaN
                                 showAlert('Ingrese un número de cuotas válido (1-24)', 'warning');
                                 return;
                             }
@@ -644,7 +725,7 @@
                         // Confirmación
                         Swal.fire({
                             title: '¿Procesar venta?',
-                            text: `Total: S/ ${total.toFixed(2)}`,
+                            html: `Cliente: <strong>${clienteSeleccionado ? (clienteSeleccionado.nombreCompleto || clienteSeleccionado.razonSocial) : 'Cliente Varios'}</strong><br>Total: <strong>S/ ${total.toFixed(2)}</strong>`,
                             icon: 'question',
                             showCancelButton: true,
                             confirmButtonColor: '#28a745',
@@ -659,13 +740,14 @@
                                     enviarVenta();
                                 } catch (error) {
                                     console.error("❌ Error al llamar enviarVenta():", error);
-                                    showAlert('Error: ' + error.message, 'error');
+                                    showAlert('Error interno al preparar datos: ' + error.message, 'error');
                                 }
                             } else {
                                 console.log("❌ Usuario canceló");
                             }
                         }).catch(error => {
                             console.error("❌ Error en SweetAlert:", error);
+                            showAlert('Error al mostrar confirmación.', 'error');
                         });
                     } catch (error) {
                         console.error("❌ Error en procesarVenta():", error);
@@ -673,25 +755,31 @@
                     }
                 }
 
+
                 // ============================================
-                // ✅ ENVIAR VENTA - CORREGIDO
+                // ENVIAR VENTA
                 // ============================================
                 function enviarVenta() {
                     try {
                         const tipoPago = $('#tipoPago').val();
                         const metodoPago = tipoPago === 'CONTADO' ? $('input[name="metodoPago"]:checked').val() : null;
                         const numCuotas = tipoPago === 'CREDITO' ? parseInt($('#numCuotas').val()) : null;
-                        const total = parseFloat($('#total').text());
+                        const total = parseFloat($('#total').text()) || 0;
+                        const subtotal = parseFloat($('#subtotal').text()) || 0;
+                        const descuento = parseFloat($('#descuento').val()) || 0;
+                        const costoEnvio = parseFloat($('#costoEnvio').val()) || 0;
+                        const recibido = parseFloat($('#montoRecibido').val()) || 0;
 
                         Swal.fire({
                             title: 'Procesando venta...',
+                            text: 'Por favor, espere.',
                             allowOutsideClick: false,
                             didOpen: () => Swal.showLoading()
                         });
 
-                        // ✅ JSON CORREGIDO
                         const data = {
-                            clienteDocumento: $('#clienteDocumento').val(),
+                            clienteId: clienteSeleccionado ? clienteSeleccionado.id : null,
+                            clienteDocumento: !clienteSeleccionado ? $('#clienteDocumento').val().trim() : null,
                             tipoPago: tipoPago,
                             productos: carrito.map(item => ({
                                 id: item.id,
@@ -702,32 +790,72 @@
                                 metodoPago: metodoPago,
                                 monto: total
                             }] : [],
-                            numCuotas: numCuotas
+                            numCuotas: numCuotas,
+                            subtotal: subtotal,
+                            descuento: descuento,
+                            costoEnvio: costoEnvio,
+                            total: total
                         };
 
                         console.log("📤 Enviando JSON al backend:", JSON.stringify(data, null, 2));
 
+                        // ------------------ AJAX con CSRF ------------------
                         $.ajax({
                             url: '/admin/ventas/pos/registrar',
                             method: 'POST',
                             contentType: 'application/json',
                             data: JSON.stringify(data),
+                            dataType: 'json',
+
+                            // ✅ Agrega token CSRF antes de enviar la petición
+                            beforeSend: function (xhr) {
+                                const token = $("meta[name='_csrf']").attr("content");
+                                const header = $("meta[name='_csrf_header']").attr("content");
+                                if (token && header) {
+                                    xhr.setRequestHeader(header, token);
+                                    console.log("🔒 CSRF Header set:", header);
+                                } else {
+                                    console.warn("⚠️ CSRF meta tags no encontrados!");
+                                }
+                            },
+                            // -------------------------------------------------
+
                             success: function (response) {
                                 Swal.close();
                                 console.log("✅ Respuesta del backend:", response);
 
                                 if (response.success) {
+                                    let vueltoHtml = '';
+                                    if (tipoPago === 'CONTADO' && metodoPago === 'EFECTIVO' && response.vuelto != null && response.vuelto > 0) {
+                                        vueltoHtml = `<p><strong>Vuelto:</strong> S/ ${response.vuelto.toFixed(2)}</p>`;
+                                    }
+
                                     Swal.fire({
-                                        title: '¡Venta Exitosa!',
+                                        title: '¡Venta Registrada!',
                                         html: `
-                                <p>${response.mensaje}</p>
-                                <p><strong>N° Venta:</strong> ${response.numeroVenta || 'N/A'}</p>
-                                <p><strong>Total:</strong> S/ ${response.total?.toFixed(2) || total.toFixed(2)}</p>
-                            `,
+                            <p>${response.mensaje || 'La venta se registró correctamente.'}</p>
+                            <p><strong>N° Venta:</strong> ${response.numeroVenta || 'N/A'}</p>
+                            <p><strong>Total:</strong> S/ ${response.total?.toFixed(2) || total.toFixed(2)}</p>
+                            ${vueltoHtml}
+                            <hr>
+                            <button id="swal-imprimir" class="btn btn-info gamer-btn">
+                                <i class="fas fa-print"></i> Imprimir Boleta
+                            </button>
+                        `,
                                         icon: 'success',
-                                        confirmButtonText: 'OK'
+                                        showConfirmButton: true,
+                                        confirmButtonText: 'OK',
+                                        didOpen: () => {
+                                            $('#swal-imprimir').on('click', function () {
+                                                if (response.ventaId) {
+                                                    window.open(`/admin/ventas/imprimir/${response.ventaId}`, '_blank');
+                                                    Swal.clickConfirm();
+                                                } else {
+                                                    Swal.showValidationMessage('No se pudo obtener el ID para imprimir.');
+                                                }
+                                            });
+                                        }
                                     }).then(() => {
-                                        // Limpiar formulario
                                         carrito = [];
                                         clienteSeleccionado = null;
                                         $('#clienteInfo').hide();
@@ -735,78 +863,136 @@
                                         $('#descuento').val(0);
                                         $('#costoEnvio').val(0);
                                         $('#montoRecibido').val('');
+                                        $('#tipoPago').val('CONTADO').trigger('change');
+                                        $('input[name="metodoPago"][value="EFECTIVO"]').prop('checked', true).trigger('change');
                                         actualizarCarrito();
+                                        cargarProductos();
                                     });
                                 } else {
                                     Swal.fire('Error', response.error || 'No se pudo registrar la venta', 'error');
                                 }
                             },
+
                             error: function (xhr, status, error) {
                                 Swal.close();
-                                console.error("❌ Error AJAX:", { xhr, status, error });
-                                console.error("❌ Response:", xhr.responseText);
+                                console.error("❌ Error AJAX:", {
+                                    status: status,
+                                    error: error,
+                                    statusText: xhr.statusText,
+                                    responseJSON: xhr.responseJSON,
+                                    responseText: xhr.responseText
+                                });
 
-                                let errorMsg = 'No se pudo procesar la venta';
-                                try {
-                                    const errorResponse = JSON.parse(xhr.responseText);
-                                    errorMsg = errorResponse.error || errorMsg;
-                                } catch (e) {
-                                    errorMsg = xhr.responseText || errorMsg;
+                                let errorMsg = 'Error al procesar la venta. Verifique los datos e intente de nuevo.';
+
+                                if (xhr.responseJSON && xhr.responseJSON.error) {
+                                    errorMsg = xhr.responseJSON.error;
+                                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMsg = xhr.responseJSON.message;
+                                } else if (xhr.status === 404) {
+                                    errorMsg = "Error: No se encontró la ruta (404). Verifica la URL.";
+                                } else if (xhr.status === 403) {
+                                    errorMsg = "Error: Acceso denegado (403). Verifica permisos o el token CSRF.";
                                 }
 
-                                Swal.fire('Error', errorMsg, 'error');
+                                Swal.fire('Error ' + xhr.status, errorMsg, 'error');
                             }
                         });
+                        // --------------------------------------------------
+
                     } catch (error) {
                         Swal.close();
                         console.error("❌ Error en enviarVenta():", error);
-                        showAlert('Error al enviar la venta: ' + error.message, 'error');
+                        showAlert('Error interno al enviar la venta: ' + error.message, 'error');
                     }
                 }
 
-                function showAlert(message, type) {
-                    const alertClass = type === 'success' ? 'alert-success' :
-                        type === 'warning' ? 'alert-warning' : 'alert-danger';
-                    const icon = type === 'success' ? 'check-circle' :
-                        type === 'warning' ? 'exclamation-triangle' : 'times-circle';
+
+
+                function showAlert(message, type = 'info', duration = 3000) {
+                    const alertContainer = $('#alertContainer');
+                    const alertId = 'alert-' + Date.now(); // ID único para cada alerta
+
+                    // Tipos válidos: success, info, warning, danger
+                    const validTypes = ['success', 'info', 'warning', 'danger'];
+                    const alertType = validTypes.includes(type) ? type : 'info';
+
+                    const iconMap = {
+                        success: 'check-circle',
+                        info: 'info-circle',
+                        warning: 'exclamation-triangle',
+                        danger: 'times-circle'
+                    };
+                    const icon = iconMap[alertType];
 
                     const alertHTML = `
-            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                <i class="fas fa-${icon}"></i> ${message}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>`;
-                    $('#alertContainer').html(alertHTML);
+                        <div id="${alertId}" class="alert alert-${alertType} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-${icon} mr-2"></i> ${message}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>`;
+
+                    alertContainer.append(alertHTML);
+
+                    // Auto-cerrar después de la duración especificada
                     setTimeout(() => {
-                        $('#alertContainer').fadeOut(() => $('#alertContainer').html('').show());
-                    }, 3000);
+                        $(`#${alertId}`).fadeOut(500, function () { $(this).remove(); });
+                    }, duration);
                 }
+
             })();
         </script>
 
-        <!-- Estilos Específicos del POS -->
+
         <style>
             .product-card {
                 cursor: pointer;
-                transition: all 0.3s ease;
+                transition: all 0.2s ease-in-out;
                 border: 2px solid transparent;
+                height: 100%;
+                /* Asegurar altura consistente */
+                display: flex;
+                /* Flex para alinear contenido */
+                flex-direction: column;
+                /* Alinear verticalmente */
+            }
+
+            .product-card .card-body {
+                flex-grow: 1;
+                /* Hacer que el body ocupe espacio disponible */
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                /* Empujar precio/stock abajo */
+            }
+
+            .product-card .card-title {
+                min-height: 40px;
+                /* Evitar saltos de altura por nombre largo */
             }
 
             .product-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 20px rgba(220, 53, 69, 0.3);
+                transform: translateY(-5px) scale(1.02);
+                box-shadow: 0 10px 25px rgba(220, 53, 69, 0.4);
                 border-color: #dc3545;
             }
 
             .product-card.sin-stock {
-                opacity: 0.5;
+                opacity: 0.6;
                 cursor: not-allowed;
+                background-color: #6c757d;
+                /* Fondo gris para indicar inactivo */
             }
 
             .product-card.sin-stock:hover {
                 transform: none;
                 box-shadow: none;
+                border-color: transparent;
+            }
+
+            .product-card.sin-stock img {
+                filter: grayscale(80%);
             }
 
             .cart-item {
@@ -814,12 +1000,29 @@
             }
 
             .cart-item:hover {
-                background-color: rgba(220, 53, 69, 0.1);
+                background-color: rgba(220, 53, 69, 0.05);
             }
 
-            #searchProduct:focus {
+            .cart-item small {
+                font-size: 0.85rem;
+            }
+
+            #searchProduct:focus,
+            #clienteDocumento:focus {
                 border-color: #dc3545;
                 box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+            }
+
+            /* Estilo para items del carrito */
+            #cartItems {
+                border: 1px solid #dee2e6;
+                /* Borde suave */
+                border-radius: 5px;
+            }
+
+            .cart-item:last-child {
+                border-bottom: none !important;
+                /* Quitar borde del último item */
             }
         </style>
 

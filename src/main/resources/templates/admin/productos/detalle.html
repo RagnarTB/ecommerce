@@ -4,14 +4,11 @@
 <head th:replace="~{fragments/head :: head('Detalle Producto')}"></head>
 
 <body class="hold-transition sidebar-mini">
-    <div class="wrapper"> <!-- Navbar -->
+    <div class="wrapper">
         <nav th:replace="~{fragments/navbar :: navbar}"></nav>
-        <!-- Sidebar -->
         <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-        <!-- Content Wrapper -->
         <div class="content-wrapper">
-            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
@@ -32,11 +29,9 @@
                 </div>
             </div>
 
-            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
                     <div class="row">
-                        <!-- Columna Izquierda: Imágenes -->
                         <div class="col-md-5">
                             <div class="card gamer-card">
                                 <div class="card-header">
@@ -45,31 +40,29 @@
                                     </h3>
                                 </div>
                                 <div class="card-body">
-                                    <!-- Imagen Principal -->
-                                    <!-- Imagen Principal -->
                                     <div class="text-center mb-3">
+                                        >
                                         <img th:if="${producto.imagenPrincipal != null}"
-                                            th:src="@{'/uploads/' + ${producto.imagenPrincipal.url}}"
+                                            th:src="@{/uploads/productos/{filename}(filename=${producto.imagenPrincipal.url})}"
                                             class="img-fluid rounded" id="imagen-principal" style="max-height: 400px;">
-
                                         <img th:unless="${producto.imagenPrincipal != null}"
                                             th:src="@{/img/placeholder-game.jpg}" class="img-fluid rounded"
                                             style="max-height: 400px;">
                                     </div>
 
-                                    <!-- Miniaturas -->
                                     <div class="row"
                                         th:if="${producto.imagenes != null and !producto.imagenes.isEmpty()}">
                                         <div class="col-3 mb-2" th:each="img : ${producto.imagenes}">
-                                            <img th:src="@{'/uploads/' + ${img.url}}" class="img-thumbnail"
-                                                onclick="cambiarImagen(this.src)" style="cursor: pointer;">
+                                            >
+                                            <img th:src="@{/uploads/productos/{filename}(filename=${img.url})}"
+                                                class="img-thumbnail" onclick="cambiarImagen(this.src)"
+                                                style="cursor: pointer;">
                                         </div>
                                     </div>
 
                                 </div>
                             </div>
 
-                            <!-- Card Acciones Rápidas -->
                             <div class="card gamer-card">
                                 <div class="card-header">
                                     <h3 class="card-title">
@@ -96,9 +89,7 @@
                             </div>
                         </div>
 
-                        <!-- Columna Derecha: Información -->
                         <div class="col-md-7">
-                            <!-- Info General -->
                             <div class="card gamer-card">
                                 <div class="card-header">
                                     <h3 class="card-title">
@@ -135,7 +126,9 @@
                                         </div>
                                         <div class="col-sm-6">
                                             <strong><i class="fas fa-tag mr-1"></i> Marca</strong>
-                                            <p class="text-muted" th:text="${producto.marca.nombre}">Marca</p>
+                                            <p class="text-muted"
+                                                th:text="${producto.marca != null ? producto.marca.nombre : '-'}">Marca
+                                            </p>
                                         </div>
                                         <div class="col-sm-6">
                                             <strong><i class="fas fa-calendar mr-1"></i> Fecha Creación</strong>
@@ -148,7 +141,6 @@
                                 </div>
                             </div>
 
-                            <!-- Card Precios -->
                             <div class="card gamer-card">
                                 <div class="card-header">
                                     <h3 class="card-title">
@@ -208,7 +200,6 @@
                                 </div>
                             </div>
 
-                            <!-- Card Inventario -->
                             <div class="card gamer-card">
                                 <div class="card-header">
                                     <h3 class="card-title">
@@ -220,7 +211,7 @@
                                         <div class="col-sm-6">
                                             <div class="info-box">
                                                 <span class="info-box-icon"
-                                                    th:classappend="${producto.stockActual <= 0} ? 'bg-danger' : 
+                                                    th:classappend="${producto.stockActual <= 0} ? 'bg-danger' :
                                                 (${producto.stockActual <= producto.stockMinimo} ? 'bg-warning' : 'bg-success')}">
                                                     <i class="fas fa-cubes"></i>
                                                 </span>
@@ -243,7 +234,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- Alertas de stock -->
                                         <div class="col-sm-12"
                                             th:if="${producto.stockActual <= producto.stockMinimo and producto.stockActual > 0}">
                                             <div class="callout callout-warning">
@@ -270,15 +260,13 @@
                                     </div>
                                 </div>
                             </div>
-                        </div> <!-- fin columna derecha -->
-                    </div> <!-- fin row -->
-                </div> <!-- fin container-fluid -->
+                        </div>
+                    </div>
+                </div>
             </section>
-        </div> <!-- fin content-wrapper -->
-
-        <!-- Footer -->
+        </div>
         <footer th:replace="~{fragments/footer :: footer}"></footer>
-    </div> <!-- fin wrapper --> <!-- Scripts -->
+    </div>
     <div th:replace="~{fragments/scripts :: scripts}"></div>
     <script> function cambiarImagen(src) { document.getElementById('imagen-principal').src = src; } </script>
 </body>

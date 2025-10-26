@@ -33,6 +33,8 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final RestTemplate restTemplate = new RestTemplate();
 
+    private static final Long ID_CLIENTE_GENERICO = 1L;
+
     // Configuración de API Decolecta desde application.properties
     @Value("${api.decolecta.token}")
     private String apiToken;
@@ -42,6 +44,30 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Value("${api.decolecta.ruc-url}")
     private String rucUrl;
+
+    @Override
+    @Transactional(readOnly = true) // Es solo lectura
+    public Customer obtenerClienteGenerico() {
+        // Intenta buscar por ID (más eficiente)
+        Optional<Customer> clienteOpt = customerRepository.findById(ID_CLIENTE_GENERICO);
+
+        // Si no se encuentra por ID, intenta buscar por DNI '00000000' como respaldo
+        if (clienteOpt.isEmpty()) {
+            log.warn("Cliente genérico con ID {} no encontrado, buscando por DNI 00000000...", ID_CLIENTE_GENERICO);
+            clienteOpt = customerRepository.findByNumeroDocumento("00000000");
+        }
+
+        // Si aún no se encuentra, lanzar error crítico
+        if (clienteOpt.isEmpty()) {
+            log.error(
+                    "¡ERROR CRÍTICO! No se encontró el registro para 'Cliente Varios' (ID: {} o DNI: 00000000). La base de datos necesita este registro.",
+                    ID_CLIENTE_GENERICO);
+            throw new RuntimeException("Cliente genérico no configurado en la base de datos.");
+        }
+
+        log.debug("Cliente genérico encontrado: ID {}", clienteOpt.get().getId());
+        return clienteOpt.get();
+    }
 
     @Override
     public Customer guardar(Customer customer) {

@@ -5,15 +5,11 @@
 
 <body class="hold-transition sidebar-mini">
     <div class="wrapper">
-        <!-- Navbar -->
         <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
-        <!-- Sidebar -->
         <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-        <!-- Content Wrapper -->
         <div class="content-wrapper">
-            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
@@ -35,11 +31,9 @@
                 </div>
             </div>
 
-            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
 
-                    <!-- Mostrar errores de validación -->
                     <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="fas fa-exclamation-circle"></i>
                         <span th:text="${error}"></span>
@@ -52,11 +46,9 @@
                         th:action="${esNuevo} ? @{/admin/productos/guardar} : @{/admin/productos/actualizar/{id}(id=${producto.id})}"
                         th:object="${producto}" method="post" enctype="multipart/form-data">
 
-                        <!-- ⚠️ CRÍTICO: Campo oculto para ID en edición -->
                         <input type="hidden" th:if="${!esNuevo}" th:field="*{id}" />
 
                         <div class="row">
-                            <!-- Columna Izquierda: Datos Básicos -->
                             <div class="col-md-8">
                                 <div class="card gamer-card">
                                     <div class="card-header">
@@ -66,7 +58,6 @@
                                         </h3>
                                     </div>
                                     <div class="card-body">
-                                        <!-- Nombre -->
                                         <div class="form-group">
                                             <label for="nombre">Nombre del Producto <span
                                                     class="text-danger">*</span></label>
@@ -79,7 +70,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- Descripción -->
                                         <div class="form-group">
                                             <label for="descripcion">Descripción</label>
                                             <textarea class="form-control" id="descripcion" th:field="*{descripcion}"
@@ -88,7 +78,6 @@
                                         </div>
 
                                         <div class="row">
-                                            <!-- Categoría -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="categoria">Categoría <span
@@ -109,7 +98,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Marca -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="marca">Marca <span class="text-danger">*</span></label>
@@ -129,7 +117,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- SKU (solo si es edición) -->
                                         <div class="form-group" th:if="${!esNuevo}">
                                             <label for="codigoSku">Código SKU</label>
                                             <input type="text" class="form-control" id="codigoSku"
@@ -138,7 +125,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Card Precios -->
                                 <div class="card gamer-card">
                                     <div class="card-header">
                                         <h3 class="card-title">
@@ -148,7 +134,6 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
-                                            <!-- Precio Base -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="precioBase">Precio Base (S/) <span
@@ -163,7 +148,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Precio Oferta -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="precioOferta">Precio en Oferta (S/)</label>
@@ -179,7 +163,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Card Stock -->
                                 <div class="card gamer-card">
                                     <div class="card-header">
                                         <h3 class="card-title">
@@ -189,7 +172,6 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
-                                            <!-- Stock Actual (solo si es edición) -->
                                             <div class="col-md-6" th:if="${!esNuevo}">
                                                 <div class="form-group">
                                                     <label for="stockActual">Stock Actual</label>
@@ -201,7 +183,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Stock Mínimo -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="stockMinimo">Stock Mínimo</label>
@@ -217,9 +198,7 @@
                                 </div>
                             </div>
 
-                            <!-- Columna Derecha: Opciones e Imágenes -->
                             <div class="col-md-4">
-                                <!-- Card Opciones -->
                                 <div class="card gamer-card">
                                     <div class="card-header">
                                         <h3 class="card-title">
@@ -228,7 +207,6 @@
                                         </h3>
                                     </div>
                                     <div class="card-body">
-                                        <!-- Estado -->
                                         <div class="form-group">
                                             <div class="custom-control custom-switch">
                                                 <input type="checkbox" class="custom-control-input" id="activo"
@@ -239,7 +217,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- Destacado -->
                                         <div class="form-group">
                                             <div class="custom-control custom-switch">
                                                 <input type="checkbox" class="custom-control-input" id="esDestacado"
@@ -252,7 +229,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Card Imágenes -->
                                 <div class="card gamer-card">
                                     <div class="card-header">
                                         <h3 class="card-title">
@@ -263,7 +239,6 @@
                                     <div class="card-body">
                                         <div class="form-group">
                                             <label for="imagenesFile">Subir Imágenes (Max. 5)</label>
-                                            <!-- ✅ IMPORTANTE: name="imagenesFile" para NO colisionar con producto.imagenes -->
                                             <input type="file" class="form-control-file" id="imagenesFile"
                                                 name="imagenesFile" accept="image/*" multiple>
                                             <small class="form-text text-muted">
@@ -271,28 +246,35 @@
                                             </small>
                                         </div>
 
-                                        <!-- Preview de imágenes actuales (solo edición) -->
                                         <div
                                             th:if="${!esNuevo and producto.imagenes != null and !#lists.isEmpty(producto.imagenes)}">
                                             <label>Imágenes Actuales:</label>
-                                            <div class="row">
-                                                <div class="col-6 mb-2" th:each="img : ${producto.imagenes}">
-                                                    <!-- ✅ La URL en BD es: productos/abc123.jpg -->
-                                                    <img th:src="@{/uploads/{url}(url=${img.url})}"
+                                            <input type="hidden" name="imagenesAEliminar" id="imagenesAEliminar">
+                                            <div class="row" id="currentImagesContainer">
+                                                <div class="col-6 mb-3 position-relative current-image-item"
+                                                    th:each="img : ${producto.imagenes}" th:data-image-id="${img.id}">
+                                                    <img th:src="@{/uploads/productos/{filename}(filename=${img.url})}"
                                                         class="img-thumbnail"
                                                         style="width: 100%; height: 100px; object-fit: cover;"
                                                         th:alt="${producto.nombre}">
-                                                    <span class="badge badge-primary badge-sm"
-                                                        th:if="${img.esPrincipal}">
-                                                        Principal
-                                                    </span>
+                                                    <span class="badge badge-primary badge-sm mt-1"
+                                                        th:if="${img.esPrincipal}">Principal</span>
+                                                    <button type="button"
+                                                        class="btn btn-danger btn-xs position-absolute"
+                                                        style="top: 5px; right: 5px;"
+                                                        onclick="marcarParaEliminar(this)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                    <div class="delete-overlay"
+                                                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,0,0,0.5); display: none; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                                        ELIMINAR
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Botones de Acción -->
                                 <div class="card gamer-card">
                                     <div class="card-body">
                                         <button type="submit" class="btn btn-success btn-block gamer-btn">
@@ -313,18 +295,12 @@
             </section>
         </div>
 
-        <!-- Footer -->
         <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
 
-    <!-- Scripts -->
     <div th:replace="~{fragments/scripts :: scripts}"></div>
 
-    <!-- Script de validación -->
-
-    <!-- Script de validación -->
     <script>
-        // Validación del formulario
         (function () {
             'use strict';
             window.addEventListener('load', function () {
@@ -341,7 +317,6 @@
             }, false);
         })();
 
-        // ✅ CORREGIR: Cambiar 'imagenes' por 'imagenesFile'
         const inputImagenes = document.getElementById('imagenesFile');
         if (inputImagenes) {
             inputImagenes.addEventListener('change', function (e) {
@@ -351,10 +326,8 @@
                     this.value = '';
                     return;
                 }
-
-                // Validar tamaño
                 for (let file of files) {
-                    if (file.size > 5 * 1024 * 1024) {
+                    if (file.size > 5 * 1024 * 1024) { // 5MB
                         alert('Cada imagen no puede superar 5MB');
                         this.value = '';
                         return;
@@ -362,6 +335,47 @@
                 }
             });
         }
+
+        // --- Lógica para eliminar imágenes ---
+        let imagenesAEliminarIds = new Set();
+
+        function marcarParaEliminar(button) {
+            const itemDiv = button.closest('.current-image-item');
+            const imageId = itemDiv.getAttribute('data-image-id');
+            const overlay = itemDiv.querySelector('.delete-overlay');
+            const imgElement = itemDiv.querySelector('img');
+
+            if (imagenesAEliminarIds.has(imageId)) {
+                // Desmarcar
+                imagenesAEliminarIds.delete(imageId);
+                overlay.style.display = 'none';
+                imgElement.style.opacity = '1';
+                button.classList.remove('btn-secondary');
+                button.classList.add('btn-danger');
+                button.innerHTML = '<i class="fas fa-times"></i>';
+            } else {
+                // Marcar
+                imagenesAEliminarIds.add(imageId);
+                overlay.style.display = 'flex';
+                imgElement.style.opacity = '0.3';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-secondary');
+                button.innerHTML = '<i class="fas fa-undo"></i>'; // Icono deshacer
+            }
+
+            // Actualizar campo oculto
+            document.getElementById('imagenesAEliminar').value = Array.from(imagenesAEliminarIds).join(',');
+            console.log("Imágenes a eliminar:", document.getElementById('imagenesAEliminar').value);
+        }
+
+        // Asegurarse de que el campo oculto se limpie al cargar si es necesario
+        document.addEventListener('DOMContentLoaded', function () {
+            const hiddenInput = document.getElementById('imagenesAEliminar');
+            if (hiddenInput) {
+                hiddenInput.value = ''; // Limpiar al cargar la página
+            }
+        });
+        // --- Fin Lógica eliminar imágenes ---
     </script>
 </body>
 

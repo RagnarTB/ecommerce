@@ -173,46 +173,52 @@ public class ProductController {
             @Valid @ModelAttribute("producto") Product producto,
             BindingResult result,
             @RequestParam(value = "imagenesFile", required = false) MultipartFile[] imagenesFile,
+            @RequestParam(value = "imagenesAEliminar", required = false) String imagenesAEliminar, // <-- Nuevo
+                                                                                                   // parámetro
             RedirectAttributes redirectAttributes,
             Model model) {
 
         log.info("Actualizando producto ID: {}", id);
+        log.info("IDs de imágenes a eliminar: {}", imagenesAEliminar); // Log para depurar
 
+        // ... (validación de errores de BindingResult como antes) ...
         if (result.hasErrors()) {
-            log.warn("Errores de validación: {}", result.getAllErrors());
-
-            // Recargar producto desde BD para mostrar imágenes
-            Optional<Product> productoOpt = productService.buscarPorId(id);
-            if (productoOpt.isPresent()) {
-                model.addAttribute("producto", productoOpt.get());
-            }
-
-            cargarDatosFormulario(model);
+            // ... (código existente para manejar errores de validación) ...
+            cargarDatosFormulario(model); // Asegúrate de que esta línea esté presente
             model.addAttribute("esNuevo", false);
+            // Recargar producto original para mostrar imágenes actuales
+            productService.buscarPorId(id).ifPresent(p -> model.addAttribute("producto", p));
             return "admin/productos/form";
         }
 
         try {
-            if (imagenesFile != null && imagenesFile.length > 0) {
+            // 1. Eliminar imágenes marcadas (ANTES de actualizar y subir nuevas)
+            if (imagenesAEliminar != null && !imagenesAEliminar.isEmpty()) {
+                productService.eliminarImagenesPorIds(imagenesAEliminar); // Llamar al nuevo método del servicio
+            }
+
+            // 2. Validar nuevas imágenes
+            if (imagenesFile != null && imagenesFile.length > 0 && !imagenesFile[0].isEmpty()) { // Verificar que no
+                                                                                                 // esté vacío
                 String errorValidacion = validarImagenes(imagenesFile);
                 if (errorValidacion != null) {
                     model.addAttribute("error", errorValidacion);
-
+                    // Recargar datos y producto original
                     Optional<Product> productoOpt = productService.buscarPorId(id);
-                    if (productoOpt.isPresent()) {
-                        model.addAttribute("producto", productoOpt.get());
-                    }
-
+                    productoOpt.ifPresent(p -> model.addAttribute("producto", p));
                     cargarDatosFormulario(model);
                     model.addAttribute("esNuevo", false);
                     return "admin/productos/form";
                 }
             }
 
+            // 3. Actualizar datos del producto
             Product productoActualizado = productService.actualizar(id, producto);
             log.info("Producto actualizado: {}", id);
 
-            if (imagenesFile != null && imagenesFile.length > 0) {
+            // 4. Subir nuevas imágenes (si las hay)
+            if (imagenesFile != null && imagenesFile.length > 0 && !imagenesFile[0].isEmpty()) { // Verificar que no
+                                                                                                 // esté vacío
                 int imagenesSubidas = subirImagenesProducto(id, imagenesFile);
                 log.info("Se subieron {} imágenes nuevas", imagenesSubidas);
             }
@@ -220,27 +226,22 @@ public class ProductController {
             redirectAttributes.addFlashAttribute("success", "Producto actualizado correctamente");
 
         } catch (RuntimeException e) {
-            log.error("Error al actualizar: {}", e.getMessage());
+            log.error("Error al actualizar: {}", e.getMessage(), e); // Añadir stack trace al log
             model.addAttribute("error", e.getMessage());
-
+            // Recargar datos y producto original
             Optional<Product> productoOpt = productService.buscarPorId(id);
-            if (productoOpt.isPresent()) {
-                model.addAttribute("producto", productoOpt.get());
-            }
-
+            productoOpt.ifPresent(p -> model.addAttribute("producto", p));
             cargarDatosFormulario(model);
             model.addAttribute("esNuevo", false);
             return "admin/productos/form";
 
         } catch (Exception e) {
             log.error("Error inesperado: {}", e.getMessage(), e);
-            model.addAttribute("error", "Error al actualizar el producto");
-
+            model.addAttribute("error", "Error al actualizar el producto: " + e.getMessage()); // Mostrar mensaje más
+                                                                                               // específico
+            // Recargar datos y producto original
             Optional<Product> productoOpt = productService.buscarPorId(id);
-            if (productoOpt.isPresent()) {
-                model.addAttribute("producto", productoOpt.get());
-            }
-
+            productoOpt.ifPresent(p -> model.addAttribute("producto", p));
             cargarDatosFormulario(model);
             model.addAttribute("esNuevo", false);
             return "admin/productos/form";

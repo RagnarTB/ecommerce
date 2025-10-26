@@ -248,7 +248,7 @@ public class SaleController {
             @RequestBody VentaPosRequest request) {
 
         log.info("🔵 Registrando venta desde POS");
-        log.info("📦 Request recibido: {}", request);
+        log.info("📦 Request recibido: {}", request); // Considera evitar imprimir datos sensibles en producción
 
         Map<String, Object> response = new HashMap<>();
 
@@ -271,7 +271,6 @@ public class SaleController {
                 return ResponseEntity.badRequest().body(response);
             }
 
-            // ✅ Validar número de cuotas
             Integer numCuotas = null;
             if (tipoPago == TipoPago.CREDITO) {
                 numCuotas = request.getNumCuotas();
@@ -296,21 +295,38 @@ public class SaleController {
             log.info("✅ Productos en request: {}", request.getProductos().size());
 
             // ========================================
-            // 3. OBTENER O CREAR CLIENTE
+            // 3. OBTENER CLIENTE (ESPECÍFICO o GENÉRICO) <-- MODIFICADO
             // ========================================
-            Customer cliente = null;
+            Customer cliente;
+
             if (request.getClienteDocumento() != null && !request.getClienteDocumento().isBlank()) {
                 try {
                     cliente = customerService.obtenerOCrearDesdeApi(request.getClienteDocumento());
-                    log.info("✅ Cliente encontrado: {}", cliente.getNombreCompleto());
+                    log.info("✅ Cliente específico encontrado/creado: {} ({})",
+                            cliente.getNombreCompleto(), cliente.getNumeroDocumento());
                 } catch (Exception e) {
-                    log.error("❌ Error al buscar/crear cliente", e);
+                    log.error("❌ Error al buscar/crear cliente específico", e);
                     response.put("success", false);
                     response.put("error", "Error al procesar cliente: " + e.getMessage());
                     return ResponseEntity.badRequest().body(response);
                 }
             } else {
-                log.warn("⚠️ Venta sin cliente asociado");
+                try {
+                    cliente = customerService.obtenerClienteGenerico();
+                    log.info("✅ Usando Cliente Genérico: {}", cliente.getNombreCompleto());
+                } catch (RuntimeException e) {
+                    log.error("❌ Error CRÍTICO al obtener cliente genérico", e);
+                    response.put("success", false);
+                    response.put("error", "Error interno: Cliente genérico no encontrado.");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+                }
+            }
+
+            if (cliente == null) {
+                log.error("❌ Error inesperado: El objeto cliente es nulo después de la lógica.");
+                response.put("success", false);
+                response.put("error", "Error interno: No se pudo determinar el cliente.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
 
             // ========================================
@@ -323,7 +339,7 @@ public class SaleController {
             log.info("✅ Usuario: {}", usuario.getUsername());
 
             // ========================================
-            // 5. PROCESAR PRODUCTOS
+            // 5. PROCESAR PRODUCTOS (SIN CAMBIOS)
             // ========================================
             List<SaleDetail> detalles = new ArrayList<>();
             BigDecimal subtotalCalculado = BigDecimal.ZERO;
@@ -344,14 +360,12 @@ public class SaleController {
                 Product producto = productService.buscarPorId(productoReq.getId())
                         .orElseThrow(() -> new RuntimeException("Producto no encontrado: ID " + productoReq.getId()));
 
-                // Validar stock
                 if (!producto.hayStock() || producto.getStockActual() < productoReq.getCantidad()) {
                     response.put("success", false);
                     response.put("error", "Stock insuficiente para: " + producto.getNombre());
                     return ResponseEntity.badRequest().body(response);
                 }
 
-                // Crear detalle
                 SaleDetail detalle = SaleDetail.builder()
                         .producto(producto)
                         .cantidad(productoReq.getCantidad())
@@ -372,7 +386,7 @@ public class SaleController {
             log.info("✅ Subtotal calculado: S/ {}", subtotalCalculado);
 
             // ========================================
-            // 6. PROCESAR PAGOS
+            // 6. PROCESAR PAGOS (SIN CAMBIOS)
             // ========================================
             List<Payment> pagos = new ArrayList<>();
             BigDecimal totalPagado = BigDecimal.ZERO;
@@ -419,7 +433,6 @@ public class SaleController {
                     log.info("✅ Pago agregado: {} - S/ {}", metodo, monto);
                 }
 
-                // Validar que el pago cubra el total
                 if (totalPagado.compareTo(subtotalCalculado) < 0) {
                     response.put("success", false);
                     response.put("error", String.format(
@@ -473,7 +486,7 @@ public class SaleController {
             return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
-            log.error("❌ Error de negocio al registrar venta", e);
+            log.error("❌ Error de negocio al registrar venta: {}", e.getMessage());
             response.put("success", false);
             response.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(response);
@@ -481,7 +494,7 @@ public class SaleController {
         } catch (Exception e) {
             log.error("❌ Error inesperado al registrar venta", e);
             response.put("success", false);
-            response.put("error", "Error interno del servidor: " + e.getMessage());
+            response.put("error", "Error interno del servidor. Contacte al administrador.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

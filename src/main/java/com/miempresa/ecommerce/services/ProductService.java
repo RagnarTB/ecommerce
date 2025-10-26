@@ -256,6 +256,25 @@ public class ProductService {
         }
     }
 
+    public void eliminarImagenesPorIds(String imagenesAEliminarStr) {
+        if (imagenesAEliminarStr == null || imagenesAEliminarStr.isBlank()) {
+            return;
+        }
+        String[] idsStr = imagenesAEliminarStr.split(",");
+        for (String idStr : idsStr) {
+            try {
+                Long imagenId = Long.parseLong(idStr.trim());
+                log.info("Intentando eliminar imagen ID: {}", imagenId);
+                eliminarImagen(imagenId); // Llama al método que ya elimina archivo y registro
+            } catch (NumberFormatException e) {
+                log.error("ID de imagen inválido: {}", idStr);
+            } catch (Exception e) {
+                log.error("Error al eliminar imagen ID {}: {}", idStr, e.getMessage());
+                // Considera si quieres relanzar la excepción o solo loguear
+            }
+        }
+    }
+
     /**
      * Elimina una imagen de un producto
      */
@@ -265,16 +284,35 @@ public class ProductService {
         Optional<ProductImage> imagenOpt = productImageRepository.findById(imagenId);
 
         if (imagenOpt.isEmpty()) {
-            throw new RuntimeException("Imagen no encontrada");
+            // Ya no lanzar excepción, solo loguear, puede que ya se haya eliminado
+            log.warn("Imagen ID {} no encontrada para eliminar (quizás ya fue eliminada)", imagenId);
+            return;
+            // throw new RuntimeException("Imagen no encontrada");
         }
 
         ProductImage imagen = imagenOpt.get();
+        Product product = imagen.getProducto(); // Necesario para desasociar
 
         // Eliminar archivo físico
         eliminarArchivo(imagen.getUrl());
 
-        // Eliminar registro
-        productImageRepository.delete(imagen);
+        // Quitar la imagen de la colección del producto (importante por la relación)
+        if (product != null) {
+            product.eliminarImagen(imagen); // Usa el método helper en Product
+            productRepository.save(product); // Guardar el producto sin la imagen
+        } else {
+            // Si no hay producto asociado (raro), eliminar directamente
+            productImageRepository.delete(imagen);
+        }
+
+        // Verificar si la imagen eliminada era la principal y reasignar si es necesario
+        if (imagen.getEsPrincipal() && product != null && !product.getImagenes().isEmpty()) {
+            product.getImagenes().get(0).setEsPrincipal(true); // Hacer la primera restante principal
+            productRepository.save(product);
+            log.info("Reasignada imagen principal para producto ID {}", product.getId());
+        }
+
+        log.info("Imagen ID {} eliminada correctamente de la base de datos", imagenId);
     }
 
     /**

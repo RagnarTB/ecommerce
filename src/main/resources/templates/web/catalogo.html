@@ -1,4 +1,3 @@
-<!-- Sidebar de filtros -->
 <section class="filters-sidebar">
     <h3 class="filter-title">Categorías</h3>
     <form action="/catalogo" method="get">
@@ -11,21 +10,19 @@
     </form>
 </section>
 
-<!-- Sección de productos filtrados -->
 <section class="featured-section">
     <h2 class="section-title">Productos</h2>
     <div class="grid-container">
         <div th:each="producto : ${productos}" class="product-card">
             <div class="product-image">
 
-                <!-- ✅ Mostrar imagen principal si existe -->
+                >
                 <img th:if="${producto.imagenPrincipal != null}"
                     th:src="@{/uploads/productos/{filename}(filename=${producto.imagenPrincipal.url})}"
                     th:alt="'Imagen de ' + ${producto.nombre}" />
-
-                <!-- ❌ Si no tiene imagen, usar placeholder -->
-                <img th:if="${producto.imagenPrincipal == null}" th:src="@{/images/default-product.png}"
+                <img th:if="${producto.imagenPrincipal == null}" th:src="@{/img/placeholder-game.jpg}"
                     alt="Imagen por defecto" />
+
             </div>
 
             <div class="product-body">

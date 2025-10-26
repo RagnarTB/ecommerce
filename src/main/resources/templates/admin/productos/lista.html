@@ -6,16 +6,12 @@
 <body class="hold-transition sidebar-mini">
     <div class="wrapper">
 
-        <!-- Navbar -->
         <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
-        <!-- Sidebar -->
         <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-        <!-- Content Wrapper -->
         <div class="content-wrapper">
 
-            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
@@ -37,7 +33,6 @@
                 </div>
             </div>
 
-            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
                     <div class="row">
@@ -78,14 +73,12 @@
                                                 <td th:text="${iterStat.count}">1</td>
 
                                                 <td>
-                                                    <!-- ✅ OPCIÓN 1: Concatenar con barra -->
+                                                    >
                                                     <img th:if="${producto.imagenPrincipal != null}"
-                                                        th:src="@{/uploads/{url}(url=${producto.imagenPrincipal.url})}"
+                                                        th:src="@{/uploads/productos/{filename}(filename=${producto.imagenPrincipal.url})}"
                                                         class="img-thumbnail"
                                                         style="max-width: 60px; max-height: 60px; object-fit: cover;"
                                                         th:alt="${producto.nombre}">
-
-                                                    <!-- Imagen placeholder si no tiene -->
                                                     <img th:unless="${producto.imagenPrincipal != null}"
                                                         th:src="@{/img/placeholder-game.jpg}" class="img-thumbnail"
                                                         style="max-width: 60px; max-height: 60px; object-fit: cover;"
@@ -111,8 +104,8 @@
                                                 </td>
 
                                                 <td th:text="${producto.categoria.nombre}">Categoría</td>
-                                                <td th:text="${producto.marca.nombre}">Marca</td>
-
+                                                <td th:text="${producto.marca != null ? producto.marca.nombre : '-'}">
+                                                    Marca</td>
                                                 <td>
                                                     <div th:if="${producto.tieneOferta()}">
                                                         <span class="text-muted" style="text-decoration: line-through;">
@@ -179,8 +172,8 @@
                                                             title="Editar">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
-                                                        <a th:href="@{/admin/productos/eliminar/{id}(id=${producto.id})}"
-                                                            class="btn btn-danger btn-confirm"
+                                                        <a href="#" class="btn btn-danger btn-confirm"
+                                                            th:attr="data-url=@{/admin/productos/eliminar/{id}(id=${producto.id})}"
                                                             data-mensaje="¿Estás seguro de eliminar este producto?"
                                                             data-toggle="tooltip" title="Eliminar">
                                                             <i class="fas fa-trash"></i>
@@ -199,12 +192,10 @@
             </section>
         </div>
 
-        <!-- Footer -->
         <footer th:replace="~{fragments/footer :: footer}"></footer>
 
     </div>
 
-    <!-- Scripts -->
     <div th:replace="~{fragments/scripts :: scripts}"></div>
 </body>
 
