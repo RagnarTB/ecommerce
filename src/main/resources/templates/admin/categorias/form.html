@@ -1,46 +1,48 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="~{fragments/head :: head(${esNuevo} ? 'Nueva Categoría' : 'Editar Categoría')}"></head>
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
 
 <body class="hold-transition sidebar-mini">
     <div class="wrapper">
-        <!-- Navbar -->
         <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
-        <!-- Sidebar -->
         <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-        <!-- Content Wrapper -->
         <div class="content-wrapper">
-            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">
                                 <i class="fas fa-folder neon-icon"></i>
-                                <span class="neon-text" th:text="${esNuevo} ? 'NUEVA' : 'EDITAR'">NUEVA</span>
-                                CATEGORÍA
+                                <span class="neon-text" th:text="${titulo}">NUEVA CATEGORÍA</span>
                             </h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
                                 <li class="breadcrumb-item"><a th:href="@{/admin/categorias}">Categorías</a></li>
-                                <li class="breadcrumb-item active" th:text="${esNuevo} ? 'Nueva' : 'Editar'">Nueva
-                                </li>
+                                <li class="breadcrumb-item active" th:text="${esNuevo} ? 'Nueva' : 'Editar'">Nueva</li>
                             </ol>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
                     <div class="row justify-content-center">
                         <div class="col-md-8">
+
+                            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                <span th:text="${error}"></span>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+
                             <div class="card gamer-card">
                                 <div class="card-header">
                                     <h3 class="card-title">
@@ -53,54 +55,68 @@
                                     th:action="${esNuevo} ? @{/admin/categorias/guardar} : @{/admin/categorias/actualizar/{id}(id=${categoria.id})}"
                                     th:object="${categoria}" method="post" class="needs-validation" novalidate>
 
+                                    <input type="hidden" th:if="${!esNuevo}" th:field="*{id}" />
+
                                     <div class="card-body">
-                                        <!-- Nombre -->
                                         <div class="form-group">
                                             <label for="nombre">Nombre de la Categoría <span
                                                     class="text-danger">*</span></label>
                                             <input type="text" class="form-control" id="nombre" th:field="*{nombre}"
-                                                placeholder="Ej: Videojuegos" required>
-                                            <div class="invalid-feedback">
-                                                El nombre es obligatorio
+                                                placeholder="Ej: Videojuegos" required
+                                                th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid' : ''">
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}"
+                                                th:errors="*{nombre}">
+                                                Error en el nombre
                                             </div>
                                         </div>
 
-                                        <!-- Descripción -->
                                         <div class="form-group">
                                             <label for="descripcion">Descripción</label>
                                             <textarea class="form-control" id="descripcion" th:field="*{descripcion}"
-                                                rows="3" placeholder="Descripción de la categoría..."></textarea>
+                                                rows="3" placeholder="Descripción de la categoría..."
+                                                th:classappend="${#fields.hasErrors('descripcion')} ? 'is-invalid' : ''"></textarea>
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('descripcion')}"
+                                                th:errors="*{descripcion}">
+                                                Error en la descripción
+                                            </div>
                                         </div>
 
-                                        <!-- Orden -->
                                         <div class="form-group">
                                             <label for="orden">Orden de Visualización</label>
                                             <input type="number" class="form-control" id="orden" th:field="*{orden}"
-                                                min="0" value="0">
+                                                min="0" placeholder="0" value="0"
+                                                th:classappend="${#fields.hasErrors('orden')} ? 'is-invalid' : ''">
                                             <small class="form-text text-muted">
-                                                Define el orden en que aparecerá la categoría (menor número =
-                                                primero)
+                                                Define el orden en que aparecerá la categoría (menor número
+                                                = primero)
                                             </small>
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('orden')}"
+                                                th:errors="*{orden}">
+                                                Error en el orden
+                                            </div>
                                         </div>
 
-                                        <!-- Activo -->
-                                        <div class="form-group">
+                                        <div class="form-group" th:if="${!esNuevo}">
                                             <div class="custom-control custom-switch">
+                                                <input type="hidden" name="activo" value="false" />
                                                 <input type="checkbox" class="custom-control-input" id="activo"
-                                                    th:field="*{activo}" checked>
-                                                <label class="custom-control-label" for="activo">
+                                                    name="activo" value="true" th:checked="*{activo}"> <label
+                                                    class="custom-control-label" for="activo">
                                                     Categoría Activa
                                                 </label>
                                             </div>
                                         </div>
+                                        <input type="hidden" th:if="${esNuevo}" th:field="*{activo}" value="true" />
+
+
                                     </div>
 
                                     <div class="card-footer">
                                         <button type="submit" class="btn btn-success gamer-btn">
                                             <i class="fas fa-save"></i>
-                                            <span th:text="${esNuevo} ? 'Guardar Categoría' : 'Actualizar Categoría'">
-                                                Guardar
-                                            </span>
+                                            <span
+                                                th:text="${esNuevo} ? 'Guardar Categoría' : 'Actualizar Categoría'">Guardar</span>
+
                                         </button>
                                         <a th:href="@{/admin/categorias}" class="btn btn-secondary">
                                             <i class="fas fa-times"></i> Cancelar
@@ -113,12 +129,26 @@
                 </div>
             </section>
         </div>
-
-        <!-- Footer -->
         <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
-    <!-- Scripts -->
     <div th:replace="~{fragments/scripts :: scripts}"></div>
+    <script>
+        (function () {
+            'use strict';
+            window.addEventListener('load', function () {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
 </body>
 
 </html>

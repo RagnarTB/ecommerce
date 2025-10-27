@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpHeaders; // <<--- AÑADIDO
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType; // <<--- AÑADIDO
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.miempresa.ecommerce.config.EmpresaConfig; // <<--- AÑADIDO
 import com.miempresa.ecommerce.controllers.admin.SaleController.PagoRequest;
 import com.miempresa.ecommerce.controllers.admin.SaleController.VentaProducto;
 import com.miempresa.ecommerce.models.Customer;
@@ -34,13 +37,14 @@ import com.miempresa.ecommerce.services.CustomerService;
 import com.miempresa.ecommerce.services.ProductService;
 import com.miempresa.ecommerce.services.SaleService;
 import com.miempresa.ecommerce.services.UserService;
+import com.miempresa.ecommerce.utils.PdfGeneratorUtil; // <<--- AÑADIDO
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * CONTROLLER: VENTAS
- * 
+ *
  * Gestiona ventas, POS y pagos.
  */
 
@@ -54,6 +58,7 @@ public class SaleController {
     private final ProductService productService;
     private final CustomerService customerService;
     private final UserService userService;
+    private final EmpresaConfig empresaConfig; // <<--- AÑADIDO (Asegúrate de que esté inyectado)
 
     // ========================================
     // LISTAR VENTAS
@@ -95,16 +100,9 @@ public class SaleController {
         private List<PagoRequest> pagos;
         private Integer numCuotas; // ✅ AGREGADO
 
+        // Getters y Setters
         public Long getClienteId() {
             return clienteId;
-        }
-
-        public Integer getNumCuotas() {
-            return numCuotas;
-        }
-
-        public void setNumCuotas(Integer numCuotas) {
-            this.numCuotas = numCuotas;
         }
 
         public void setClienteId(Long clienteId) {
@@ -175,6 +173,28 @@ public class SaleController {
             this.pagos = pagos;
         }
 
+        public Integer getNumCuotas() {
+            return numCuotas;
+        }
+
+        public void setNumCuotas(Integer numCuotas) {
+            this.numCuotas = numCuotas;
+        }
+
+        // toString para logging (opcional, cuidado con datos sensibles)
+        @Override
+        public String toString() {
+            return "VentaPosRequest{" +
+                    "clienteDocumento='" + clienteDocumento + '\'' +
+                    ", tipoPago='" + tipoPago + '\'' +
+                    ", numCuotas=" + numCuotas +
+                    ", descuento=" + descuento +
+                    ", costoEnvio=" + costoEnvio +
+                    ", total=" + total +
+                    ", productos=" + (productos != null ? productos.size() : 0) + " items" +
+                    ", pagos=" + (pagos != null ? pagos.size() : 0) + " items" +
+                    '}';
+        }
     }
 
     public static class VentaProducto {
@@ -183,6 +203,7 @@ public class SaleController {
         private Integer cantidad;
         private BigDecimal precio;
 
+        // Getters y Setters
         public Long getId() {
             return id;
         }
@@ -206,7 +227,6 @@ public class SaleController {
         public void setPrecio(BigDecimal precio) {
             this.precio = precio;
         }
-
     }
 
     public static class PagoRequest {
@@ -214,6 +234,7 @@ public class SaleController {
         private String metodoPago;
         private BigDecimal monto;
 
+        // Getters y Setters
         public String getMetodoPago() {
             return metodoPago;
         }
@@ -229,18 +250,19 @@ public class SaleController {
         public void setMonto(BigDecimal monto) {
             this.monto = monto;
         }
-
     }
 
     /**
      * Procesa una venta desde el POS
-     * 
+     *
      * Recibe JSON con:
      * - clienteDocumento
      * - productos [{id, cantidad, precio}]
      * - tipoPago (CONTADO/CREDITO)
      * - pagos [{metodo, monto}]
      * - numCuotas (si es crédito)
+     * - descuento (opcional)
+     * - costoEnvio (opcional)
      */
     @PostMapping("/pos/registrar")
     @ResponseBody
@@ -248,7 +270,7 @@ public class SaleController {
             @RequestBody VentaPosRequest request) {
 
         log.info("🔵 Registrando venta desde POS");
-        log.info("📦 Request recibido: {}", request); // Considera evitar imprimir datos sensibles en producción
+        log.info("📦 Request recibido: {}", request); // toString implementado en VentaPosRequest
 
         Map<String, Object> response = new HashMap<>();
 
@@ -262,9 +284,9 @@ public class SaleController {
                 return ResponseEntity.badRequest().body(response);
             }
 
-            TipoPago tipoPago;
+            TipoPago tipoPagoEnum; // Renombrado para claridad
             try {
-                tipoPago = TipoPago.valueOf(request.getTipoPago());
+                tipoPagoEnum = TipoPago.valueOf(request.getTipoPago());
             } catch (IllegalArgumentException e) {
                 response.put("success", false);
                 response.put("error", "Tipo de pago inválido: " + request.getTipoPago());
@@ -272,7 +294,7 @@ public class SaleController {
             }
 
             Integer numCuotas = null;
-            if (tipoPago == TipoPago.CREDITO) {
+            if (tipoPagoEnum == TipoPago.CREDITO) {
                 numCuotas = request.getNumCuotas();
                 if (numCuotas == null || numCuotas < 1 || numCuotas > 24) {
                     response.put("success", false);
@@ -281,7 +303,7 @@ public class SaleController {
                 }
             }
 
-            log.info("✅ Tipo de pago: {} | Cuotas: {}", tipoPago, numCuotas);
+            log.info("✅ Tipo de pago: {} | Cuotas: {}", tipoPagoEnum, numCuotas);
 
             // ========================================
             // 2. VALIDAR PRODUCTOS
@@ -295,7 +317,7 @@ public class SaleController {
             log.info("✅ Productos en request: {}", request.getProductos().size());
 
             // ========================================
-            // 3. OBTENER CLIENTE (ESPECÍFICO o GENÉRICO) <-- MODIFICADO
+            // 3. OBTENER CLIENTE (ESPECÍFICO o GENÉRICO)
             // ========================================
             Customer cliente;
 
@@ -339,7 +361,7 @@ public class SaleController {
             log.info("✅ Usuario: {}", usuario.getUsername());
 
             // ========================================
-            // 5. PROCESAR PRODUCTOS (SIN CAMBIOS)
+            // 5. PROCESAR PRODUCTOS
             // ========================================
             List<SaleDetail> detalles = new ArrayList<>();
             BigDecimal subtotalCalculado = BigDecimal.ZERO;
@@ -386,12 +408,12 @@ public class SaleController {
             log.info("✅ Subtotal calculado: S/ {}", subtotalCalculado);
 
             // ========================================
-            // 6. PROCESAR PAGOS (SIN CAMBIOS)
+            // 6. PROCESAR PAGOS
             // ========================================
             List<Payment> pagos = new ArrayList<>();
             BigDecimal totalPagado = BigDecimal.ZERO;
 
-            if (tipoPago == TipoPago.CONTADO) {
+            if (tipoPagoEnum == TipoPago.CONTADO) {
                 if (request.getPagos() == null || request.getPagos().isEmpty()) {
                     response.put("success", false);
                     response.put("error", "Debe especificar al menos un método de pago");
@@ -424,7 +446,7 @@ public class SaleController {
                     Payment pago = Payment.builder()
                             .metodoPago(metodo)
                             .monto(monto)
-                            .usuario(usuario)
+                            // usuario se asigna en el servicio
                             .build();
 
                     pagos.add(pago);
@@ -433,17 +455,20 @@ public class SaleController {
                     log.info("✅ Pago agregado: {} - S/ {}", metodo, monto);
                 }
 
-                if (totalPagado.compareTo(subtotalCalculado) < 0) {
+                // Validar pago suficiente contra el TOTAL esperado del request
+                BigDecimal totalEsperado = request.getTotal() != null ? request.getTotal() : BigDecimal.ZERO;
+                if (totalPagado.compareTo(totalEsperado) < 0) {
+                    log.warn("Pago insuficiente. Total Esperado: S/ {}, Pagado: S/ {}", totalEsperado, totalPagado);
                     response.put("success", false);
                     response.put("error", String.format(
-                            "Pago insuficiente. Total: S/ %.2f, Pagado: S/ %.2f",
-                            subtotalCalculado, totalPagado));
+                            "Pago insuficiente. Total Venta: S/ %.2f, Monto Pagado: S/ %.2f",
+                            totalEsperado, totalPagado));
                     return ResponseEntity.badRequest().body(response);
                 }
 
                 log.info("✅ Total pagado: S/ {}", totalPagado);
             } else {
-                log.info("✅ Venta a CRÉDITO, sin pagos iniciales");
+                log.info("✅ Venta a CRÉDITO, sin pagos iniciales o procesados dentro del crédito");
             }
 
             // ========================================
@@ -451,14 +476,25 @@ public class SaleController {
             // ========================================
             Sale venta = Sale.builder()
                     .cliente(cliente)
-                    .tipoPago(tipoPago)
+                    .tipoPago(tipoPagoEnum) // Usar el Enum
                     .build();
 
             log.info("🔄 Llamando a saleService.crearVenta()...");
 
             Sale ventaGuardada;
             try {
-                ventaGuardada = saleService.crearVenta(venta, detalles, pagos, usuario, numCuotas);
+                // --- INICIO DE LA INTEGRACIÓN ---
+                // Corregido: Pasar descuento y costoEnvio al servicio
+                ventaGuardada = saleService.crearVenta(
+                        venta,
+                        detalles,
+                        pagos,
+                        usuario,
+                        request.getNumCuotas(), // Puede ser null si es CONTADO
+                        request.getDescuento(), // <<--- PASAR DESCUENTO DEL REQUEST
+                        request.getCostoEnvio() // <<--- PASAR COSTOENVIO DEL REQUEST
+                );
+                // --- FIN DE LA INTEGRACIÓN ---
                 log.info("✅ Venta creada exitosamente: {}", ventaGuardada.getNumeroVenta());
             } catch (Exception e) {
                 log.error("❌ Error al crear venta en el servicio", e);
@@ -474,11 +510,22 @@ public class SaleController {
             response.put("mensaje", "Venta registrada correctamente");
             response.put("numeroVenta", ventaGuardada.getNumeroVenta());
             response.put("ventaId", ventaGuardada.getId());
-            response.put("total", ventaGuardada.getTotal());
+            response.put("total", ventaGuardada.getTotal()); // Usar el total calculado por el backend
 
-            if (tipoPago == TipoPago.CONTADO) {
+            // Calcular vuelto basado en el total pagado y el total final de la venta
+            if (tipoPagoEnum == TipoPago.CONTADO) {
                 BigDecimal vuelto = totalPagado.subtract(ventaGuardada.getTotal());
-                response.put("vuelto", vuelto);
+                // Asegurarse de que el vuelto no sea negativo (aunque la validación anterior
+                // debería prevenirlo)
+                if (vuelto.compareTo(BigDecimal.ZERO) < 0) {
+                    log.warn(
+                            "Se detectó un vuelto negativo (S/ {}), esto no debería ocurrir. TotalPagado={}, TotalVenta={}",
+                            vuelto, totalPagado, ventaGuardada.getTotal());
+                    vuelto = BigDecimal.ZERO; // Forzar a cero si es negativo
+                }
+                response.put("vuelto", vuelto.setScale(2, java.math.RoundingMode.HALF_UP)); // Redondear vuelto
+                log.info("Calculando vuelto: Total Pagado S/ {}, Total Venta S/ {}, Vuelto S/ {}", totalPagado,
+                        ventaGuardada.getTotal(), vuelto);
             }
 
             log.info("✅ Respuesta enviada al frontend: {}", response);
@@ -486,7 +533,7 @@ public class SaleController {
             return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
-            log.error("❌ Error de negocio al registrar venta: {}", e.getMessage());
+            log.error("❌ Error de negocio al registrar venta: {}", e.getMessage(), e); // Log stacktrace
             response.put("success", false);
             response.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(response);
@@ -545,15 +592,39 @@ public class SaleController {
 
         return "redirect:/admin/ventas";
     }
-}
 
-/**
- * NOTA IMPORTANTE:
- * El método registrarVentaPOS está simplificado.
- * En la implementación real necesitarás:
- * 1. Parsear el JSON de productos usando Gson o Jackson
- * 2. Validar stock de cada producto
- * 3. Crear los SaleDetail correctamente
- * 4. Manejar multipagos
- * 5. Generar PDF de boleta
- */
+    // ========================================
+    // IMPRIMIR BOLETA
+    // ========================================
+    @GetMapping("/imprimir/{id}")
+    public ResponseEntity<byte[]> imprimirBoleta(@PathVariable Long id) {
+        log.info("Solicitud para imprimir boleta de venta ID: {}", id);
+        try {
+            Sale venta = saleService.buscarPorId(id)
+                    .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
+
+            byte[] pdfBytes = PdfGeneratorUtil.generateBoletaPdf(
+                    venta,
+                    empresaConfig.getNombre(),
+                    empresaConfig.getRuc(),
+                    empresaConfig.getDireccion());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            String filename = "Boleta-" + venta.getNumeroVenta() + ".pdf";
+            headers.setContentDispositionFormData("inline", filename); // inline para ver en navegador
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+            log.info("Boleta PDF generada para venta {}, enviando respuesta.", venta.getNumeroVenta());
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+
+        } catch (RuntimeException re) {
+            log.error("Error al buscar venta para imprimir PDF (ID {}): {}", id, re.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 si no se encuentra
+        } catch (Exception e) {
+            log.error("Error al generar PDF de boleta para venta ID {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+}

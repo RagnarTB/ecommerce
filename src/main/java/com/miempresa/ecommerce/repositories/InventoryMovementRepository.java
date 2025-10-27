@@ -20,73 +20,78 @@ import com.miempresa.ecommerce.models.enums.TipoMovimiento;
 @Repository
 public interface InventoryMovementRepository extends JpaRepository<InventoryMovement, Long> {
 
-        /**
-         * Busca movimientos de un producto específico.
-         */
-        List<InventoryMovement> findByProductoIdOrderByFechaMovimientoDesc(Long productoId);
+  /**
+   * Busca movimientos de un producto específico.
+   */
+  List<InventoryMovement> findByProductoIdOrderByFechaMovimientoDesc(Long productoId);
 
-        /**
-         * Busca movimientos por tipo.
-         */
-        List<InventoryMovement> findByTipoOrderByFechaMovimientoDesc(TipoMovimiento tipo);
+  /**
+   * Busca movimientos por tipo.
+   */
+  List<InventoryMovement> findByTipoOrderByFechaMovimientoDesc(TipoMovimiento tipo);
 
-        /**
-         * Busca movimientos por motivo.
-         */
-        List<InventoryMovement> findByMotivoOrderByFechaMovimientoDesc(MotivoMovimiento motivo);
+  /**
+   * Busca movimientos por motivo.
+   */
+  List<InventoryMovement> findByMotivoOrderByFechaMovimientoDesc(MotivoMovimiento motivo);
 
-        /**
-         * Busca movimientos en un rango de fechas.
-         */
-        List<InventoryMovement> findByFechaMovimientoBetweenOrderByFechaMovimientoDesc(
-                        LocalDateTime fechaInicio,
-                        LocalDateTime fechaFin);
+  /**
+   * Busca movimientos en un rango de fechas.
+   */
+  List<InventoryMovement> findByFechaMovimientoBetweenOrderByFechaMovimientoDesc(
+      LocalDateTime fechaInicio,
+      LocalDateTime fechaFin);
 
-        /**
-         * Busca movimientos de un producto en un rango de fechas.
-         */
-        List<InventoryMovement> findByProductoIdAndFechaMovimientoBetweenOrderByFechaMovimientoDesc(
-                        Long productoId,
-                        LocalDateTime fechaInicio,
-                        LocalDateTime fechaFin);
+  /**
+   * Busca movimientos de un producto en un rango de fechas.
+   */
+  List<InventoryMovement> findByProductoIdAndFechaMovimientoBetweenOrderByFechaMovimientoDesc(
+      Long productoId,
+      LocalDateTime fechaInicio,
+      LocalDateTime fechaFin);
 
-        /**
-         * Busca movimientos por usuario.
-         */
-        List<InventoryMovement> findByUsuarioIdOrderByFechaMovimientoDesc(Long usuarioId);
+  /**
+   * Busca movimientos por usuario.
+   */
+  List<InventoryMovement> findByUsuarioIdOrderByFechaMovimientoDesc(Long usuarioId);
 
-        /**
-         * Busca movimientos con filtros múltiples (dinámicos).
-         */
-        @Query("""
-                        SELECT m FROM InventoryMovement m
-                        WHERE (:productoId IS NULL OR m.producto.id = :productoId)
-                          AND (:tipo IS NULL OR m.tipo = :tipo)
-                          AND (:motivo IS NULL OR m.motivo = :motivo)
-                          AND (:fechaInicio IS NULL OR m.fechaMovimiento >= :fechaInicio)
-                          AND (:fechaFin IS NULL OR m.fechaMovimiento <= :fechaFin)
-                        ORDER BY m.fechaMovimiento DESC
-                        """)
-        List<InventoryMovement> buscarConFiltros(
-                        @Param("productoId") Long productoId,
-                        @Param("tipo") TipoMovimiento tipo,
-                        @Param("motivo") MotivoMovimiento motivo,
-                        @Param("fechaInicio") LocalDateTime fechaInicio,
-                        @Param("fechaFin") LocalDateTime fechaFin);
+  /**
+   * Busca movimientos con filtros múltiples (dinámicos).
+   */
+  @Query("""
+      SELECT m FROM InventoryMovement m
+      WHERE (:productoId IS NULL OR m.producto.id = :productoId)
+        AND (:tipo IS NULL OR m.tipo = :tipo)
+        AND (:motivo IS NULL OR m.motivo = :motivo)
+        AND (:fechaInicio IS NULL OR m.fechaMovimiento >= :fechaInicio)
+        AND (:fechaFin IS NULL OR m.fechaMovimiento <= :fechaFin)
+      ORDER BY m.fechaMovimiento DESC
+      """)
+  List<InventoryMovement> buscarConFiltros(
+      @Param("productoId") Long productoId,
+      @Param("tipo") TipoMovimiento tipo,
+      @Param("motivo") MotivoMovimiento motivo,
+      @Param("fechaInicio") LocalDateTime fechaInicio,
+      @Param("fechaFin") LocalDateTime fechaFin);
 
-        /**
-         * Obtiene los últimos movimientos registrados.
-         */
-        List<InventoryMovement> findTop20ByOrderByFechaMovimientoDesc();
+  /**
+   * Obtiene los últimos movimientos registrados.
+   */
+  List<InventoryMovement> findTop20ByOrderByFechaMovimientoDesc();
 
-        /**
-         * Cuenta movimientos por tipo.
-         */
-        long countByTipo(TipoMovimiento tipo);
+  /**
+   * Cuenta movimientos por tipo.
+   */
+  long countByTipo(TipoMovimiento tipo);
 
-        /**
-         * Busca movimientos relacionados a una referencia específica.
-         * Ejemplo: todos los movimientos de la venta #25.
-         */
-        List<InventoryMovement> findByReferenciaIdAndReferenciaTipo(Long referenciaId, String referenciaTipo);
+  /**
+   * Busca movimientos relacionados a una referencia específica.
+   * Ejemplo: todos los movimientos de la venta #25.
+   */
+  List<InventoryMovement> findByReferenciaIdAndReferenciaTipo(Long referenciaId, String referenciaTipo);
+
+  List<InventoryMovement> findByProductoIdAndMotivoAndTipoAndReferenciaIdIsNullOrderByFechaMovimientoDesc(
+      Long productoId,
+      MotivoMovimiento motivo,
+      TipoMovimiento tipo);
 }

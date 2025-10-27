@@ -119,22 +119,29 @@
                                                 <strong>S/ <span id="subtotal">0.00</span></strong>
                                             </td>
                                         </tr>
+                                        <!-- === INICIO INTEGRACIÓN === -->
                                         <tr>
                                             <td>Descuento:</td>
                                             <td class="text-right">
+                                                <!-- Asegúrate que el ID sea 'descuento' -->
                                                 <input type="number" class="form-control form-control-sm text-right"
-                                                    id="descuento" value="0" min="0" step="0.01"
-                                                    style="max-width: 100px; float: right;">
+                                                    id="descuento" value="0.00" min="0" step="0.01"
+                                                    style="max-width: 100px; display: inline-block;">
+                                                <!-- display inline -->
+                                                <span style="margin-left: 5px;">S/</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Envío:</td>
                                             <td class="text-right">
+                                                <!-- Asegúrate que el ID sea 'costoEnvio' -->
                                                 <input type="number" class="form-control form-control-sm text-right"
-                                                    id="costoEnvio" value="0" min="0" step="0.01"
-                                                    style="max-width: 100px; float: right;">
+                                                    id="costoEnvio" value="0.00" min="0" step="0.01"
+                                                    style="max-width: 100px; display: inline-block;">
+                                                <span style="margin-left: 5px;">S/</span>
                                             </td>
                                         </tr>
+                                        <!-- === FIN INTEGRACIÓN === -->
                                         <tr class="bg-light">
                                             <td>
                                                 <h4><strong>TOTAL:</strong></h4>
@@ -273,7 +280,7 @@
                                 <i class="fas fa-box-open fa-3x mb-3"></i>
                                 <p>No hay productos disponibles para mostrar.</p>
                             </div>
-                         `);
+                          `);
                     }
                 }
 
@@ -321,6 +328,8 @@
                                 clienteSeleccionado = null;
                                 $('#clienteInfo').hide();
                                 $('#clienteDocumento').val('');
+                                $('#descuento').val('0.00'); // Resetear descuento
+                                $('#costoEnvio').val('0.00'); // Resetear envío
                                 actualizarCarrito();
                                 showAlert('Carrito limpiado', 'info');
                             }
@@ -364,7 +373,8 @@
                     $('#montoRecibido').on('keyup change', calcularVuelto);
 
                     // Cambios en descuento y envío
-                    $('#descuento, #costoEnvio').on('keyup change', calcularTotales);
+                    $('#descuento, #costoEnvio').on('keyup change input', calcularTotales); // Added 'input' for better reactivity
+
 
                     // Procesar venta
                     $('#btnProcesarVenta').off('click').on('click', function (e) {
@@ -388,14 +398,13 @@
                                 <i class="fas fa-search fa-3x mb-3"></i>
                                 <p>No se encontraron productos con ese criterio.</p>
                             </div>
-                        `);
+                          `);
                         $('#noProducts').hide(); // Ocultar el mensaje inicial
                         return;
                     }
                     $('#noProducts').hide(); // Ocultar el mensaje inicial
 
                     lista.forEach(producto => {
-                        // <<--- CORRECCIÓN DE RUTA --->>
                         const imagenUrl = (producto.imagenPrincipal && producto.imagenPrincipal.url)
                             ? `/uploads/productos/${producto.imagenPrincipal.url}`
                             : '/img/placeholder-game.jpg';
@@ -409,7 +418,8 @@
                                     <img src="${imagenUrl}"
                                         class="card-img-top"
                                         alt="${producto.nombre}"
-                                        style="height: 150px; object-fit: cover;">
+                                        style="height: 150px; object-fit: cover;"
+                                        onerror="this.onerror=null; this.src='/img/placeholder-game.jpg';"> <!-- Fallback image -->
                                     <div class="card-body p-2">
                                         <h6 class="card-title mb-1" style="font-size: 0.9rem; min-height: 40px;">
                                             ${producto.nombre}
@@ -425,7 +435,7 @@
                                     </div>
                                 </div>
                             </div>
-                        `);
+                          `);
                     });
                 }
 
@@ -484,7 +494,7 @@
                                 <i class="fas fa-shopping-cart fa-3x mb-3"></i>
                                 <p>Carrito vacío</p>
                             </div>
-                        `);
+                          `);
                         calcularTotales();
                         return;
                     }
@@ -533,7 +543,7 @@
                                     </div>
                                 </div>
                             </div>
-                        `);
+                          `);
                     });
 
                     calcularTotales();
@@ -623,6 +633,17 @@
                         method: 'POST', // Es POST según tu API
                         contentType: 'application/json',
                         data: JSON.stringify({ numeroDocumento: documento }),
+                        // Agrega token CSRF antes de enviar la petición
+                        beforeSend: function (xhr) {
+                            const token = $("meta[name='_csrf']").attr("content");
+                            const header = $("meta[name='_csrf_header']").attr("content");
+                            if (token && header) {
+                                xhr.setRequestHeader(header, token);
+                                console.log("🔒 CSRF Header set:", header);
+                            } else {
+                                console.warn("⚠️ CSRF meta tags no encontrados!");
+                            }
+                        },
                         success: function (response) {
                             Swal.close();
                             if (response.success && response.data) {
@@ -669,24 +690,40 @@
                             return;
                         }
 
-                        // Cliente es opcional para POS, si no hay, se crea como "Cliente Varios" o similar en backend si es necesario
                         const clienteDoc = $('#clienteDocumento').val().trim();
-                        // if (!clienteSeleccionado && clienteDoc) {
-                        //     showAlert('Busque y confirme el cliente primero, o deje el campo vacío para "Cliente Varios"', 'warning');
-                        //     return;
-                        // }
                         if (!clienteDoc) {
-                            if (!confirm('No se ha especificado un cliente. ¿Desea continuar como "Cliente Varios"?')) {
-                                return;
-                            }
-                            clienteSeleccionado = null; // Asegurar que sea null si no hay doc
+                            Swal.fire({ // Usar Swal para confirmación modal
+                                title: 'Cliente no especificado',
+                                text: 'No se ha especificado un cliente. ¿Desea continuar como "Cliente Varios"?',
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonText: 'Sí, continuar',
+                                cancelButtonText: 'Cancelar'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    clienteSeleccionado = null; // Asegurar que sea null si no hay doc
+                                    continuarProcesoVenta(); // Llamar a la función que continúa
+                                }
+                            });
+                            return; // Detener aquí hasta que el usuario confirme
                         } else if (!clienteSeleccionado || clienteSeleccionado.numeroDocumento !== clienteDoc) {
                             // Si hay un documento pero no coincide con el cliente buscado (o no se buscó)
                             showAlert('El documento ingresado no coincide con el cliente buscado/confirmado. Por favor, busque de nuevo o borre el documento.', 'warning');
                             return;
                         }
 
+                        // Si el clienteDoc existe y coincide, continuar directamente
+                        continuarProcesoVenta();
 
+                    } catch (error) {
+                        console.error("❌ Error en validación inicial de procesarVenta():", error);
+                        showAlert('Error al validar la venta: ' + error.message, 'error');
+                    }
+                }
+
+                // Función separada para continuar después de la validación del cliente
+                function continuarProcesoVenta() {
+                    try {
                         const tipoPago = $('#tipoPago').val();
                         const metodoPago = $('input[name="metodoPago"]:checked').val();
                         const total = parseFloat($('#total').text()) || 0;
@@ -709,10 +746,7 @@
 
                         // Validar crédito
                         if (tipoPago === 'CREDITO') {
-                            if (!clienteSeleccionado) {
-                                showAlert('Se requiere un cliente registrado para ventas a crédito.', 'warning');
-                                return;
-                            }
+                            // La validación de cliente ya se hizo antes
                             const numCuotas = parseInt($('#numCuotas').val());
                             if (isNaN(numCuotas) || numCuotas < 1 || numCuotas > 24) { // Validar NaN
                                 showAlert('Ingrese un número de cuotas válido (1-24)', 'warning');
@@ -722,7 +756,7 @@
 
                         console.log("✅ Validaciones pasadas, mostrando confirmación...");
 
-                        // Confirmación
+                        // Confirmación final
                         Swal.fire({
                             title: '¿Procesar venta?',
                             html: `Cliente: <strong>${clienteSeleccionado ? (clienteSeleccionado.nombreCompleto || clienteSeleccionado.razonSocial) : 'Cliente Varios'}</strong><br>Total: <strong>S/ ${total.toFixed(2)}</strong>`,
@@ -750,7 +784,7 @@
                             showAlert('Error al mostrar confirmación.', 'error');
                         });
                     } catch (error) {
-                        console.error("❌ Error en procesarVenta():", error);
+                        console.error("❌ Error en continuarProcesoVenta():", error);
                         showAlert('Error al procesar la venta: ' + error.message, 'error');
                     }
                 }
@@ -768,7 +802,7 @@
                         const subtotal = parseFloat($('#subtotal').text()) || 0;
                         const descuento = parseFloat($('#descuento').val()) || 0;
                         const costoEnvio = parseFloat($('#costoEnvio').val()) || 0;
-                        const recibido = parseFloat($('#montoRecibido').val()) || 0;
+                        // const recibido = parseFloat($('#montoRecibido').val()) || 0; // No necesario enviar recibido
 
                         Swal.fire({
                             title: 'Procesando venta...',
@@ -778,17 +812,19 @@
                         });
 
                         const data = {
-                            clienteId: clienteSeleccionado ? clienteSeleccionado.id : null,
+                            // Enviar documento solo si no se seleccionó cliente específico (para Cliente Varios implícito)
                             clienteDocumento: !clienteSeleccionado ? $('#clienteDocumento').val().trim() : null,
                             tipoPago: tipoPago,
                             productos: carrito.map(item => ({
                                 id: item.id,
                                 cantidad: item.cantidad,
-                                precio: item.precio
+                                precio: item.precio // Asegurarse que el precio se envía correctamente
                             })),
+                            // Enviar pagos solo si es CONTADO
                             pagos: tipoPago === 'CONTADO' ? [{
                                 metodoPago: metodoPago,
-                                monto: total
+                                // El backend debe usar el total calculado, no el monto pagado individual
+                                monto: total // O podrías enviar el desglose si manejas multipago real
                             }] : [],
                             numCuotas: numCuotas,
                             subtotal: subtotal,
@@ -826,22 +862,23 @@
 
                                 if (response.success) {
                                     let vueltoHtml = '';
-                                    if (tipoPago === 'CONTADO' && metodoPago === 'EFECTIVO' && response.vuelto != null && response.vuelto > 0) {
+                                    // Usar response.vuelto que ya viene redondeado del backend
+                                    if (response.vuelto != null && response.vuelto > 0) {
                                         vueltoHtml = `<p><strong>Vuelto:</strong> S/ ${response.vuelto.toFixed(2)}</p>`;
                                     }
 
                                     Swal.fire({
                                         title: '¡Venta Registrada!',
                                         html: `
-                            <p>${response.mensaje || 'La venta se registró correctamente.'}</p>
-                            <p><strong>N° Venta:</strong> ${response.numeroVenta || 'N/A'}</p>
-                            <p><strong>Total:</strong> S/ ${response.total?.toFixed(2) || total.toFixed(2)}</p>
-                            ${vueltoHtml}
-                            <hr>
-                            <button id="swal-imprimir" class="btn btn-info gamer-btn">
-                                <i class="fas fa-print"></i> Imprimir Boleta
-                            </button>
-                        `,
+                                          <p>${response.mensaje || 'La venta se registró correctamente.'}</p>
+                                          <p><strong>N° Venta:</strong> ${response.numeroVenta || 'N/A'}</p>
+                                          <p><strong>Total:</strong> S/ ${response.total?.toFixed(2) || total.toFixed(2)}</p>
+                                          ${vueltoHtml}
+                                          <hr>
+                                          <button id="swal-imprimir" class="btn btn-info gamer-btn">
+                                              <i class="fas fa-print"></i> Imprimir Boleta
+                                          </button>
+                                        `,
                                         icon: 'success',
                                         showConfirmButton: true,
                                         confirmButtonText: 'OK',
@@ -856,17 +893,19 @@
                                             });
                                         }
                                     }).then(() => {
+                                        // Resetear todo después de cerrar el SweetAlert
                                         carrito = [];
                                         clienteSeleccionado = null;
                                         $('#clienteInfo').hide();
                                         $('#clienteDocumento').val('');
-                                        $('#descuento').val(0);
-                                        $('#costoEnvio').val(0);
+                                        $('#descuento').val('0.00'); // Usar '0.00'
+                                        $('#costoEnvio').val('0.00'); // Usar '0.00'
                                         $('#montoRecibido').val('');
                                         $('#tipoPago').val('CONTADO').trigger('change');
                                         $('input[name="metodoPago"][value="EFECTIVO"]').prop('checked', true).trigger('change');
-                                        actualizarCarrito();
-                                        cargarProductos();
+                                        actualizarCarrito(); // Esto llama a calcularTotales
+                                        // No es necesario recargar productos aquí a menos que el stock cambie en tiempo real
+                                        // cargarProductos();
                                     });
                                 } else {
                                     Swal.fire('Error', response.error || 'No se pudo registrar la venta', 'error');
@@ -908,25 +947,19 @@
                 }
 
 
-
+                // Función de utilidad para mostrar alertas flotantes
                 function showAlert(message, type = 'info', duration = 3000) {
                     const alertContainer = $('#alertContainer');
                     const alertId = 'alert-' + Date.now(); // ID único para cada alerta
 
-                    // Tipos válidos: success, info, warning, danger
                     const validTypes = ['success', 'info', 'warning', 'danger'];
                     const alertType = validTypes.includes(type) ? type : 'info';
 
-                    const iconMap = {
-                        success: 'check-circle',
-                        info: 'info-circle',
-                        warning: 'exclamation-triangle',
-                        danger: 'times-circle'
-                    };
+                    const iconMap = { success: 'check-circle', info: 'info-circle', warning: 'exclamation-triangle', danger: 'times-circle' };
                     const icon = iconMap[alertType];
 
                     const alertHTML = `
-                        <div id="${alertId}" class="alert alert-${alertType} alert-dismissible fade show" role="alert">
+                        <div id="${alertId}" class="alert alert-${alertType} alert-dismissible fade show m-3" role="alert" style="position: fixed; top: 60px; right: 10px; z-index: 1050; min-width: 250px;">
                             <i class="fas fa-${icon} mr-2"></i> ${message}
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
@@ -935,7 +968,6 @@
 
                     alertContainer.append(alertHTML);
 
-                    // Auto-cerrar después de la duración especificada
                     setTimeout(() => {
                         $(`#${alertId}`).fadeOut(500, function () { $(this).remove(); });
                     }, duration);
@@ -972,7 +1004,8 @@
                 /* Evitar saltos de altura por nombre largo */
             }
 
-            .product-card:hover {
+            .product-card:hover:not(.sin-stock) {
+                /* Apply hover only if not sin-stock */
                 transform: translateY(-5px) scale(1.02);
                 box-shadow: 0 10px 25px rgba(220, 53, 69, 0.4);
                 border-color: #dc3545;
@@ -981,8 +1014,8 @@
             .product-card.sin-stock {
                 opacity: 0.6;
                 cursor: not-allowed;
-                background-color: #6c757d;
-                /* Fondo gris para indicar inactivo */
+                background-color: #f8f9fa;
+                /* Lighter background for inactive */
             }
 
             .product-card.sin-stock:hover {
@@ -1023,6 +1056,81 @@
             .cart-item:last-child {
                 border-bottom: none !important;
                 /* Quitar borde del último item */
+            }
+
+            /* Gamer theme adjustments */
+            .gamer-card {
+                background-color: #343a40;
+                /* Dark background */
+                color: #f8f9fa;
+                /* Light text */
+                border: 1px solid #dc3545;
+                /* Red border */
+            }
+
+            .gamer-card .card-header {
+                background-color: #dc3545;
+                /* Red header */
+                color: #fff;
+                border-bottom: 1px solid #bd2130;
+                /* Darker red border */
+            }
+
+            .gamer-card .card-title {
+                color: #fff;
+                /* White title text */
+            }
+
+            .gamer-input {
+                background-color: #495057;
+                /* Darker input */
+                color: #f8f9fa;
+                /* Light text */
+                border: 1px solid #6c757d;
+                /* Gray border */
+            }
+
+            .gamer-input::placeholder {
+                color: #adb5bd;
+                /* Lighter placeholder */
+            }
+
+            .gamer-input:focus {
+                background-color: #495057;
+                color: #f8f9fa;
+                border-color: #dc3545;
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+            }
+
+            .gamer-btn {
+                background-color: #dc3545;
+                border-color: #dc3545;
+                color: #fff;
+                transition: background-color 0.2s ease, border-color 0.2s ease;
+            }
+
+            .gamer-btn:hover {
+                background-color: #c82333;
+                border-color: #bd2130;
+                color: #fff;
+            }
+
+            /* Override some bootstrap default styles if needed */
+            .table-sm td,
+            .table-sm th {
+                color: #f8f9fa;
+                /* Light text for table cells inside gamer card */
+            }
+
+            .custom-control-label {
+                color: #f8f9fa;
+                /* Light text for radio labels */
+            }
+
+            #clienteInfo {
+                background-color: #17a2b8;
+                /* Info color, adjust if needed */
+                border-color: #17a2b8;
             }
         </style>
 
