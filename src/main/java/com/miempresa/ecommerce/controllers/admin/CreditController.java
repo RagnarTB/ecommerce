@@ -1,8 +1,11 @@
 package com.miempresa.ecommerce.controllers.admin;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.miempresa.ecommerce.models.Credit;
@@ -17,6 +21,7 @@ import com.miempresa.ecommerce.models.Installment;
 import com.miempresa.ecommerce.services.CreditService;
 import com.miempresa.ecommerce.services.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -73,14 +78,17 @@ public class CreditController {
     }
 
     @PostMapping("/registrar-abono")
-    public String registrarAbono(
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> registrarAbono(
             @RequestParam Long creditoId,
             @RequestParam BigDecimal monto,
             @RequestParam String metodoPago,
             @RequestParam(required = false) String referencia,
-            RedirectAttributes redirectAttributes) {
+            HttpServletRequest request) {
 
         log.info("Registrando abono de {} al crédito {}", monto, creditoId);
+
+        Map<String, Object> response = new HashMap<>();
 
         try {
             String username = com.miempresa.ecommerce.security.SecurityUtils.getCurrentUsername();
@@ -91,13 +99,15 @@ public class CreditController {
                     com.miempresa.ecommerce.models.enums.MetodoPago.valueOf(metodoPago),
                     referencia, usuario);
 
-            redirectAttributes.addFlashAttribute("success", "Abono registrado");
+            response.put("success", true);
+            response.put("message", "Abono registrado correctamente");
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             log.error("Error al registrar abono: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
-
-        return "redirect:/admin/creditos/ver/" + creditoId;
     }
 }
