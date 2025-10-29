@@ -83,6 +83,43 @@
         </div>
     </section>
 
+    <!-- ✅ Botón PlayStation Flotante - Redes Sociales -->
+    <div class="playstation-container">
+        <div class="playstation-input">
+            <!-- CROSS (X) - Facebook -->
+            <div id="cross-input">
+                <div id="cross-title">FACEBOOK</div>
+                <button id="cross" type="button" th:data-url="${config['facebook_url']}" aria-label="Facebook">
+                    <p>x</p>
+                </button>
+            </div>
+
+            <!-- CIRCLE (O) - Instagram -->
+            <div id="circle-input">
+                <div id="circle-title">INSTAGRAM</div>
+                <button id="circle" type="button" th:data-url="${config['instagram_url']}" aria-label="Instagram">
+                    <div></div>
+                </button>
+            </div>
+
+            <!-- SQUARE - TikTok -->
+            <div id="square-input">
+                <div id="square-title">TIKTOK</div>
+                <button id="square" type="button" th:data-url="${config['tiktok_url']}" aria-label="TikTok">
+                    <div></div>
+                </button>
+            </div>
+
+            <!-- TRIANGLE - Discord -->
+            <div id="triangle-input">
+                <div id="triangle-title">DISCORD</div>
+                <button id="triangle" type="button" th:data-url="${config['discord_url']}" aria-label="Discord">
+                    <p>△</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ✅ Footer con información de contacto desde configuración -->
     <footer class="footer-gamer">
         <div class="container">
@@ -125,6 +162,9 @@
             </p>
         </div>
     </footer>
+
+    <!-- JavaScript para botón PlayStation -->
+    <script src="/js/web-gamer.js"></script>
 </body>
 
 </html>
