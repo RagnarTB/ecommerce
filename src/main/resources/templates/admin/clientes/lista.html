@@ -78,8 +78,8 @@
                                     </div>
                                     <div class="col-md-4">
                                         <button type="button" class="btn btn-success btn-block gamer-btn"
-                                            data-toggle="modal" data-target="#modalConsultarAPI">
-                                            <i class="fas fa-cloud-download-alt"></i> Consultar API (DNI/RUC)
+                                            data-toggle="modal" data-target="#modalCrearCliente">
+                                            <i class="fas fa-user-plus"></i> Crear Nuevo Cliente
                                         </button>
                                     </div>
                                 </div>
@@ -188,57 +188,104 @@
         <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
 
-    <!-- Modal Consultar API -->
-    <div class="modal fade" id="modalConsultarAPI" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+    <!-- Modal Crear Cliente -->
+    <div class="modal fade" id="modalCrearCliente" tabindex="-1">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content gamer-card">
                 <div class="modal-header bg-danger">
                     <h5 class="modal-title">
-                        <i class="fas fa-cloud-download-alt"></i> Consultar DNI/RUC
+                        <i class="fas fa-user-plus"></i> Crear Nuevo Cliente
                     </h5>
                     <button type="button" class="close text-white" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <div id="alertModal"></div>
+                <form id="formCrearCliente">
+                    <div class="modal-body">
+                        <div id="alertModalCliente"></div>
 
-                    <div class="form-group">
-                        <label for="documentoConsulta">
-                            <i class="fas fa-id-card text-danger"></i> Número de Documento
-                        </label>
-                        <input type="text" class="form-control form-control-lg gamer-input" id="documentoConsulta"
-                            placeholder="DNI (8 dígitos) o RUC (11 dígitos)" maxlength="11">
-                        <small class="form-text text-muted">
-                            Ingrese DNI o RUC para consultar en RENIEC/SUNAT
-                        </small>
-                    </div>
+                        <!-- Tipo y Número de Documento -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Tipo de Documento <span class="text-danger">*</span></label>
+                                    <select class="form-control gamer-input" id="tipoDocumento" name="tipoDocumento" required>
+                                        <option value="DNI">DNI</option>
+                                        <option value="RUC">RUC</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label>Número de Documento <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control gamer-input" id="numeroDocumento"
+                                               name="numeroDocumento" maxlength="11" required>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-info" id="btnAutocompletar">
+                                                <i class="fas fa-cloud-download-alt"></i> Consultar
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">DNI: 8 dígitos | RUC: 11 dígitos</small>
+                                </div>
+                            </div>
+                        </div>
 
-                    <!-- Resultado de la consulta -->
-                    <div id="resultadoConsulta" style="display: none;">
-                        <div class="alert alert-success">
-                            <h6><i class="fas fa-check-circle"></i> Cliente Encontrado</h6>
-                            <dl class="row mb-0">
-                                <dt class="col-sm-4">Documento:</dt>
-                                <dd class="col-sm-8" id="resultado-documento"></dd>
+                        <!-- Nombres y Apellidos (DNI) / Razón Social (RUC) -->
+                        <div class="row">
+                            <div class="col-md-6" id="grupoNombres">
+                                <div class="form-group">
+                                    <label>Nombres <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control gamer-input" id="nombres" name="nombres">
+                                </div>
+                            </div>
+                            <div class="col-md-6" id="grupoApellidos">
+                                <div class="form-group">
+                                    <label>Apellidos <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control gamer-input" id="apellidos" name="apellidos">
+                                </div>
+                            </div>
+                            <div class="col-md-12" id="grupoRazonSocial" style="display: none;">
+                                <div class="form-group">
+                                    <label>Razón Social <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control gamer-input" id="razonSocial" name="razonSocial">
+                                </div>
+                            </div>
+                        </div>
 
-                                <dt class="col-sm-4">Nombre:</dt>
-                                <dd class="col-sm-8" id="resultado-nombre"></dd>
-                            </dl>
+                        <!-- Email y Teléfono -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" class="form-control gamer-input" id="email" name="email">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Teléfono</label>
+                                    <input type="text" class="form-control gamer-input" id="telefono" name="telefono"
+                                           maxlength="15">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dirección -->
+                        <div class="form-group">
+                            <label>Dirección</label>
+                            <textarea class="form-control gamer-input" id="direccion" name="direccion" rows="2"></textarea>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times"></i> Cerrar
-                    </button>
-                    <button type="button" class="btn btn-success" id="btnConsultarAPI">
-                        <i class="fas fa-search"></i> Consultar
-                    </button>
-                    <a href="#" id="btnVerCliente" class="btn btn-primary" style="display: none;">
-                        <i class="fas fa-eye"></i> Ver Cliente
-                    </a>
-                </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success gamer-btn">
+                            <i class="fas fa-check"></i> Crear Cliente
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -246,80 +293,156 @@
     <!-- Scripts -->
     <div th:replace="~{fragments/scripts :: scripts}"></div>
 
-    <!-- Script Consulta API -->
+    <!-- Script Crear Cliente -->
     <script>
         $(document).ready(function () {
-            // Consultar API
-            $('#btnConsultarAPI').on('click', function () {
-                const documento = $('#documentoConsulta').val().trim();
+            // Cambiar campos según tipo de documento
+            $('#tipoDocumento').on('change', function () {
+                const tipo = $(this).val();
+                if (tipo === 'DNI') {
+                    $('#grupoNombres, #grupoApellidos').show();
+                    $('#grupoRazonSocial').hide();
+                    $('#numeroDocumento').attr('maxlength', '8').attr('placeholder', '8 dígitos');
+                    $('#nombres, #apellidos').prop('required', true);
+                    $('#razonSocial').prop('required', false);
+                } else {
+                    $('#grupoNombres, #grupoApellidos').hide();
+                    $('#grupoRazonSocial').show();
+                    $('#numeroDocumento').attr('maxlength', '11').attr('placeholder', '11 dígitos');
+                    $('#razonSocial').prop('required', true);
+                    $('#nombres, #apellidos').prop('required', false);
+                }
+            });
+
+            // Autocompletar con API Decolecta
+            $('#btnAutocompletar').on('click', function () {
+                const documento = $('#numeroDocumento').val().trim();
+                const tipo = $('#tipoDocumento').val();
 
                 if (!documento) {
-                    showAlertModal('Ingrese un documento', 'warning');
+                    showAlertModalCliente('Ingrese un número de documento', 'warning');
                     return;
                 }
 
-                if (documento.length !== 8 && documento.length !== 11) {
-                    showAlertModal('Ingrese un DNI (8 dígitos) o RUC (11 dígitos) válido', 'warning');
+                const longitudEsperada = tipo === 'DNI' ? 8 : 11;
+                if (documento.length !== longitudEsperada) {
+                    showAlertModalCliente(`${tipo} debe tener ${longitudEsperada} dígitos`, 'warning');
                     return;
                 }
 
-                // Mostrar loading
                 const btn = $(this);
-                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Consultando...');
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
 
-                // Llamada AJAX
                 $.ajax({
-                    url: '/admin/clientes/buscar',
-                    method: 'GET',
-                    data: { documento: documento },
+                    url: '/api/clientes/obtener-o-crear',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ numeroDocumento: documento }),
+                    beforeSend: function (xhr) {
+                        const token = $("meta[name='_csrf']").attr("content");
+                        const header = $("meta[name='_csrf_header']").attr("content");
+                        if (token && header) {
+                            xhr.setRequestHeader(header, token);
+                        }
+                    },
                     success: function (response) {
-                        btn.prop('disabled', false).html('<i class="fas fa-search"></i> Consultar');
+                        btn.prop('disabled', false).html('<i class="fas fa-cloud-download-alt"></i> Consultar');
 
-                        if (response.success) {
-                            // Mostrar resultado
-                            $('#resultado-documento').text(response.cliente.tipoDocumento + ': ' + response.cliente.numeroDocumento);
-                            $('#resultado-nombre').text(response.cliente.nombre);
-                            $('#resultadoConsulta').show();
+                        if (response.success && response.data) {
+                            const cliente = response.data;
 
-                            // Mostrar botón para ver cliente
-                            $('#btnVerCliente')
-                                .attr('href', '/admin/clientes/ver/' + response.cliente.id)
-                                .show();
+                            // Autocompletar campos
+                            if (tipo === 'DNI') {
+                                const nombreCompleto = cliente.nombreCompleto || '';
+                                const partes = nombreCompleto.split(' ');
+                                const apellidos = partes.slice(0, 2).join(' ');
+                                const nombres = partes.slice(2).join(' ');
+                                $('#apellidos').val(apellidos);
+                                $('#nombres').val(nombres);
+                            } else {
+                                $('#razonSocial').val(cliente.razonSocial || '');
+                            }
 
-                            showAlertModal('Cliente encontrado/creado correctamente', 'success');
+                            $('#direccion').val(cliente.direccion || '');
+                            showAlertModalCliente('Datos obtenidos de API. Verifique y complete', 'success');
                         } else {
-                            showAlertModal(response.error || 'No se encontró el documento', 'error');
+                            showAlertModalCliente('No se encontraron datos. Complete manualmente', 'warning');
+                        }
+                    },
+                    error: function () {
+                        btn.prop('disabled', false).html('<i class="fas fa-cloud-download-alt"></i> Consultar');
+                        showAlertModalCliente('Error al consultar API. Complete manualmente', 'error');
+                    }
+                });
+            });
+
+            // Enviar formulario
+            $('#formCrearCliente').on('submit', function (e) {
+                e.preventDefault();
+
+                const formData = {
+                    tipoDocumento: $('#tipoDocumento').val(),
+                    numeroDocumento: $('#numeroDocumento').val(),
+                    nombres: $('#nombres').val() || null,
+                    apellidos: $('#apellidos').val() || null,
+                    razonSocial: $('#razonSocial').val() || null,
+                    email: $('#email').val() || null,
+                    telefono: $('#telefono').val() || null,
+                    direccion: $('#direccion').val() || null
+                };
+
+                $.ajax({
+                    url: '/admin/clientes/crear',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    beforeSend: function (xhr) {
+                        const token = $("meta[name='_csrf']").attr("content");
+                        const header = $("meta[name='_csrf_header']").attr("content");
+                        if (token && header) {
+                            xhr.setRequestHeader(header, token);
+                        }
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            $('#modalCrearCliente').modal('hide');
+                            Swal.fire({
+                                title: '¡Cliente Creado!',
+                                text: 'El cliente se creó correctamente',
+                                icon: 'success'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            showAlertModalCliente(response.error || 'Error al crear cliente', 'error');
                         }
                     },
                     error: function (xhr) {
-                        btn.prop('disabled', false).html('<i class="fas fa-search"></i> Consultar');
-                        showAlertModal(xhr.responseJSON?.error || 'Error al consultar API', 'error');
+                        showAlertModalCliente(xhr.responseJSON?.error || 'Error al crear el cliente', 'error');
                     }
                 });
             });
 
             // Limpiar modal al cerrar
-            $('#modalConsultarAPI').on('hidden.bs.modal', function () {
-                $('#documentoConsulta').val('');
-                $('#resultadoConsulta').hide();
-                $('#btnVerCliente').hide();
-                $('#alertModal').html('');
+            $('#modalCrearCliente').on('hidden.bs.modal', function () {
+                $('#formCrearCliente')[0].reset();
+                $('#tipoDocumento').trigger('change');
+                $('#alertModalCliente').html('');
             });
 
-            function showAlertModal(message, type) {
+            function showAlertModalCliente(message, type) {
                 const alertClass = type === 'success' ? 'alert-success' :
-                    type === 'warning' ? 'alert-warning' :
-                        'alert-danger';
+                    type === 'warning' ? 'alert-warning' : 'alert-danger';
+                const iconClass = type === 'success' ? 'check-circle' :
+                    type === 'warning' ? 'exclamation-triangle' : 'times-circle';
 
                 const alertHTML = `
-            <div class="alert ${alertClass} alert-dismissible fade show">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i>
-                ${message}
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-            </div>
-        `;
-
-                $('#alertModal').html(alertHTML);
+                    <div class="alert ${alertClass} alert-dismissible fade show">
+                        <i class="fas fa-${iconClass}"></i> ${message}
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+                `;
+                $('#alertModalCliente').html(alertHTML);
             }
         });
     </script>

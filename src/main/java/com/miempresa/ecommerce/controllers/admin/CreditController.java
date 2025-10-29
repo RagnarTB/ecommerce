@@ -39,7 +39,7 @@ public class CreditController {
         BigDecimal deudaTotal = creditService.obtenerTotalDeudaPendiente();
         List<Installment> cuotasVencidas = creditService.obtenerCuotasVencidas();
 
-        model.addAttribute("creditosActivos", creditosActivos);
+        model.addAttribute("creditos", creditosActivos); // ✅ Corregido: cambiar a "creditos" para coincidir con la vista
         model.addAttribute("deudaTotal", deudaTotal != null ? deudaTotal : BigDecimal.ZERO);
         model.addAttribute("cuotasVencidasCount", cuotasVencidas.size());
         model.addAttribute("titulo", "Gestión de Créditos");

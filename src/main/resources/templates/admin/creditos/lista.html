@@ -338,6 +338,14 @@
                     url: '/admin/creditos/registrar-abono',
                     method: 'POST',
                     data: formData,
+                    // ✅ Agregar token CSRF
+                    beforeSend: function (xhr) {
+                        const token = $("meta[name='_csrf']").attr("content");
+                        const header = $("meta[name='_csrf_header']").attr("content");
+                        if (token && header) {
+                            xhr.setRequestHeader(header, token);
+                        }
+                    },
                     success: function (response) {
                         $('#modalAbono').modal('hide');
                         Swal.fire({

@@ -14,6 +14,8 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
+import com.miempresa.ecommerce.models.Credit;
+import com.miempresa.ecommerce.models.Product;
 import com.miempresa.ecommerce.models.Sale;
 import com.miempresa.ecommerce.models.SaleDetail;
 
@@ -360,8 +362,225 @@ public class PdfGeneratorUtil {
     }
 
     /**
+     * ✅ NUEVO: Genera PDF de reporte de inventario
+     *
+     * @param productos     Lista de productos
+     * @param empresaNombre Nombre de la empresa
+     * @param empresaRuc    RUC de la empresa
+     * @return Array de bytes del PDF generado
+     */
+    public static byte[] generateReporteInventarioPdf(List<Product> productos,
+            String empresaNombre, String empresaRuc) throws IOException {
+
+        log.info("Generando reporte PDF de inventario con {} productos", productos.size());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter writer = new PdfWriter(baos);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            // Encabezado
+            document.add(new Paragraph(empresaNombre)
+                    .setFontSize(16)
+                    .setBold()
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.add(new Paragraph("RUC: " + empresaRuc)
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.add(new Paragraph("\n"));
+
+            document.add(new Paragraph("REPORTE DE INVENTARIO")
+                    .setFontSize(14)
+                    .setBold()
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.add(new Paragraph("Fecha: " + LocalDateTime.now().format(DATE_FORMAT))
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.add(new Paragraph("\n"));
+
+            // Tabla de productos
+            float[] columnWidths = { 3f, 2f, 2f, 1.5f, 2f, 2f };
+            Table table = new Table(columnWidths);
+            table.setWidth(520);
+
+            // Encabezados
+            table.addHeaderCell(new Paragraph("Producto").setBold());
+            table.addHeaderCell(new Paragraph("SKU").setBold());
+            table.addHeaderCell(new Paragraph("Categoría").setBold());
+            table.addHeaderCell(new Paragraph("Stock").setBold());
+            table.addHeaderCell(new Paragraph("Precio").setBold());
+            table.addHeaderCell(new Paragraph("Valor Total").setBold());
+
+            // Datos
+            BigDecimal valorTotalInventario = BigDecimal.ZERO;
+
+            for (Product producto : productos) {
+                if (producto == null)
+                    continue;
+
+                table.addCell(producto.getNombre() != null ? producto.getNombre() : "");
+                table.addCell(producto.getCodigoSku() != null ? producto.getCodigoSku() : "");
+                table.addCell(
+                        producto.getCategoria() != null && producto.getCategoria().getNombre() != null
+                                ? producto.getCategoria().getNombre()
+                                : "");
+
+                Integer stock = producto.getStockActual() != null ? producto.getStockActual() : 0;
+                table.addCell(stock.toString());
+
+                BigDecimal precio = producto.getPrecioActual() != null ? producto.getPrecioActual()
+                        : BigDecimal.ZERO;
+                table.addCell("S/ " + precio.setScale(2, java.math.RoundingMode.HALF_UP).toString());
+
+                BigDecimal valorTotal = precio.multiply(new BigDecimal(stock));
+                valorTotalInventario = valorTotalInventario.add(valorTotal);
+                table.addCell("S/ " + valorTotal.setScale(2, java.math.RoundingMode.HALF_UP).toString());
+            }
+
+            document.add(table);
+
+            // Total
+            document.add(new Paragraph("\n"));
+            document.add(new Paragraph("Valor Total del Inventario: S/ "
+                    + valorTotalInventario.setScale(2, java.math.RoundingMode.HALF_UP).toString())
+                    .setFontSize(12)
+                    .setBold()
+                    .setTextAlignment(TextAlignment.RIGHT));
+
+            document.add(new Paragraph("Total de Productos: " + productos.size())
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.RIGHT));
+
+            document.close();
+
+            log.info("Reporte PDF de inventario generado exitosamente");
+
+        } catch (Exception e) {
+            log.error("Error al generar reporte PDF de inventario: {}", e.getMessage(), e);
+            throw new IOException("Error al generar reporte PDF de inventario", e);
+        }
+
+        return baos.toByteArray();
+    }
+
+    /**
+     * ✅ NUEVO: Genera PDF de reporte de créditos
+     *
+     * @param creditos       Lista de créditos activos
+     * @param deudaTotal     Deuda total pendiente
+     * @param cuotasVencidas Cantidad de cuotas vencidas
+     * @param empresaNombre  Nombre de la empresa
+     * @param empresaRuc     RUC de la empresa
+     * @return Array de bytes del PDF generado
+     */
+    public static byte[] generateReporteCreditosPdf(List<Credit> creditos,
+            BigDecimal deudaTotal, int cuotasVencidas,
+            String empresaNombre, String empresaRuc) throws IOException {
+
+        log.info("Generando reporte PDF de créditos con {} créditos activos", creditos.size());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter writer = new PdfWriter(baos);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            // Encabezado
+            document.add(new Paragraph(empresaNombre)
+                    .setFontSize(16)
+                    .setBold()
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.add(new Paragraph("RUC: " + empresaRuc)
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.add(new Paragraph("\n"));
+
+            document.add(new Paragraph("REPORTE DE CRÉDITOS Y COBRANZAS")
+                    .setFontSize(14)
+                    .setBold()
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.add(new Paragraph("Fecha: " + LocalDateTime.now().format(DATE_FORMAT))
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.add(new Paragraph("\n"));
+
+            // Resumen
+            document.add(new Paragraph("RESUMEN EJECUTIVO")
+                    .setFontSize(12)
+                    .setBold());
+
+            document.add(new Paragraph("Total de Créditos Activos: " + creditos.size()));
+            document.add(new Paragraph("Deuda Total Pendiente: S/ "
+                    + (deudaTotal != null ? deudaTotal.setScale(2, java.math.RoundingMode.HALF_UP).toString()
+                            : "0.00")));
+            document.add(new Paragraph("Cuotas Vencidas: " + cuotasVencidas)
+                    .setFontColor(cuotasVencidas > 0 ? com.itextpdf.kernel.colors.ColorConstants.RED : null));
+
+            document.add(new Paragraph("\n"));
+
+            // Tabla de créditos
+            float[] columnWidths = { 3f, 2f, 2f, 2f, 1.5f };
+            Table table = new Table(columnWidths);
+            table.setWidth(520);
+
+            // Encabezados
+            table.addHeaderCell(new Paragraph("Cliente").setBold());
+            table.addHeaderCell(new Paragraph("Venta").setBold());
+            table.addHeaderCell(new Paragraph("Monto Total").setBold());
+            table.addHeaderCell(new Paragraph("Pendiente").setBold());
+            table.addHeaderCell(new Paragraph("Cuotas").setBold());
+
+            // Datos
+            for (Credit credito : creditos) {
+                if (credito == null || credito.getCliente() == null)
+                    continue;
+
+                table.addCell(credito.getCliente().getNombreCompleto() != null
+                        ? credito.getCliente().getNombreCompleto()
+                        : "");
+                table.addCell(credito.getVenta() != null && credito.getVenta().getNumeroVenta() != null
+                        ? credito.getVenta().getNumeroVenta()
+                        : "");
+
+                BigDecimal montoTotal = credito.getMontoTotal() != null ? credito.getMontoTotal() : BigDecimal.ZERO;
+                table.addCell("S/ " + montoTotal.setScale(2, java.math.RoundingMode.HALF_UP).toString());
+
+                BigDecimal montoPendiente = credito.getMontoPendiente() != null ? credito.getMontoPendiente()
+                        : BigDecimal.ZERO;
+                table.addCell("S/ " + montoPendiente.setScale(2, java.math.RoundingMode.HALF_UP).toString());
+
+                table.addCell((credito.getCuotasPagadas() != null ? credito.getCuotasPagadas() : 0) + " / "
+                        + (credito.getNumCuotas() != null ? credito.getNumCuotas() : 0));
+            }
+
+            document.add(table);
+
+            document.close();
+
+            log.info("Reporte PDF de créditos generado exitosamente");
+
+        } catch (Exception e) {
+            log.error("Error al generar reporte PDF de créditos: {}", e.getMessage(), e);
+            throw new IOException("Error al generar reporte PDF de créditos", e);
+        }
+
+        return baos.toByteArray();
+    }
+
+    /**
      * Genera nombre de archivo único para un reporte
-     * 
+     *
      * @param tipoReporte Tipo de reporte (ventas, productos, etc.)
      * @return Nombre de archivo con timestamp
      */

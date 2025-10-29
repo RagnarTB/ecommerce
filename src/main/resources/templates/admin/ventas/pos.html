@@ -142,6 +142,12 @@
                                             </td>
                                         </tr>
                                         <!-- === FIN INTEGRACIÓN === -->
+                                        <tr>
+                                            <td>IGV (18%):</td>
+                                            <td class="text-right">
+                                                <strong>S/ <span id="igv">0.00</span></strong>
+                                            </td>
+                                        </tr>
                                         <tr class="bg-light">
                                             <td>
                                                 <h4><strong>TOTAL:</strong></h4>
@@ -576,14 +582,26 @@
                 };
 
                 function calcularTotales() {
+                    // Subtotal de productos
                     const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
                     const descuento = parseFloat($('#descuento').val()) || 0;
                     const costoEnvio = parseFloat($('#costoEnvio').val()) || 0;
-                    let total = subtotal - descuento + costoEnvio;
-                    total = Math.max(0, total); // Asegurar que el total no sea negativo
 
+                    // Base imponible (subtotal - descuento + envío)
+                    let baseImponible = subtotal - descuento + costoEnvio;
+                    baseImponible = Math.max(0, baseImponible); // Asegurar que no sea negativo
+
+                    // IGV (18% de la base imponible)
+                    const igv = baseImponible * 0.18;
+
+                    // Total con IGV incluido
+                    const total = baseImponible + igv;
+
+                    // Actualizar valores en la vista
                     $('#subtotal').text(subtotal.toFixed(2));
+                    $('#igv').text(igv.toFixed(2));
                     $('#total').text(total.toFixed(2));
+
                     calcularVuelto(); // Recalcular vuelto cada vez que cambie el total
                 }
 
@@ -746,7 +764,13 @@
 
                         // Validar crédito
                         if (tipoPago === 'CREDITO') {
-                            // La validación de cliente ya se hizo antes
+                            // ✅ VALIDACIÓN CRÍTICA: Exigir cliente real para crédito
+                            if (!clienteSeleccionado || !clienteSeleccionado.id) {
+                                showAlert('Para ventas a crédito debe registrar un cliente. Por favor, busque o registre el cliente primero.', 'error');
+                                $('#clienteDocumento').focus();
+                                return;
+                            }
+
                             const numCuotas = parseInt($('#numCuotas').val());
                             if (isNaN(numCuotas) || numCuotas < 1 || numCuotas > 24) { // Validar NaN
                                 showAlert('Ingrese un número de cuotas válido (1-24)', 'warning');

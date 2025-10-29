@@ -1,34 +1,56 @@
 <!DOCTYPE html>
-<html lang="es" class="dark-mode">
+<html lang="es" class="dark-mode" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
-    <title>Inicio - Ecommerce Gamer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ✅ Usar nombre de empresa desde configuración -->
+    <title th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Inicio - Ecommerce'}">Inicio - Ecommerce</title>
     <link rel="stylesheet" href="/css/web-gamer.css">
 </head>
 
 <body>
+    <!-- ✅ Navbar con configuración dinámica -->
     <nav class="navbar-gamer">
         <div class="container">
-            <a href="/" class="navbar-brand">Ecommerce Gamer</a>
+            <!-- Logo desde configuración o texto por defecto -->
+            <a href="/" class="navbar-brand">
+                <img th:if="${config['LOGO_URL'] != null}"
+                     th:src="@{${config['LOGO_URL']}}"
+                     alt="Logo"
+                     style="height: 40px; vertical-align: middle; margin-right: 10px;">
+                <span th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Ecommerce'}">Ecommerce</span>
+            </a>
             <div class="search-box">
                 <form action="/catalogo" method="get">
-                    <input type="text" name="busqueda" class="search-input" placeholder="Buscar...">
+                    <input type="text" name="busqueda" class="search-input" placeholder="Buscar productos...">
                     <button type="submit" class="search-btn">🔍</button>
                 </form>
+            </div>
+            <div>
+                <a href="/catalogo" class="btn-outline-gamer" style="margin-left: 15px;">Ver Catálogo</a>
             </div>
         </div>
     </nav>
 
+    <!-- ✅ Hero Section con configuración -->
     <section class="hero-section">
         <div class="hero-content">
-            <h1 class="hero-title">Bienvenido al Mundo Gamer</h1>
-            <p class="hero-subtitle">Explora los productos más épicos</p>
+            <h1 class="hero-title" th:text="${config['BANNER_TITULO_1'] != null ? config['BANNER_TITULO_1'] : 'Bienvenido a Nuestra Tienda'}">
+                Bienvenido a Nuestra Tienda
+            </h1>
+            <p class="hero-subtitle" th:text="${config['BANNER_SUBTITULO'] != null ? config['BANNER_SUBTITULO'] : 'Los mejores productos al mejor precio'}">
+                Los mejores productos al mejor precio
+            </p>
             <a href="/catalogo" class="btn-gamer">Ver Catálogo</a>
         </div>
-        <div class="hero-3d">
+        <!-- Banner principal o iframe 3D -->
+        <div class="hero-3d" th:if="${config['BANNER_1_URL'] == null}">
             <iframe src="https://my.spline.design/nintendoswitchcopy-2yhH5E9ykmD7XxrXzMr3cOYc/" frameborder="0"
                 width="100%" height="100%"></iframe>
+        </div>
+        <div class="hero-image" th:if="${config['BANNER_1_URL'] != null}">
+            <img th:src="@{${config['BANNER_1_URL']}}" alt="Banner Principal" style="width: 100%; height: auto; border-radius: 10px;">
         </div>
     </section>
 
@@ -61,9 +83,47 @@
         </div>
     </section>
 
+    <!-- ✅ Footer con información de contacto desde configuración -->
     <footer class="footer-gamer">
-        <div class="footer-title">Ecommerce Gamer</div>
-        <div class="footer-bottom">&copy; 2025 Todos los derechos reservados</div>
+        <div class="container">
+            <div class="footer-content">
+                <!-- Información de empresa -->
+                <div class="footer-section">
+                    <h4 class="footer-title" th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Ecommerce'}">Ecommerce</h4>
+                    <p th:if="${config['EMPRESA_DIRECCION'] != null}" th:text="${config['EMPRESA_DIRECCION']}"></p>
+                    <p th:if="${config['EMPRESA_RUC'] != null}">RUC: <span th:text="${config['EMPRESA_RUC']}"></span></p>
+                </div>
+
+                <!-- Contacto -->
+                <div class="footer-section" th:if="${config['CONTACTO_TELEFONO'] != null || config['CONTACTO_EMAIL'] != null}">
+                    <h4 class="footer-title">Contacto</h4>
+                    <p th:if="${config['CONTACTO_TELEFONO'] != null}">
+                        📞 <span th:text="${config['CONTACTO_TELEFONO']}"></span>
+                    </p>
+                    <p th:if="${config['CONTACTO_EMAIL'] != null}">
+                        ✉️ <span th:text="${config['CONTACTO_EMAIL']}"></span>
+                    </p>
+                    <p th:if="${config['CONTACTO_WHATSAPP'] != null}">
+                        💬 WhatsApp: <a th:href="'https://wa.me/' + ${config['CONTACTO_WHATSAPP']}"
+                                        target="_blank"
+                                        style="color: #25D366;"
+                                        th:text="${config['CONTACTO_WHATSAPP']}"></a>
+                    </p>
+                </div>
+
+                <!-- Horarios -->
+                <div class="footer-section" th:if="${config['EMPRESA_HORARIOS'] != null}">
+                    <h4 class="footer-title">Horarios de Atención</h4>
+                    <p th:text="${config['EMPRESA_HORARIOS']}"></p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span th:text="${#temporals.year(#temporals.createNow())}">2025</span>
+               <span th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Ecommerce'}"></span> -
+               Todos los derechos reservados
+            </p>
+        </div>
     </footer>
 </body>
 
