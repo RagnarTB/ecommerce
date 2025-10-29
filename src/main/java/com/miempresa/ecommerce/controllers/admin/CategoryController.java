@@ -140,21 +140,16 @@ public class CategoryController {
         return "redirect:/admin/categorias";
     }
 
-    // Método ELIMINAR (usualmente llama a cambiarEstado para borrado lógico)
-    /*
-     * @GetMapping("/eliminar/{id}")
-     * public String eliminar(@PathVariable Long id, RedirectAttributes
-     * redirectAttributes) {
-     * try {
-     * categoryService.eliminar(id); // Llama a cambiarEstado(id, false)
-     * internamente
-     * redirectAttributes.addFlashAttribute("success",
-     * "Categoría eliminada (desactivada) correctamente");
-     * } catch (Exception e) {
-     * log.error("Error al eliminar categoría ID {}: {}", id, e.getMessage());
-     * redirectAttributes.addFlashAttribute("error", e.getMessage());
-     * }
-     * return "redirect:/admin/categorias";
-     * }
-     */
+    // Método ELIMINAR (borrado lógico con validación de productos asociados)
+    @GetMapping("/eliminar/{id}")
+    public String eliminar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            categoryService.eliminar(id); // Llama a cambiarEstado(id, false) con validación
+            redirectAttributes.addFlashAttribute("success", "Categoría eliminada correctamente");
+        } catch (Exception e) {
+            log.error("Error al eliminar categoría ID {}: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/categorias";
+    }
 }
