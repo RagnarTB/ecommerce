@@ -89,4 +89,17 @@ public interface CustomerService {
     long contarActivos();
 
     Customer obtenerClienteGenerico();
+
+    /**
+     * Obtiene o crea un cliente desde datos del formulario web
+     *
+     * @param documento Número de documento
+     * @param nombres   Nombres del cliente
+     * @param apellidos Apellidos del cliente
+     * @param telefono  Teléfono del cliente
+     * @param email     Email del cliente
+     * @return Cliente encontrado o creado
+     */
+    Customer obtenerOCrearDesdeWeb(String documento, String nombres, String apellidos,
+            String telefono, String email);
 }
