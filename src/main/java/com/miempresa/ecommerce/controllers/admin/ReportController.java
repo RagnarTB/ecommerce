@@ -73,14 +73,41 @@ public class ReportController {
     public String reporteVentas(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
+            @RequestParam(required = false) String periodo,
             Model model) {
+
+        // ✅ Procesar período si se especifica
+        LocalDateTime ahora = LocalDateTime.now();
+
+        if (periodo != null) {
+            switch (periodo) {
+                case "hoy":
+                    fechaInicio = ahora.withHour(0).withMinute(0).withSecond(0);
+                    fechaFin = ahora;
+                    break;
+                case "ayer":
+                    fechaInicio = ahora.minusDays(1).withHour(0).withMinute(0).withSecond(0);
+                    fechaFin = ahora.minusDays(1).withHour(23).withMinute(59).withSecond(59);
+                    break;
+                case "semana":
+                    fechaInicio = ahora.minusDays(7).withHour(0).withMinute(0).withSecond(0);
+                    fechaFin = ahora;
+                    break;
+                case "mes":
+                    fechaInicio = ahora.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+                    fechaFin = ahora;
+                    break;
+                default:
+                    break;
+            }
+        }
 
         // Valores por defecto: mes actual
         if (fechaInicio == null) {
-            fechaInicio = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+            fechaInicio = ahora.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
         }
         if (fechaFin == null) {
-            fechaFin = LocalDateTime.now();
+            fechaFin = ahora;
         }
 
         log.debug("Mostrando reporte de ventas: {} - {}", fechaInicio, fechaFin);
@@ -202,6 +229,46 @@ public class ReportController {
         return "admin/reportes/productos";
     }
 
+    /**
+     * ✅ NUEVO: Genera PDF de inventario completo
+     *
+     * URL: GET /admin/reportes/productos/pdf
+     * Retorna: PDF para descargar
+     */
+    @GetMapping("/productos/pdf")
+    public ResponseEntity<byte[]> generarPdfInventario() {
+        try {
+            log.info("Generando PDF de inventario completo");
+
+            // Obtener todos los productos activos
+            var productos = productService.obtenerActivos();
+
+            // Generar PDF usando PdfGeneratorUtil
+            byte[] pdfBytes = PdfGeneratorUtil.generateReporteInventarioPdf(
+                    productos,
+                    empresaConfig.getNombre(),
+                    empresaConfig.getRuc());
+
+            // Configurar headers de respuesta
+            String nombreArchivo = PdfGeneratorUtil.generarNombreArchivo("inventario");
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", nombreArchivo);
+
+            log.info("Reporte PDF de inventario generado exitosamente: {} productos", productos.size());
+
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+
+        } catch (IOException e) {
+            log.error("Error al generar PDF de inventario: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e) {
+            log.error("Error inesperado al generar PDF de inventario: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     // ========================================
     // REPORTE DE CRÉDITOS
     // ========================================
@@ -222,6 +289,50 @@ public class ReportController {
         model.addAttribute("titulo", "Reporte de Créditos");
 
         return "admin/reportes/creditos";
+    }
+
+    /**
+     * ✅ NUEVO: Genera PDF de reporte de créditos
+     *
+     * URL: GET /admin/reportes/creditos/pdf
+     * Retorna: PDF para descargar
+     */
+    @GetMapping("/creditos/pdf")
+    public ResponseEntity<byte[]> generarPdfCreditos() {
+        try {
+            log.info("Generando PDF de reporte de créditos");
+
+            // Obtener datos
+            var creditos = creditService.obtenerActivos();
+            var deudaTotal = creditService.obtenerTotalDeudaPendiente();
+            var cuotasVencidas = creditService.obtenerCuotasVencidas();
+
+            // Generar PDF usando PdfGeneratorUtil
+            byte[] pdfBytes = PdfGeneratorUtil.generateReporteCreditosPdf(
+                    creditos,
+                    deudaTotal,
+                    cuotasVencidas.size(),
+                    empresaConfig.getNombre(),
+                    empresaConfig.getRuc());
+
+            // Configurar headers de respuesta
+            String nombreArchivo = PdfGeneratorUtil.generarNombreArchivo("creditos");
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", nombreArchivo);
+
+            log.info("Reporte PDF de créditos generado exitosamente");
+
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+
+        } catch (IOException e) {
+            log.error("Error al generar PDF de créditos: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e) {
+            log.error("Error inesperado al generar PDF de créditos: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
 
