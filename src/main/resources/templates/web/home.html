@@ -5,7 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- ✅ Usar nombre de empresa desde configuración -->
-    <title th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Inicio - Ecommerce'}">Inicio - Ecommerce</title>
+    <title th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Inicio - Ecommerce'}">Inicio - Ecommerce</title>
+
+    <!-- SEO Meta Tags -->
+    <meta th:if="${config['meta_description']}" name="description" th:content="${config['meta_description']}">
+    <meta th:if="${config['meta_keywords']}" name="keywords" th:content="${config['meta_keywords']}">
+
     <link rel="stylesheet" href="/css/web-gamer.css">
 </head>
 
@@ -15,11 +20,11 @@
         <div class="container">
             <!-- Logo desde configuración o texto por defecto -->
             <a href="/" class="navbar-brand">
-                <img th:if="${config['LOGO_URL'] != null}"
-                     th:src="@{${config['LOGO_URL']}}"
+                <img th:if="${config['logo_url'] != null}"
+                     th:src="@{${config['logo_url']}}"
                      alt="Logo"
                      style="height: 40px; vertical-align: middle; margin-right: 10px;">
-                <span th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Ecommerce'}">Ecommerce</span>
+                <span th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce</span>
             </a>
             <div class="search-box">
                 <form action="/catalogo" method="get">
@@ -36,21 +41,21 @@
     <!-- ✅ Hero Section con configuración -->
     <section class="hero-section">
         <div class="hero-content">
-            <h1 class="hero-title" th:text="${config['BANNER_TITULO_1'] != null ? config['BANNER_TITULO_1'] : 'Bienvenido a Nuestra Tienda'}">
+            <h1 class="hero-title" th:text="${config['texto_bienvenida'] != null ? config['texto_bienvenida'] : 'Bienvenido a Nuestra Tienda'}">
                 Bienvenido a Nuestra Tienda
             </h1>
-            <p class="hero-subtitle" th:text="${config['BANNER_SUBTITULO'] != null ? config['BANNER_SUBTITULO'] : 'Los mejores productos al mejor precio'}">
+            <p class="hero-subtitle" th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Los mejores productos al mejor precio'}">
                 Los mejores productos al mejor precio
             </p>
             <a href="/catalogo" class="btn-gamer">Ver Catálogo</a>
         </div>
         <!-- Banner principal o iframe 3D -->
-        <div class="hero-3d" th:if="${config['BANNER_1_URL'] == null}">
+        <div class="hero-3d" th:if="${config['banner_url'] == null}">
             <iframe src="https://my.spline.design/nintendoswitchcopy-2yhH5E9ykmD7XxrXzMr3cOYc/" frameborder="0"
                 width="100%" height="100%"></iframe>
         </div>
-        <div class="hero-image" th:if="${config['BANNER_1_URL'] != null}">
-            <img th:src="@{${config['BANNER_1_URL']}}" alt="Banner Principal" style="width: 100%; height: auto; border-radius: 10px;">
+        <div class="hero-image" th:if="${config['banner_url'] != null}">
+            <img th:src="@{${config['banner_url']}}" alt="Banner Principal" style="width: 100%; height: auto; border-radius: 10px;">
         </div>
     </section>
 
@@ -126,38 +131,37 @@
             <div class="footer-content">
                 <!-- Información de empresa -->
                 <div class="footer-section">
-                    <h4 class="footer-title" th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Ecommerce'}">Ecommerce</h4>
-                    <p th:if="${config['EMPRESA_DIRECCION'] != null}" th:text="${config['EMPRESA_DIRECCION']}"></p>
-                    <p th:if="${config['EMPRESA_RUC'] != null}">RUC: <span th:text="${config['EMPRESA_RUC']}"></span></p>
+                    <h4 class="footer-title" th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce</h4>
+                    <p th:if="${config['direccion'] != null}" th:text="${config['direccion']}"></p>
                 </div>
 
                 <!-- Contacto -->
-                <div class="footer-section" th:if="${config['CONTACTO_TELEFONO'] != null || config['CONTACTO_EMAIL'] != null}">
+                <div class="footer-section" th:if="${config['telefono'] != null || config['email'] != null || config['whatsapp'] != null}">
                     <h4 class="footer-title">Contacto</h4>
-                    <p th:if="${config['CONTACTO_TELEFONO'] != null}">
-                        📞 <span th:text="${config['CONTACTO_TELEFONO']}"></span>
+                    <p th:if="${config['telefono'] != null}">
+                        📞 <span th:text="${config['telefono']}"></span>
                     </p>
-                    <p th:if="${config['CONTACTO_EMAIL'] != null}">
-                        ✉️ <span th:text="${config['CONTACTO_EMAIL']}"></span>
+                    <p th:if="${config['email'] != null}">
+                        ✉️ <span th:text="${config['email']}"></span>
                     </p>
-                    <p th:if="${config['CONTACTO_WHATSAPP'] != null}">
-                        💬 WhatsApp: <a th:href="'https://wa.me/' + ${config['CONTACTO_WHATSAPP']}"
+                    <p th:if="${config['whatsapp'] != null}">
+                        💬 WhatsApp: <a th:href="'https://wa.me/' + ${config['whatsapp']}"
                                         target="_blank"
                                         style="color: #25D366;"
-                                        th:text="${config['CONTACTO_WHATSAPP']}"></a>
+                                        th:text="${config['whatsapp']}"></a>
                     </p>
                 </div>
 
                 <!-- Horarios -->
-                <div class="footer-section" th:if="${config['EMPRESA_HORARIOS'] != null}">
+                <div class="footer-section" th:if="${config['horario_atencion'] != null}">
                     <h4 class="footer-title">Horarios de Atención</h4>
-                    <p th:text="${config['EMPRESA_HORARIOS']}"></p>
+                    <p th:text="${config['horario_atencion']}"></p>
                 </div>
             </div>
         </div>
         <div class="footer-bottom">
             <p>&copy; <span th:text="${#temporals.year(#temporals.createNow())}">2025</span>
-               <span th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Ecommerce'}"></span> -
+               <span th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}"></span> -
                Todos los derechos reservados
             </p>
         </div>

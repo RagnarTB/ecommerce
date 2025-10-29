@@ -38,7 +38,7 @@ public class InventoryController {
 
         if (productoId != null) {
             movimientos = inventoryMovementService.obtenerPorProducto(productoId);
-        } else if (tipo != null) {
+        } else if (tipo != null && !tipo.isBlank()) {
             movimientos = inventoryMovementService.obtenerPorTipo(
                     TipoMovimiento.valueOf(tipo));
         } else {
