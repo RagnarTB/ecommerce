@@ -122,12 +122,22 @@ public class CustomerController {
                 }
             }
 
+            // Separar apellidos en paterno y materno si vienen juntos
+            String apellidoPaterno = null;
+            String apellidoMaterno = null;
+            if (request.getApellidos() != null && !request.getApellidos().trim().isEmpty()) {
+                String[] apellidos = request.getApellidos().trim().split("\\s+", 2);
+                apellidoPaterno = apellidos.length > 0 ? apellidos[0] : null;
+                apellidoMaterno = apellidos.length > 1 ? apellidos[1] : null;
+            }
+
             // Crear el cliente
             Customer cliente = Customer.builder()
                     .tipoDocumento(tipo)
                     .numeroDocumento(request.getNumeroDocumento())
                     .nombres(request.getNombres())
-                    .apellidos(request.getApellidos())
+                    .apellidoPaterno(apellidoPaterno)
+                    .apellidoMaterno(apellidoMaterno)
                     .razonSocial(request.getRazonSocial())
                     .email(request.getEmail())
                     .telefono(request.getTelefono())
