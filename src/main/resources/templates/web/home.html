@@ -5,8 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- ✅ Usar nombre de empresa desde configuración -->
-    <title th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Inicio - Ecommerce'}">Inicio - Ecommerce</title>
-
+    <title th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Inicio - Ecommerce'}">Inicio -
+        Ecommerce</title>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <!-- SEO Meta Tags -->
     <meta th:if="${config['meta_description']}" name="description" th:content="${config['meta_description']}">
     <meta th:if="${config['meta_keywords']}" name="keywords" th:content="${config['meta_keywords']}">
@@ -14,13 +16,18 @@
     <link rel="stylesheet" href="/css/web-gamer.css">
 
     <!-- Colores dinámicos desde configuración -->
-    <style th:if="${config['color_primario'] != null || config['color_secundario'] != null || config['color_acento'] != null}">
+    <style
+        th:if="${config['color_primario'] != null or config['color_secundario'] != null or config['color_acento'] != null}">
         :root {
-            --color-primario: [[${config['color_primario'] != null ? config['color_primario'] : '#ff006e'}]];
-            --color-secundario: [[${config['color_secundario'] != null ? config['color_secundario'] : '#00f5ff'}]];
-            --color-acento: [[${config['color_acento'] != null ? config['color_acento'] : '#8b00ff'}]];
-        }
+    --color-primario: [[${config['color_primario'] != null ? config['color_primario'] : '#ff006e'}]];
+    --color-secundario: [[${config['color_secundario'] != null ? config['color_secundario'] : '#00f5ff'}]];
+    --color-acento: [[${config['color_acento'] != null ? config['color_acento'] : '#8b00ff'}]];
+}
+
     </style>
+
+
+
 </head>
 
 <body>
@@ -29,11 +36,10 @@
         <div class="container">
             <!-- Logo y marca -->
             <a href="/" class="navbar-brand">
-                <img th:if="${config['logo_url'] != null}"
-                     th:src="@{${config['logo_url']}}"
-                     alt="Logo"
-                     class="navbar-logo">
-                <span class="brand-text" th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce</span>
+                <img th:if="${config['logo_url'] != null}" th:src="@{${config['logo_url']}}" alt="Logo"
+                    class="navbar-logo">
+                <span class="brand-text"
+                    th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce</span>
             </a>
 
             <!-- Menú de navegación -->
@@ -46,10 +52,8 @@
                     <i class="fas fa-shopping-bag"></i>
                     <span>Catálogo</span>
                 </a>
-                <a th:if="${config['whatsapp'] != null}"
-                   th:href="'https://wa.me/' + ${config['whatsapp']}"
-                   target="_blank"
-                   class="nav-link">
+                <a th:if="${config['whatsapp'] != null}" th:href="'https://wa.me/' + ${config['whatsapp']}"
+                    target="_blank" class="nav-link">
                     <i class="fab fa-whatsapp"></i>
                     <span>Contacto</span>
                 </a>
@@ -78,10 +82,12 @@
     <!-- ✅ Hero Section con iframe 3D -->
     <section class="hero-section">
         <div class="hero-content">
-            <h1 class="hero-title" th:text="${config['texto_bienvenida'] != null ? config['texto_bienvenida'] : 'Bienvenido a Nuestra Tienda'}">
+            <h1 class="hero-title"
+                th:text="${config['texto_bienvenida'] != null ? config['texto_bienvenida'] : 'Bienvenido a Nuestra Tienda'}">
                 Bienvenido a Nuestra Tienda
             </h1>
-            <p class="hero-subtitle" th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Los mejores productos al mejor precio'}">
+            <p class="hero-subtitle"
+                th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Los mejores productos al mejor precio'}">
                 Los mejores productos al mejor precio
             </p>
             <a href="/catalogo" class="btn-gamer">
@@ -91,11 +97,8 @@
         </div>
         <!-- Iframe 3D siempre visible -->
         <div class="hero-3d">
-            <iframe src="https://my.spline.design/nintendoswitchcopy-2yhH5E9ykmD7XxrXzMr3cOYc/"
-                frameborder="0"
-                width="100%"
-                height="100%"
-                loading="lazy"></iframe>
+            <iframe src="https://my.spline.design/nintendoswitchcopy-2yhH5E9ykmD7XxrXzMr3cOYc/" frameborder="0"
+                width="100%" height="100%" loading="lazy"></iframe>
         </div>
     </section>
 
@@ -123,6 +126,8 @@
                             th:text="${producto.precioBase} + ' S/'"></span>
                     </div>
                     <a th:href="@{'/producto/' + ${producto.id}}" class="btn-outline-gamer">Ver Detalle</a>
+                    <button type="button" class="btn-gamer add-to-cart"
+                        th:attr="data-product-id=${producto.id}">Añadir</button>
                 </div>
             </div>
         </div>
@@ -171,12 +176,15 @@
             <div class="footer-content">
                 <!-- Información de empresa -->
                 <div class="footer-section">
-                    <h4 class="footer-title" th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce</h4>
+                    <h4 class="footer-title"
+                        th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce
+                    </h4>
                     <p th:if="${config['direccion'] != null}" th:text="${config['direccion']}"></p>
                 </div>
 
                 <!-- Contacto -->
-                <div class="footer-section" th:if="${config['telefono'] != null || config['email'] != null || config['whatsapp'] != null}">
+                <div class="footer-section"
+                    th:if="${config['telefono'] != null || config['email'] != null || config['whatsapp'] != null}">
                     <h4 class="footer-title">Contacto</h4>
                     <p th:if="${config['telefono'] != null}">
                         📞 <span th:text="${config['telefono']}"></span>
@@ -185,10 +193,8 @@
                         ✉️ <span th:text="${config['email']}"></span>
                     </p>
                     <p th:if="${config['whatsapp'] != null}">
-                        💬 WhatsApp: <a th:href="'https://wa.me/' + ${config['whatsapp']}"
-                                        target="_blank"
-                                        style="color: #25D366;"
-                                        th:text="${config['whatsapp']}"></a>
+                        💬 WhatsApp: <a th:href="'https://wa.me/' + ${config['whatsapp']}" target="_blank"
+                            style="color: #25D366;" th:text="${config['whatsapp']}"></a>
                     </p>
                 </div>
 
@@ -201,8 +207,8 @@
         </div>
         <div class="footer-bottom">
             <p>&copy; <span th:text="${#temporals.year(#temporals.createNow())}">2025</span>
-               <span th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}"></span> -
-               Todos los derechos reservados
+                <span th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}"></span> -
+                Todos los derechos reservados
             </p>
         </div>
     </footer>

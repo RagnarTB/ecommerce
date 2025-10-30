@@ -115,7 +115,7 @@ public class HomeController {
     // CARRITO DE COMPRAS
     // ========================================
 
-    @PostMapping("/carrito/agregar")
+    @PostMapping("/legacy/carrito/agregar")
     public String agregarAlCarrito(
             @RequestParam Long productoId,
             @RequestParam Integer cantidad,
@@ -139,7 +139,7 @@ public class HomeController {
         return "redirect:/carrito";
     }
 
-    @GetMapping("/carrito")
+    @GetMapping("/legacy/carrito")
     public String verCarrito(HttpSession session, Model model) {
         @SuppressWarnings("unchecked")
         Map<Long, Integer> carrito = (Map<Long, Integer>) session.getAttribute("carrito");
@@ -183,14 +183,14 @@ public class HomeController {
     // CHECKOUT
     // ========================================
 
-    @GetMapping("/checkout")
+    @GetMapping("/legacy/checkout")
     public String checkout(HttpSession session, Model model) {
         // Similar a verCarrito pero muestra formulario de datos
         model.addAttribute("config", configurationService.obtenerTodasComoMapa());
         return "web/checkout";
     }
 
-    @PostMapping("/checkout/procesar")
+    @PostMapping("/legacy/checkout/procesar")
     public String procesarPedido(
             @RequestParam String documento,
             @RequestParam String tipoEntrega,
@@ -258,7 +258,7 @@ public class HomeController {
     // ELIMINAR DEL CARRITO
     // ========================================
 
-    @PostMapping("/carrito/eliminar/{productoId}")
+    @PostMapping("/legacy/carrito/eliminar/{productoId}")
     public String eliminarDelCarrito(@PathVariable Long productoId,
             HttpSession session) {
         @SuppressWarnings("unchecked")
@@ -276,7 +276,7 @@ public class HomeController {
     // ACTUALIZAR CANTIDAD
     // ========================================
 
-    @PostMapping("/carrito/actualizar")
+    @PostMapping("/legacy/carrito/actualizar")
     public String actualizarCantidad(
             @RequestParam Long productoId,
             @RequestParam Integer cantidad,

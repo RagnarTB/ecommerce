@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Checkout - Ecommerce Gamer</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/web-gamer.css}">
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 </head>
 
 <body class="dark-mode">
@@ -15,23 +17,47 @@
             <h2 class="section-title">Checkout</h2>
 
             <div class="form-gamer">
-                <form th:action="@{/checkout/procesar}" method="post">
+                <form id="checkout-form">
                     <div class="form-group">
                         <label class="form-label">Documento</label>
-                        <input type="text" name="documento" class="form-control-gamer" required>
+                        <input type="text" name="documento" id="documento" class="form-control-gamer" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nombres</label>
+                        <input type="text" name="nombres" id="nombres" class="form-control-gamer" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Apellidos</label>
+                        <input type="text" name="apellidos" id="apellidos" class="form-control-gamer" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" name="telefono" id="telefono" class="form-control-gamer">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" id="email" class="form-control-gamer">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Tipo de entrega</label>
-                        <select name="tipoEntrega" class="form-control-gamer" required>
-                            <option value="DOMICILIO">Domicilio</option>
+                        <select name="tipoEntrega" id="tipoEntrega" class="form-control-gamer" required>
                             <option value="RECOGER">Recoger en tienda</option>
+                            <option value="DELIVERY">Domicilio</option>
                         </select>
                     </div>
-                    <div class="form-group" th:if="${tipoEntrega == 'DOMICILIO'}">
+                    <div class="form-group" id="direccion-group" style="display:none;">
                         <label class="form-label">Dirección</label>
-                        <input type="text" name="direccion" class="form-control-gamer">
+                        <input type="text" name="direccion" id="direccion" class="form-control-gamer">
                     </div>
-                    <button type="submit" class="btn-gamer">Procesar Pedido</button>
+                    <div class="form-group">
+                        <label class="form-label">Referencia</label>
+                        <input type="text" name="referencia" id="referencia" class="form-control-gamer">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notas (opcional)</label>
+                        <textarea name="notas" id="notas" class="form-control-gamer" rows="3"></textarea>
+                    </div>
+                    <button type="submit" id="checkout-submit" class="btn-gamer">Procesar Pedido</button>
                 </form>
             </div>
 
@@ -42,6 +68,56 @@
     </section>
 
     <footer th:replace="fragments/footer :: footer"></footer>
+    <script>
+        // Manejo simple del formulario para usar el endpoint JSON /carrito/procesar
+        document.addEventListener('DOMContentLoaded', function () {
+            const tipoEntrega = document.getElementById('tipoEntrega');
+            const direccionGroup = document.getElementById('direccion-group');
+
+            tipoEntrega && tipoEntrega.addEventListener('change', function () {
+                direccionGroup.style.display = this.value === 'DELIVERY' ? 'block' : 'none';
+            });
+
+            const form = document.getElementById('checkout-form');
+            form && form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const data = {
+                    documento: document.getElementById('documento').value,
+                    nombres: document.getElementById('nombres').value,
+                    apellidos: document.getElementById('apellidos').value,
+                    telefono: document.getElementById('telefono').value,
+                    email: document.getElementById('email').value,
+                    tipoEntrega: document.getElementById('tipoEntrega').value,
+                    direccion: document.getElementById('direccion').value,
+                    referencia: document.getElementById('referencia').value,
+                    notas: document.getElementById('notas').value
+                };
+
+                const submitBtn = document.getElementById('checkout-submit');
+                submitBtn.disabled = true;
+
+                try {
+                    const res = await fetch('/carrito/procesar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        // Redirigir a la página de confirmación
+                        window.location.href = '/carrito/confirmacion/' + json.pedidoId;
+                    } else {
+                        alert(json.error || 'Error al procesar el pedido');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error al procesar el pedido');
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

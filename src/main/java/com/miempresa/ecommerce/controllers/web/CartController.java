@@ -1,22 +1,34 @@
 package com.miempresa.ecommerce.controllers.web;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.miempresa.ecommerce.models.CartItem;
 import com.miempresa.ecommerce.models.Order;
 import com.miempresa.ecommerce.models.OrderDetail;
 import com.miempresa.ecommerce.models.Product;
 import com.miempresa.ecommerce.models.enums.EstadoPedido;
 import com.miempresa.ecommerce.models.enums.TipoEntrega;
-import com.miempresa.ecommerce.services.*;
+import com.miempresa.ecommerce.services.CartService;
+import com.miempresa.ecommerce.services.ConfigurationService;
+import com.miempresa.ecommerce.services.CustomerService;
+import com.miempresa.ecommerce.services.OrderService;
+import com.miempresa.ecommerce.services.ProductService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Controlador para el carrito de compras y checkout
@@ -158,6 +170,8 @@ public class CartController {
     /**
      * Procesar pedido
      */
+    // Archivo: controllers/web/CartController.java
+
     @PostMapping("/procesar")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> procesarPedido(@RequestBody Map<String, Object> datos) {
@@ -183,32 +197,44 @@ public class CartController {
             String apellidos = (String) datos.get("apellidos");
             String telefono = (String) datos.get("telefono");
             String email = (String) datos.get("email");
-            String tipoEntrega = (String) datos.get("tipoEntrega");
+            String tipoEntrega = (String) datos.get("tipoEntrega"); // [cite: 1726]
             String direccion = (String) datos.get("direccion");
             String referencia = (String) datos.get("referencia");
             String notas = (String) datos.get("notas");
 
             // Obtener o crear cliente
             var cliente = customerService.obtenerOCrearDesdeWeb(
-                documento, nombres, apellidos, telefono, email);
+                    documento, nombres, apellidos, telefono, email); // [cite: 221, 381-383]
 
-            // Calcular costo de envío
+            // --- INICIO DE LA CORRECCIÓN ---
+
             BigDecimal costoEnvio = BigDecimal.ZERO;
-            if ("DELIVERY".equals(tipoEntrega)) {
-                String costoEnvioStr = configurationService.obtener("costo_envio_lima")
-                        .orElse("15.00");
+            TipoEntrega tipoEntregaEnum = TipoEntrega.valueOf(tipoEntrega); // [cite: 242]
+
+            // Solo calcular costo si es DELIVERY
+            if (tipoEntregaEnum == TipoEntrega.DELIVERY) { // [cite: 242]
+                String costoEnvioStr;
+                // Lógica simple: si la dirección NO contiene "lima", se asume provincia.
+                if (direccion != null && !direccion.trim().isEmpty() && !direccion.toLowerCase().contains("lima")) {
+                    costoEnvioStr = configurationService.obtenerValor("costo_envio_provincia", "25.00"); // [cite: 420]
+                } else {
+                    // Si es Lima o la dirección está vacía, se cobra Lima.
+                    costoEnvioStr = configurationService.obtenerValor("costo_envio_lima", "15.00"); // [cite: 420]
+                }
                 costoEnvio = new BigDecimal(costoEnvioStr);
             }
+
+            // --- FIN DE LA CORRECCIÓN ---
 
             // Crear pedido
             Order pedido = Order.builder()
                     .cliente(cliente)
-                    .tipoEntrega(TipoEntrega.valueOf(tipoEntrega))
+                    .tipoEntrega(tipoEntregaEnum) // Usar el Enum
                     .direccionEntrega(direccion)
                     .referenciaEntrega(referencia)
                     .notasCliente(notas)
-                    .costoEnvio(costoEnvio)
-                    .estado(EstadoPedido.PENDIENTE)
+                    .costoEnvio(costoEnvio) // Aplicar el costo corregido
+                    .estado(EstadoPedido.PENDIENTE) // [cite: 233-234]
                     .build();
 
             // Agregar detalles desde el carrito
@@ -227,11 +253,11 @@ public class CartController {
             }
 
             // Calcular total y guardar
-            pedido.calcularTotal();
-            Order pedidoGuardado = orderService.crearPedidoWeb(pedido);
+            pedido.calcularTotal(); // [cite: 280]
+            Order pedidoGuardado = orderService.crearPedidoWeb(pedido); //
 
             // Limpiar carrito
-            cartService.limpiar();
+            cartService.limpiar(); // [cite: 399]
 
             // Respuesta exitosa
             response.put("success", true);

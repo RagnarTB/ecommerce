@@ -4,19 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] + ' - Carrito' : 'Carrito de Compras'}">Carrito de Compras</title>
-
+    <title
+        th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] + ' - Carrito' : 'Carrito de Compras'}">
+        Carrito de Compras</title>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <link rel="stylesheet" href="/css/web-gamer.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Colores dinámicos desde configuración -->
-    <style th:if="${config['color_primario'] != null || config['color_secundario'] != null || config['color_acento'] != null}">
-        :root {
-            --color-primario: [[${config['color_primario'] != null ? config['color_primario'] : '#ff006e'}]];
-            --color-secundario: [[${config['color_secundario'] != null ? config['color_secundario'] : '#00f5ff'}]];
-            --color-acento: [[${config['color_acento'] != null ? config['color_acento'] : '#8b00ff'}]];
-        }
-    </style>
+   <style
+    th:if="${config['color_primario'] != null || config['color_secundario'] != null || config['color_acento'] != null}">
+    :root {
+        --color-primario: [[${config['color_primario'] != null ? config['color_primario'] : '#ff006e'}]];
+        --color-secundario: [[${config['color_secundario'] != null ? config['color_secundario'] : '#00f5ff'}]];
+        --color-acento: [[${config['color_acento'] != null ? config['color_acento'] : '#8b00ff'}]];
+    }
+</style>
 </head>
 
 <body>
@@ -24,11 +28,10 @@
     <nav class="navbar-gamer">
         <div class="container">
             <a href="/" class="navbar-brand">
-                <img th:if="${config['logo_url'] != null}"
-                     th:src="@{${config['logo_url']}}"
-                     alt="Logo"
-                     class="navbar-logo">
-                <span class="brand-text" th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce</span>
+                <img th:if="${config['logo_url'] != null}" th:src="@{${config['logo_url']}}" alt="Logo"
+                    class="navbar-logo">
+                <span class="brand-text"
+                    th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce</span>
             </a>
 
             <div class="nav-menu">
@@ -40,10 +43,8 @@
                     <i class="fas fa-shopping-bag"></i>
                     <span>Catálogo</span>
                 </a>
-                <a th:if="${config['whatsapp'] != null}"
-                   th:href="'https://wa.me/' + ${config['whatsapp']}"
-                   target="_blank"
-                   class="nav-link">
+                <a th:if="${config['whatsapp'] != null}" th:href="'https://wa.me/' + ${config['whatsapp']}"
+                    target="_blank" class="nav-link">
                     <i class="fab fa-whatsapp"></i>
                     <span>Contacto</span>
                 </a>
@@ -90,14 +91,10 @@
             <!-- Lista de productos -->
             <div class="col-lg-8">
                 <div th:each="item : ${items}" class="cart-item">
-                    <img th:if="${item.imagenUrl != null}"
-                         th:src="@{${item.imagenUrl}}"
-                         th:alt="${item.nombre}"
-                         class="cart-item-image">
-                    <img th:if="${item.imagenUrl == null}"
-                         src="/img/placeholder-game.jpg"
-                         alt="Sin imagen"
-                         class="cart-item-image">
+                    <img th:if="${item.imagenUrl != null}" th:src="@{${item.imagenUrl}}" th:alt="${item.nombre}"
+                        class="cart-item-image">
+                    <img th:if="${item.imagenUrl == null}" src="/img/placeholder-game.jpg" alt="Sin imagen"
+                        class="cart-item-image">
 
                     <div class="cart-item-details">
                         <h3 class="cart-item-title" th:text="${item.nombre}">Nombre del Producto</h3>
@@ -109,20 +106,19 @@
                         </p>
 
                         <div class="quantity-controls">
-                            <button class="quantity-btn" th:attr="data-producto-id=${item.productoId}" onclick="decrementarCantidad(this)">
+                            <button class="quantity-btn" th:attr="data-producto-id=${item.productoId}"
+                                onclick="decrementarCantidad(this)">
                                 <i class="fas fa-minus"></i>
                             </button>
-                            <input type="number"
-                                   class="quantity-input"
-                                   th:value="${item.cantidad}"
-                                   th:attr="data-producto-id=${item.productoId}"
-                                   min="1"
-                                   th:max="${item.stockDisponible}"
-                                   readonly>
-                            <button class="quantity-btn" th:attr="data-producto-id=${item.productoId}" onclick="incrementarCantidad(this)">
+                            <input type="number" class="quantity-input" th:value="${item.cantidad}"
+                                th:attr="data-producto-id=${item.productoId}" min="1" th:max="${item.stockDisponible}"
+                                readonly>
+                            <button class="quantity-btn" th:attr="data-producto-id=${item.productoId}"
+                                onclick="incrementarCantidad(this)">
                                 <i class="fas fa-plus"></i>
                             </button>
-                            <button class="btn btn-danger btn-sm" style="margin-left: 1rem;" th:attr="data-producto-id=${item.productoId}" onclick="eliminarProducto(this)">
+                            <button class="btn btn-danger btn-sm" style="margin-left: 1rem;"
+                                th:attr="data-producto-id=${item.productoId}" onclick="eliminarProducto(this)">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -143,7 +139,8 @@
 
                     <div class="summary-row">
                         <span>Subtotal:</span>
-                        <span id="subtotal-display">S/ <span th:text="${#numbers.formatDecimal(subtotal, 1, 2)}">0.00</span></span>
+                        <span id="subtotal-display">S/ <span
+                                th:text="${#numbers.formatDecimal(subtotal, 1, 2)}">0.00</span></span>
                     </div>
 
                     <div class="summary-row">
@@ -153,15 +150,18 @@
 
                     <div class="summary-row total">
                         <span>Total:</span>
-                        <span id="total-display">S/ <span th:text="${#numbers.formatDecimal(subtotal, 1, 2)}">0.00</span></span>
+                        <span id="total-display">S/ <span
+                                th:text="${#numbers.formatDecimal(subtotal, 1, 2)}">0.00</span></span>
                     </div>
 
-                    <a href="/carrito/checkout" class="btn-gamer" style="width: 100%; text-align: center; margin-top: 1rem;">
+                    <a href="/carrito/checkout" class="btn-gamer"
+                        style="width: 100%; text-align: center; margin-top: 1rem;">
                         <i class="fas fa-credit-card"></i>
                         Proceder al Checkout
                     </a>
 
-                    <a href="/catalogo" class="btn-outline-gamer" style="width: 100%; text-align: center; margin-top: 1rem;">
+                    <a href="/catalogo" class="btn-outline-gamer"
+                        style="width: 100%; text-align: center; margin-top: 1rem;">
                         <i class="fas fa-arrow-left"></i>
                         Seguir Comprando
                     </a>
@@ -175,11 +175,14 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h4 class="footer-title" th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce</h4>
+                    <h4 class="footer-title"
+                        th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce
+                    </h4>
                     <p th:if="${config['direccion'] != null}" th:text="${config['direccion']}"></p>
                 </div>
 
-                <div class="footer-section" th:if="${config['telefono'] != null || config['email'] != null || config['whatsapp'] != null}">
+                <div class="footer-section"
+                    th:if="${config['telefono'] != null || config['email'] != null || config['whatsapp'] != null}">
                     <h4 class="footer-title">Contacto</h4>
                     <p th:if="${config['telefono'] != null}">
                         📞 <span th:text="${config['telefono']}"></span>
@@ -192,8 +195,8 @@
         </div>
         <div class="footer-bottom">
             <p>&copy; <span th:text="${#temporals.year(#temporals.createNow())}">2025</span>
-               <span th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}"></span> -
-               Todos los derechos reservados
+                <span th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}"></span> -
+                Todos los derechos reservados
             </p>
         </div>
     </footer>
@@ -228,12 +231,12 @@
                 url: '/carrito/actualizar',
                 method: 'POST',
                 data: { productoId: productoId, cantidad: cantidad },
-                success: function(response) {
+                success: function (response) {
                     if (response.success) {
                         location.reload(); // Recargar para actualizar precios
                     }
                 },
-                error: function(xhr) {
+                error: function (xhr) {
                     const error = xhr.responseJSON?.error || 'Error al actualizar cantidad';
                     alert(error);
                 }
@@ -249,12 +252,12 @@
                 url: '/carrito/eliminar',
                 method: 'POST',
                 data: { productoId: productoId },
-                success: function(response) {
+                success: function (response) {
                     if (response.success) {
                         location.reload();
                     }
                 },
-                error: function(xhr) {
+                error: function (xhr) {
                     const error = xhr.responseJSON?.error || 'Error al eliminar producto';
                     alert(error);
                 }
@@ -262,4 +265,5 @@
         }
     </script>
 </body>
+
 </html>

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Pedido Exitoso - Ecommerce Gamer</title>
+    <title>Confirmación - Ecommerce Gamer</title>
     <link rel="stylesheet" th:href="@{/css/web-gamer.css}">
     <meta name="_csrf" th:content="${_csrf.token}" />
     <meta name="_csrf_header" th:content="${_csrf.headerName}" />
@@ -15,14 +15,16 @@
     <section class="success-section">
         <div class="container">
             <div class="success-icon">&#10003;</div>
-            <h2 class="success-title">¡Pedido realizado con éxito!</h2>
+            <h2 class="success-title">¡Pedido confirmado!</h2>
             <p class="order-number">Pedido #: <span th:text="${pedido.numeroPedido}"></span></p>
 
             <div class="order-details-card">
                 <h3>Detalle del pedido</h3>
                 <div th:each="item : ${pedido.detalles}">
-                    <p><strong th:text="${item.producto.nombre}"></strong> x <span th:text="${item.cantidad}"></span> =
-                        <span th:text="${item.producto.precioActual}"></span>
+                    <p>
+                        <strong th:text="${item.producto.nombre}"></strong>
+                        x <span th:text="${item.cantidad}"></span>
+                        = <span th:text="${item.subtotal}"></span>
                     </p>
                 </div>
                 <p><strong>Total:</strong> <span th:text="${pedido.total}"></span></p>
@@ -33,6 +35,7 @@
     </section>
 
     <footer th:replace="fragments/footer :: footer"></footer>
+    <script src="/js/web-gamer.js"></script>
 </body>
 
 </html>
