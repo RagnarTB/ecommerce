@@ -1,32 +1,53 @@
-<section class="product-detail-section">
-    <div class="product-gallery">
+<html xmlns:th="http://www.thymeleaf.org">
 
-        >
-        <img th:if="${producto.imagenPrincipal != null}"
-            th:src="@{/uploads/productos/{filename}(filename=${producto.imagenPrincipal.url})}" class="main-image"
-            th:alt="'Imagen de ' + ${producto.nombre}" />
-        <img th:if="${producto.imagenPrincipal == null}" th:src="@{/img/placeholder-game.jpg}" class="main-image"
-            alt="Imagen por defecto" />
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Detalle del producto</title>
 
-        <div class="thumbnail-images">
+    <!-- ✅ Agrega aquí los metadatos CSRF -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+
+    <link rel="stylesheet" th:href="@{/css/web-gamer.css}">
+</head>
+
+<body>
+
+
+    <section class="product-detail-section">
+        <div class="product-gallery">
+
             >
-            <img th:each="img : ${producto.imagenes}" th:src="@{/uploads/productos/{filename}(filename=${img.url})}"
-                class="thumbnail" th:alt="'Miniatura de ' + ${producto.nombre}" />
+            <img th:if="${producto.imagenPrincipal != null}"
+                th:src="@{/uploads/productos/{filename}(filename=${producto.imagenPrincipal.url})}" class="main-image"
+                th:alt="'Imagen de ' + ${producto.nombre}" />
+            <img th:if="${producto.imagenPrincipal == null}" th:src="@{/img/placeholder-game.jpg}" class="main-image"
+                alt="Imagen por defecto" />
+
+            <div class="thumbnail-images">
+                >
+                <img th:each="img : ${producto.imagenes}" th:src="@{/uploads/productos/{filename}(filename=${img.url})}"
+                    class="thumbnail" th:alt="'Miniatura de ' + ${producto.nombre}" />
+            </div>
         </div>
-    </div>
 
-    <div class="product-info">
-        <h2 class="product-detail-title" th:text="${producto.nombre}"></h2>
-        <p class="product-description" th:text="${producto.descripcion}"></p>
+        <div class="product-info">
+            <h2 class="product-detail-title" th:text="${producto.nombre}"></h2>
+            <p class="product-description" th:text="${producto.descripcion}"></p>
 
-        <div class="product-price">
-            <span class="price-current" th:text="${producto.precioActual} + ' S/'"></span>
+            <div class="product-price">
+                <span class="price-current" th:text="${producto.precioActual} + ' S/'"></span>
+            </div>
+
+            <div class="add-to-cart-container">
+                <input type="number" name="cantidad" value="1" min="1" class="quantity-input"
+                    id="cantidad-[[${producto.id}]]">
+                <button type="button" class="btn-gamer add-to-cart" data-product-id="[[${producto.id}]]"
+                    data-qty="1">Agregar al Carrito</button>
+            </div>
         </div>
+    </section>
 
-        <form action="/carrito/agregar" method="post">
-            <input type="hidden" name="productoId" th:value="${producto.id}">
-            <input type="number" name="cantidad" value="1" min="1" class="quantity-input">
-            <button type="submit" class="btn-gamer">Agregar al Carrito</button>
-        </form>
-    </div>
-</section>
+</body>
+
+</html>

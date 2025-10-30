@@ -237,18 +237,15 @@ public class SaleService {
 
                 // Validar si se puede anular (ej: si tiene pagos)
                 BigDecimal montoPagado = credito.getMontoTotal().subtract(credito.getMontoPendiente());
-                // DESCOMENTA si quieres impedir anulación con pagos
-                /*
-                 * if (montoPagado.compareTo(BigDecimal.ZERO) > 0) {
-                 * log.error(
-                 * "No se puede anular la venta {} porque el crédito asociado ID {} tiene pagos registrados (S/ {})."
-                 * ,
-                 * venta.getNumeroVenta(), credito.getId(), montoPagado);
-                 * throw new RuntimeException(
-                 * "No se puede anular una venta a crédito que ya tiene pagos registrados. Realice una devolución manual del dinero primero."
-                 * );
-                 * }
-                 */
+                // ✅ Validación activa: No se puede anular venta con pagos registrados
+                if (montoPagado.compareTo(BigDecimal.ZERO) > 0) {
+                    log.error(
+                            "No se puede anular la venta {} porque el crédito asociado ID {} tiene pagos registrados (S/ {}).",
+                            venta.getNumeroVenta(), credito.getId(), montoPagado);
+                    throw new RuntimeException(
+                            "No se puede anular una venta a crédito que ya tiene pagos registrados. Monto pagado: S/ "
+                                    + montoPagado + ". Contacte al administrador para devoluciones manuales.");
+                }
 
                 log.info("Anulando crédito ID {}", credito.getId());
                 credito.setEstado(EstadoCredito.ANULADO); // Cambiar estado a ANULADO

@@ -116,7 +116,7 @@ public class ReportController {
         BigDecimal totalVentas = saleService.calcularTotalVentasPorFecha(fechaInicio, fechaFin);
 
         model.addAttribute("ventas", ventas);
-        model.addAttribute("totalVentas", totalVentas);
+        model.addAttribute("totalVentas", totalVentas != null ? totalVentas : BigDecimal.ZERO);
         model.addAttribute("fechaInicio", fechaInicio);
         model.addAttribute("fechaFin", fechaFin);
         model.addAttribute("titulo", "Reporte de Ventas");
@@ -283,9 +283,11 @@ public class ReportController {
     public String reporteCreditos(Model model) {
         log.debug("Mostrando reporte de créditos");
 
+        BigDecimal deudaTotal = creditService.obtenerTotalDeudaPendiente();
+
         model.addAttribute("creditosActivos", creditService.obtenerActivos());
         model.addAttribute("cuotasVencidas", creditService.obtenerCuotasVencidas());
-        model.addAttribute("deudaTotal", creditService.obtenerTotalDeudaPendiente());
+        model.addAttribute("deudaTotal", deudaTotal != null ? deudaTotal : BigDecimal.ZERO);
         model.addAttribute("titulo", "Reporte de Créditos");
 
         return "admin/reportes/creditos";

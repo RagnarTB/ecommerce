@@ -1,38 +1,58 @@
-<section class="filters-sidebar">
-    <h3 class="filter-title">Categorías</h3>
-    <form action="/catalogo" method="get">
-        <div th:each="categoria : ${categorias}" class="filter-option">
-            <input type="checkbox" name="categoriaId" th:value="${categoria.id}" class="filter-checkbox"
-                th:checked="${categoria.id == categoriaSeleccionada}">
-            <span th:text="${categoria.nombre}"></span>
-        </div>
-        <button type="submit" class="btn-gamer-secondary">Filtrar</button>
-    </form>
-</section>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 
-<section class="featured-section">
-    <h2 class="section-title">Productos</h2>
-    <div class="grid-container">
-        <div th:each="producto : ${productos}" class="product-card">
-            <div class="product-image">
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo</title>
 
-                >
-                <img th:if="${producto.imagenPrincipal != null}"
-                    th:src="@{/uploads/productos/{filename}(filename=${producto.imagenPrincipal.url})}"
-                    th:alt="'Imagen de ' + ${producto.nombre}" />
-                <img th:if="${producto.imagenPrincipal == null}" th:src="@{/img/placeholder-game.jpg}"
-                    alt="Imagen por defecto" />
+    <!-- ✅ Agrega aquí los tokens CSRF -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 
+    <link rel="stylesheet" th:href="@{/css/web-gamer.css}">
+</head>
+
+<body>
+    <section class="filters-sidebar">
+        <h3 class="filter-title">Categorías</h3>
+        <form action="/catalogo" method="get">
+            <div th:each="categoria : ${categorias}" class="filter-option">
+                <input type="checkbox" name="categoriaId" th:value="${categoria.id}" class="filter-checkbox"
+                    th:checked="${categoria.id == categoriaSeleccionada}">
+                <span th:text="${categoria.nombre}"></span>
             </div>
+            <button type="submit" class="btn-gamer-secondary">Filtrar</button>
+        </form>
+    </section>
 
-            <div class="product-body">
-                <h3 class="product-title" th:text="${producto.nombre}"></h3>
-                <p class="product-category" th:text="${producto.categoria.nombre}"></p>
-                <div class="product-price">
-                    <span class="price-current" th:text="${producto.precioActual} + ' S/'"></span>
+    <section class="featured-section">
+        <h2 class="section-title">Productos</h2>
+        <div class="grid-container">
+            <div th:each="producto : ${productos}" class="product-card">
+                <div class="product-image">
+
+                    >
+                    <img th:if="${producto.imagenPrincipal != null}"
+                        th:src="@{/uploads/productos/{filename}(filename=${producto.imagenPrincipal.url})}"
+                        th:alt="'Imagen de ' + ${producto.nombre}" />
+                    <img th:if="${producto.imagenPrincipal == null}" th:src="@{/img/placeholder-game.jpg}"
+                        alt="Imagen por defecto" />
+
                 </div>
-                <a th:href="@{'/producto/' + ${producto.id}}" class="btn-outline-gamer">Ver Detalle</a>
+
+                <div class="product-body">
+                    <h3 class="product-title" th:text="${producto.nombre}"></h3>
+                    <p class="product-category" th:text="${producto.categoria.nombre}"></p>
+                    <div class="product-price">
+                        <span class="price-current" th:text="${producto.precioActual} + ' S/'"></span>
+                    </div>
+                    <a th:href="@{'/producto/' + ${producto.id}}" class="btn-outline-gamer">Ver Detalle</a>
+                    <button type="button" class="btn-gamer add-to-cart"
+                        th:attr="data-product-id=${producto.id}">Añadir</button>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+</body>
+
+</html>

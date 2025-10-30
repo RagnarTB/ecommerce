@@ -560,7 +560,7 @@ public class PdfGeneratorUtil {
                         : BigDecimal.ZERO;
                 table.addCell("S/ " + montoPendiente.setScale(2, java.math.RoundingMode.HALF_UP).toString());
 
-                table.addCell((credito.getCuotasPagadas() != null ? credito.getCuotasPagadas() : 0) + " / "
+                table.addCell(credito.getCuotasPagadas() + " / "
                         + (credito.getNumCuotas() != null ? credito.getNumCuotas() : 0));
             }
 

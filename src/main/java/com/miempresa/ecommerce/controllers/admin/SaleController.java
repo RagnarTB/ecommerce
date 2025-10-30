@@ -572,8 +572,11 @@ public class SaleController {
     // ========================================
 
     @PostMapping("/anular/{id}")
-    public String anular(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> anular(@PathVariable Long id) {
         log.info("Anulando venta ID: {}", id);
+
+        Map<String, Object> response = new HashMap<>();
 
         try {
             String username = SecurityUtils.getCurrentUsername();
@@ -582,15 +585,16 @@ public class SaleController {
 
             saleService.anularVenta(id, usuario);
 
-            redirectAttributes.addFlashAttribute("success", "Venta anulada correctamente");
+            response.put("success", true);
+            response.put("message", "Venta anulada correctamente");
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             log.error("Error al anular venta: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("error",
-                    "Error al anular: " + e.getMessage());
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
-
-        return "redirect:/admin/ventas";
     }
 
     // ========================================

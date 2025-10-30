@@ -5,10 +5,15 @@
    ============================================ */
 
 :root {
-    /* Colores principales */
-    --primary-color: #CD9F9F;
-    --primary-dark: #B88888;
-    --primary-light: #E5C4C4;
+    /* Colores configurables (pueden ser sobrescritos dinámicamente) */
+    --color-primario: #ff006e;
+    --color-secundario: #00f5ff;
+    --color-acento: #8b00ff;
+
+    /* Colores principales basados en configuración */
+    --primary-color: var(--color-primario);
+    --primary-dark: var(--color-primario);
+    --primary-light: var(--color-primario);
 
     /* Colores de acento gamer */
     --neon-blue: #7CB2E8;
@@ -70,7 +75,7 @@ a {
    ============================================ */
 
 .navbar-gamer {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(135deg, var(--color-primario), var(--color-acento));
     box-shadow: 0 4px 20px var(--shadow);
     padding: 1rem 0;
     position: sticky;
@@ -79,8 +84,19 @@ a {
     backdrop-filter: blur(10px);
 }
 
+.navbar-gamer .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
 .navbar-brand {
-    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.5rem;
     font-weight: 800;
     color: white !important;
     text-transform: uppercase;
@@ -89,28 +105,85 @@ a {
     transition: var(--transition);
 }
 
+.navbar-logo {
+    height: 40px;
+    vertical-align: middle;
+    transition: var(--transition);
+}
+
+.brand-text {
+    white-space: nowrap;
+}
+
 .navbar-brand:hover {
-    text-shadow: 0 0 20px white, 0 0 30px var(--neon-blue);
+    text-shadow: 0 0 20px white, 0 0 30px var(--color-secundario);
     transform: scale(1.05);
 }
 
+.navbar-brand:hover .navbar-logo {
+    transform: rotate(360deg);
+}
+
+/* Menú de navegación */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     color: white !important;
     font-weight: 600;
-    margin: 0 0.5rem;
-    padding: 0.5rem 1rem !important;
-    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    border-radius: 25px;
     transition: var(--transition);
+    white-space: nowrap;
+}
+
+.nav-link i {
+    font-size: 1.1rem;
 }
 
 .nav-link:hover {
     background-color: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .nav-link.active {
     background-color: rgba(255, 255, 255, 0.3);
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+/* Acciones del navbar (carrito, etc.) */
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cart-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white !important;
+    font-size: 1.5rem;
+    transition: var(--transition);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.cart-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* Buscador en navbar */
@@ -575,6 +648,15 @@ a {
    BOTONES PLAYSTATION (REDES SOCIALES)
    ============================================ */
 
+/* Contenedor flotante */
+.playstation-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    animation: fadeInUp 1s ease 0.5s both;
+}
+
 .playstation-input {
     width: 10em;
     height: 10em;
@@ -582,7 +664,7 @@ a {
     border-radius: 50%;
     position: relative;
     transition: all 0.2s ease;
-    box-shadow: 0px -1px 1px #969696;
+    box-shadow: 0px -1px 1px #969696, 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 #cross p,
@@ -788,7 +870,7 @@ a {
    TOGGLE MODO OSCURO (ANTORCHA)
    ============================================ */
 
-.container input {
+.torch-container input {
     position: absolute;
     opacity: 0;
     cursor: pointer;
@@ -796,7 +878,7 @@ a {
     width: 0;
 }
 
-.container {
+.torch-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -969,52 +1051,52 @@ a {
     background-color: #271e10;
 }
 
-.container input:checked~.torch .face {
+.torch-container input:checked~.torch .face {
     filter: drop-shadow(0px 0px 2px rgb(255, 255, 255)) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4));
 }
 
-.container input:checked~.torch .top div:nth-child(1),
-.container input:checked~.torch .left div:nth-child(3),
-.container input:checked~.torch .right div:nth-child(3) {
+.torch-container input:checked~.torch .top div:nth-child(1),
+.torch-container input:checked~.torch .left div:nth-child(3),
+.torch-container input:checked~.torch .right div:nth-child(3) {
     background-color: #ffff97;
 }
 
-.container input:checked~.torch .top div:nth-child(2),
-.container input:checked~.torch .left div:nth-child(1),
-.container input:checked~.torch .right div:nth-child(1) {
+.torch-container input:checked~.torch .top div:nth-child(2),
+.torch-container input:checked~.torch .left div:nth-child(1),
+.torch-container input:checked~.torch .right div:nth-child(1) {
     background-color: #ffd800;
 }
 
-.container input:checked~.torch .top div:nth-child(3),
-.container input:checked~.torch .left div:nth-child(4),
-.container input:checked~.torch .right div:nth-child(4) {
+.torch-container input:checked~.torch .top div:nth-child(3),
+.torch-container input:checked~.torch .left div:nth-child(4),
+.torch-container input:checked~.torch .right div:nth-child(4) {
     background-color: #ffffff;
 }
 
-.container input:checked~.torch .top div:nth-child(4),
-.container input:checked~.torch .left div:nth-child(2),
-.container input:checked~.torch .right div:nth-child(2) {
+.torch-container input:checked~.torch .top div:nth-child(4),
+.torch-container input:checked~.torch .left div:nth-child(2),
+.torch-container input:checked~.torch .right div:nth-child(2) {
     background-color: #ff8f00;
 }
 
-.container input:checked~.torch .side div:nth-child(11),
-.container input:checked~.torch .side div:nth-child(15) {
+.torch-container input:checked~.torch .side div:nth-child(11),
+.torch-container input:checked~.torch .side div:nth-child(15) {
     background-color: #675231;
 }
 
-.container input:checked~.torch .side div:nth-child(12) {
+.torch-container input:checked~.torch .side div:nth-child(12) {
     background-color: #3d301d;
 }
 
-.container input:checked~.torch .side div:nth-child(13) {
+.torch-container input:checked~.torch .side div:nth-child(13) {
     background-color: #987849;
 }
 
-.container input:checked~.torch .side div:nth-child(14) {
+.torch-container input:checked~.torch .side div:nth-child(14) {
     background-color: #3b2e1b;
 }
 
-.container input:checked~.torch .side div:nth-child(16) {
+.torch-container input:checked~.torch .side div:nth-child(16) {
     background-color: #372a17;
 }
 
@@ -1055,6 +1137,34 @@ a {
     margin-top: 2rem;
     text-align: center;
     color: rgba(255, 255, 255, 0.6);
+}
+
+/* ============================================
+   CONTENEDOR PRINCIPAL
+   ============================================ */
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* ============================================
+   GRID DE PRODUCTOS
+   ============================================ */
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 2rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
 }
 
 /* ============================================
@@ -1394,6 +1504,11 @@ a {
         height: 200px;
     }
 
+    .playstation-container {
+        bottom: 20px;
+        right: 20px;
+    }
+
     .playstation-input {
         width: 8em;
         height: 8em;
@@ -1402,6 +1517,16 @@ a {
     .playstation-input:hover {
         width: 10em;
         height: 10em;
+    }
+
+    .playstation-input button {
+        width: 3em;
+        height: 3em;
+    }
+
+    .playstation-input:hover button {
+        width: 3.5em;
+        height: 3.5em;
     }
 }
 
@@ -1467,46 +1592,46 @@ a {
    EFECTO DE ANTORCHA / ILUMINACIÓN
    ============================================ */
 
-.container input:checked~.torch .side div:nth-child(1) {
+.torch-container input:checked~.torch .side div:nth-child(1) {
     background-color: #7c623e;
 }
 
-.container input:checked~.torch .side div:nth-child(2) {
+.torch-container input:checked~.torch .side div:nth-child(2) {
     background-color: #4c3d26;
 }
 
-.container input:checked~.torch .side div:nth-child(3),
-.container input:checked~.torch .side div:nth-child(5) {
+.torch-container input:checked~.torch .side div:nth-child(3),
+.torch-container input:checked~.torch .side div:nth-child(5) {
     background-color: #937344;
 }
 
-.container input:checked~.torch .side div:nth-child(4),
-.container input:checked~.torch .side div:nth-child(10) {
+.torch-container input:checked~.torch .side div:nth-child(4),
+.torch-container input:checked~.torch .side div:nth-child(10) {
     background-color: #3c2f1c;
 }
 
-.container input:checked~.torch .side div:nth-child(6) {
+.torch-container input:checked~.torch .side div:nth-child(6) {
     background-color: #423522;
 }
 
-.container input:checked~.torch .side div:nth-child(7) {
+.torch-container input:checked~.torch .side div:nth-child(7) {
     background-color: #9f7f50;
 }
 
-.container input:checked~.torch .side div:nth-child(8) {
+.torch-container input:checked~.torch .side div:nth-child(8) {
     background-color: #403320;
 }
 
-.container input:checked~.torch .side div:nth-child(9) {
+.torch-container input:checked~.torch .side div:nth-child(9) {
     background-color: #977748;
 }
 
-.container input:checked~.torch .side div:nth-child(10) {
+.torch-container input:checked~.torch .side div:nth-child(10) {
     background-color: #6e5635;
 }
 
 /* Brillo interior */
-.container input:checked~.torch .side div {
+.torch-container input:checked~.torch .side div {
     box-shadow: inset 0 0 10px rgba(255, 200, 100, 0.4),
         0 0 15px rgba(255, 180, 80, 0.3);
 }

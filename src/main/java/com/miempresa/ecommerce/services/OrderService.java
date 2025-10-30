@@ -49,6 +49,57 @@ public class OrderService {
     // ========================================
 
     /**
+     * Crea un nuevo pedido desde la web (sin pasar detalles por separado)
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Order crearPedidoWeb(Order pedido) {
+        log.info("Creando nuevo pedido web para cliente: {}",
+                pedido.getCliente() != null ? pedido.getCliente().getNombreCompleto() : "Desconocido");
+
+        // Generar número de pedido
+        pedido.setNumeroPedido(generarNumeroPedido());
+        pedido.setEstado(EstadoPedido.PENDIENTE);
+
+        // Validar stock y establecer datos de productos
+        if (pedido.getDetalles() != null) {
+            for (OrderDetail detalle : pedido.getDetalles()) {
+                Product producto = detalle.getProducto();
+                if (producto == null || producto.getId() == null) {
+                    throw new RuntimeException("Detalle de pedido inválido: producto no especificado");
+                }
+
+                // Recargar producto desde BD
+                Product productoActualizado = productRepository.findById(producto.getId())
+                        .orElseThrow(() -> new RuntimeException("Producto no encontrado: ID " + producto.getId()));
+
+                Integer stockDisponible = productoActualizado.getStockActual() != null
+                        ? productoActualizado.getStockActual()
+                        : 0;
+                Integer cantidadNecesaria = detalle.getCantidad() != null ? detalle.getCantidad() : 0;
+
+                if (cantidadNecesaria <= 0) {
+                    throw new RuntimeException(
+                            "La cantidad del producto '" + productoActualizado.getNombre() + "' debe ser mayor a cero.");
+                }
+
+                if (stockDisponible < cantidadNecesaria) {
+                    throw new RuntimeException("Stock insuficiente para: " + productoActualizado.getNombre()
+                            + " (Disponible: " + stockDisponible + ")");
+                }
+
+                detalle.establecerDatosProducto();
+                detalle.calcularSubtotal();
+            }
+        }
+
+        pedido.calcularTotal();
+        Order pedidoGuardado = orderRepository.save(pedido);
+
+        log.info("Pedido web creado: {}", pedidoGuardado.getNumeroPedido());
+        return pedidoGuardado;
+    }
+
+    /**
      * Crea un nuevo pedido desde la web
      */
     @Transactional(rollbackFor = Exception.class) // ✅ AGREGADO

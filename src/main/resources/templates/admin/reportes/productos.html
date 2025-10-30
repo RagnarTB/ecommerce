@@ -280,15 +280,24 @@
                 const stockPorCategoria = {};
 
                 productos.forEach(producto => {
-                    const categoria = producto.categoria.nombre;
+                    // Manejar productos sin categoría
+                    const categoria = (producto.categoria && producto.categoria.nombre)
+                        ? producto.categoria.nombre
+                        : 'Sin Categoría';
                     if (!stockPorCategoria[categoria]) {
                         stockPorCategoria[categoria] = 0;
                     }
-                    stockPorCategoria[categoria] += producto.stockActual;
+                    stockPorCategoria[categoria] += producto.stockActual || 0;
                 });
 
                 const categorias = Object.keys(stockPorCategoria);
                 const stocks = Object.values(stockPorCategoria);
+
+                // Solo mostrar gráfico si hay datos
+                if (categorias.length === 0 || stocks.every(s => s === 0)) {
+                    $('#stockChart').parent().html('<p class="text-center text-muted">No hay datos de stock para mostrar</p>');
+                    return;
+                }
 
                 // Colores para el gráfico
                 const colores = [

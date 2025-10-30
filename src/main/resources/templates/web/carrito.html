@@ -1,44 +1,269 @@
-<section>
-    <h2 class="section-title">Tu Carrito</h2>
+<!DOCTYPE html>
+<html lang="es" class="dark-mode" xmlns:th="http://www.thymeleaf.org">
 
-    <div th:if="${carritoVacio}" class="empty-cart">
-        <p class="empty-title">Tu carrito está vacío</p>
-        <a href="/catalogo" class="btn-gamer">Explorar Productos</a>
-    </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title
+        th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] + ' - Carrito' : 'Carrito de Compras'}">
+        Carrito de Compras</title>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <link rel="stylesheet" href="/css/web-gamer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <div th:if="${!carritoVacio}">
-        <div th:each="item : ${items}" class="cart-item">
+    <!-- Colores dinámicos desde configuración -->
+   <style
+    th:if="${config['color_primario'] != null || config['color_secundario'] != null || config['color_acento'] != null}">
+    :root {
+        --color-primario: [[${config['color_primario'] != null ? config['color_primario'] : '#ff006e'}]];
+        --color-secundario: [[${config['color_secundario'] != null ? config['color_secundario'] : '#00f5ff'}]];
+        --color-acento: [[${config['color_acento'] != null ? config['color_acento'] : '#8b00ff'}]];
+    }
+</style>
+</head>
 
-            >
-            <img th:if="${item.producto.imagenPrincipal != null}"
-                th:src="@{/uploads/productos/{filename}(filename=${item.producto.imagenPrincipal.url})}"
-                class="cart-item-image" th:alt="'Imagen de ' + ${item.producto.nombre}" />
-            <img th:if="${item.producto.imagenPrincipal == null}" th:src="@{/img/placeholder-game.jpg}"
-                class="cart-item-image" alt="Imagen por defecto" />
+<body>
+    <!-- Navbar -->
+    <nav class="navbar-gamer">
+        <div class="container">
+            <a href="/" class="navbar-brand">
+                <img th:if="${config['logo_url'] != null}" th:src="@{${config['logo_url']}}" alt="Logo"
+                    class="navbar-logo">
+                <span class="brand-text"
+                    th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce</span>
+            </a>
 
-            <div class="cart-item-details">
-                <h3 class="cart-item-title" th:text="${item.producto.nombre}"></h3>
-                <p class="cart-item-price"
-                    th:text="'S/ ' + ${#numbers.formatDecimal(item.subtotal, 1, 'POINT', 2, 'POINT')}"></p>
-                <form action="/carrito/actualizar" method="post" class="quantity-controls">
-                    <input type="hidden" name="productoId" th:value="${item.producto.id}">
-                    <input type="number" name="cantidad" th:value="${item.cantidad}" min="1" class="quantity-input">
-                    <button type="submit" class="quantity-btn">✔</button>
-                </form>
+            <div class="nav-menu">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
+                </a>
+                <a href="/catalogo" class="nav-link">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Catálogo</span>
+                </a>
+                <a th:if="${config['whatsapp'] != null}" th:href="'https://wa.me/' + ${config['whatsapp']}"
+                    target="_blank" class="nav-link">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>Contacto</span>
+                </a>
+            </div>
 
-                <form th:action="@{'/carrito/eliminar/{productoId}'(productoId=${item.producto.id})}" method="post">
-                    <button type="submit" class="btn-gamer-secondary">Eliminar</button>
+            <div class="search-box">
+                <form action="/catalogo" method="get">
+                    <input type="text" name="busqueda" class="search-input" placeholder="Buscar productos...">
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </form>
             </div>
+
+            <div class="navbar-actions">
+                <a href="/carrito" class="cart-btn active">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cart-count" th:text="${cantidadTotal}">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido del carrito -->
+    <section class="container" style="padding: 3rem 0; min-height: 60vh;">
+        <h1 class="section-title">
+            <i class="fas fa-shopping-cart"></i>
+            Mi Carrito de Compras
+        </h1>
+
+        <!-- Carrito vacío -->
+        <div th:if="${items == null || items.isEmpty()}" class="empty-cart">
+            <i class="fas fa-shopping-cart empty-icon"></i>
+            <h2 class="empty-title">Tu carrito está vacío</h2>
+            <p class="empty-text">¡Agrega productos increíbles y comienza tu experiencia de compra!</p>
+            <a href="/catalogo" class="btn-gamer">
+                <i class="fas fa-shopping-bag"></i>
+                Ver Catálogo
+            </a>
         </div>
 
-        <div class="order-summary">
-            <h3 class="summary-title">Resumen</h3>
-            <div class="summary-row total">
-                <span>Total:</span>
-                <span th:text="'S/ ' + ${#numbers.formatDecimal(total, 1, 'POINT', 2, 'POINT')}"></span>
+        <!-- Carrito con productos -->
+        <div th:if="${items != null && !items.isEmpty()}" class="row">
+            <!-- Lista de productos -->
+            <div class="col-lg-8">
+                <div th:each="item : ${items}" class="cart-item">
+                    <img th:if="${item.imagenUrl != null}" th:src="@{${item.imagenUrl}}" th:alt="${item.nombre}"
+                        class="cart-item-image">
+                    <img th:if="${item.imagenUrl == null}" src="/img/placeholder-game.jpg" alt="Sin imagen"
+                        class="cart-item-image">
+
+                    <div class="cart-item-details">
+                        <h3 class="cart-item-title" th:text="${item.nombre}">Nombre del Producto</h3>
+                        <p class="cart-item-price">
+                            S/ <span th:text="${#numbers.formatDecimal(item.precio, 1, 2)}">0.00</span>
+                        </p>
+                        <p class="text-muted" style="font-size: 0.9rem;">
+                            Stock disponible: <span th:text="${item.stockDisponible}">0</span>
+                        </p>
+
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" th:attr="data-producto-id=${item.productoId}"
+                                onclick="decrementarCantidad(this)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" class="quantity-input" th:value="${item.cantidad}"
+                                th:attr="data-producto-id=${item.productoId}" min="1" th:max="${item.stockDisponible}"
+                                readonly>
+                            <button class="quantity-btn" th:attr="data-producto-id=${item.productoId}"
+                                onclick="incrementarCantidad(this)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" style="margin-left: 1rem;"
+                                th:attr="data-producto-id=${item.productoId}" onclick="eliminarProducto(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right;">
+                        <p style="font-size: 1.5rem; font-weight: 700; color: var(--color-primario);">
+                            S/ <span th:text="${#numbers.formatDecimal(item.subtotal, 1, 2)}">0.00</span>
+                        </p>
+                    </div>
+                </div>
             </div>
-            <a href="/checkout" class="btn-gamer">Ir al Checkout</a>
+
+            <!-- Resumen del pedido -->
+            <div class="col-lg-4">
+                <div class="order-summary">
+                    <h3 class="summary-title">Resumen del Pedido</h3>
+
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotal-display">S/ <span
+                                th:text="${#numbers.formatDecimal(subtotal, 1, 2)}">0.00</span></span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Envío:</span>
+                        <span>Calculado en el checkout</span>
+                    </div>
+
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="total-display">S/ <span
+                                th:text="${#numbers.formatDecimal(subtotal, 1, 2)}">0.00</span></span>
+                    </div>
+
+                    <a href="/carrito/checkout" class="btn-gamer"
+                        style="width: 100%; text-align: center; margin-top: 1rem;">
+                        <i class="fas fa-credit-card"></i>
+                        Proceder al Checkout
+                    </a>
+
+                    <a href="/catalogo" class="btn-outline-gamer"
+                        style="width: 100%; text-align: center; margin-top: 1rem;">
+                        <i class="fas fa-arrow-left"></i>
+                        Seguir Comprando
+                    </a>
+                </div>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-gamer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title"
+                        th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce
+                    </h4>
+                    <p th:if="${config['direccion'] != null}" th:text="${config['direccion']}"></p>
+                </div>
+
+                <div class="footer-section"
+                    th:if="${config['telefono'] != null || config['email'] != null || config['whatsapp'] != null}">
+                    <h4 class="footer-title">Contacto</h4>
+                    <p th:if="${config['telefono'] != null}">
+                        📞 <span th:text="${config['telefono']}"></span>
+                    </p>
+                    <p th:if="${config['email'] != null}">
+                        ✉️ <span th:text="${config['email']}"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span th:text="${#temporals.year(#temporals.createNow())}">2025</span>
+                <span th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}"></span> -
+                Todos los derechos reservados
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function incrementarCantidad(btn) {
+            const productoId = $(btn).data('producto-id');
+            const input = $(`.quantity-input[data-producto-id="${productoId}"]`);
+            const cantidadActual = parseInt(input.val());
+            const max = parseInt(input.attr('max'));
+
+            if (cantidadActual < max) {
+                actualizarCantidad(productoId, cantidadActual + 1);
+            } else {
+                alert('No hay más stock disponible');
+            }
+        }
+
+        function decrementarCantidad(btn) {
+            const productoId = $(btn).data('producto-id');
+            const input = $(`.quantity-input[data-producto-id="${productoId}"]`);
+            const cantidadActual = parseInt(input.val());
+
+            if (cantidadActual > 1) {
+                actualizarCantidad(productoId, cantidadActual - 1);
+            }
+        }
+
+        function actualizarCantidad(productoId, cantidad) {
+            $.ajax({
+                url: '/carrito/actualizar',
+                method: 'POST',
+                data: { productoId: productoId, cantidad: cantidad },
+                success: function (response) {
+                    if (response.success) {
+                        location.reload(); // Recargar para actualizar precios
+                    }
+                },
+                error: function (xhr) {
+                    const error = xhr.responseJSON?.error || 'Error al actualizar cantidad';
+                    alert(error);
+                }
+            });
+        }
+
+        function eliminarProducto(btn) {
+            if (!confirm('¿Eliminar este producto del carrito?')) return;
+
+            const productoId = $(btn).data('producto-id');
+
+            $.ajax({
+                url: '/carrito/eliminar',
+                method: 'POST',
+                data: { productoId: productoId },
+                success: function (response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                },
+                error: function (xhr) {
+                    const error = xhr.responseJSON?.error || 'Error al eliminar producto';
+                    alert(error);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -5,52 +5,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- ✅ Usar nombre de empresa desde configuración -->
-    <title th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Inicio - Ecommerce'}">Inicio - Ecommerce</title>
+    <title th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Inicio - Ecommerce'}">Inicio -
+        Ecommerce</title>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <!-- SEO Meta Tags -->
+    <meta th:if="${config['meta_description']}" name="description" th:content="${config['meta_description']}">
+    <meta th:if="${config['meta_keywords']}" name="keywords" th:content="${config['meta_keywords']}">
+
     <link rel="stylesheet" href="/css/web-gamer.css">
+
+    <!-- Colores dinámicos desde configuración -->
+    <style
+        th:if="${config['color_primario'] != null or config['color_secundario'] != null or config['color_acento'] != null}">
+        :root {
+    --color-primario: [[${config['color_primario'] != null ? config['color_primario'] : '#ff006e'}]];
+    --color-secundario: [[${config['color_secundario'] != null ? config['color_secundario'] : '#00f5ff'}]];
+    --color-acento: [[${config['color_acento'] != null ? config['color_acento'] : '#8b00ff'}]];
+}
+
+    </style>
+
+
+
 </head>
 
 <body>
-    <!-- ✅ Navbar con configuración dinámica -->
+    <!-- ✅ Navbar Mejorado con configuración dinámica -->
     <nav class="navbar-gamer">
         <div class="container">
-            <!-- Logo desde configuración o texto por defecto -->
+            <!-- Logo y marca -->
             <a href="/" class="navbar-brand">
-                <img th:if="${config['LOGO_URL'] != null}"
-                     th:src="@{${config['LOGO_URL']}}"
-                     alt="Logo"
-                     style="height: 40px; vertical-align: middle; margin-right: 10px;">
-                <span th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Ecommerce'}">Ecommerce</span>
+                <img th:if="${config['logo_url'] != null}" th:src="@{${config['logo_url']}}" alt="Logo"
+                    class="navbar-logo">
+                <span class="brand-text"
+                    th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce</span>
             </a>
+
+            <!-- Menú de navegación -->
+            <div class="nav-menu">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
+                </a>
+                <a href="/catalogo" class="nav-link">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Catálogo</span>
+                </a>
+                <a th:if="${config['whatsapp'] != null}" th:href="'https://wa.me/' + ${config['whatsapp']}"
+                    target="_blank" class="nav-link">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>Contacto</span>
+                </a>
+            </div>
+
+            <!-- Barra de búsqueda -->
             <div class="search-box">
                 <form action="/catalogo" method="get">
                     <input type="text" name="busqueda" class="search-input" placeholder="Buscar productos...">
-                    <button type="submit" class="search-btn">🔍</button>
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </form>
             </div>
-            <div>
-                <a href="/catalogo" class="btn-outline-gamer" style="margin-left: 15px;">Ver Catálogo</a>
+
+            <!-- Carrito de compras -->
+            <div class="navbar-actions">
+                <a href="/carrito" class="cart-btn">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cart-count">0</span>
+                </a>
             </div>
         </div>
     </nav>
 
-    <!-- ✅ Hero Section con configuración -->
+    <!-- ✅ Hero Section con iframe 3D -->
     <section class="hero-section">
         <div class="hero-content">
-            <h1 class="hero-title" th:text="${config['BANNER_TITULO_1'] != null ? config['BANNER_TITULO_1'] : 'Bienvenido a Nuestra Tienda'}">
+            <h1 class="hero-title"
+                th:text="${config['texto_bienvenida'] != null ? config['texto_bienvenida'] : 'Bienvenido a Nuestra Tienda'}">
                 Bienvenido a Nuestra Tienda
             </h1>
-            <p class="hero-subtitle" th:text="${config['BANNER_SUBTITULO'] != null ? config['BANNER_SUBTITULO'] : 'Los mejores productos al mejor precio'}">
+            <p class="hero-subtitle"
+                th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Los mejores productos al mejor precio'}">
                 Los mejores productos al mejor precio
             </p>
-            <a href="/catalogo" class="btn-gamer">Ver Catálogo</a>
+            <a href="/catalogo" class="btn-gamer">
+                <i class="fas fa-shopping-bag"></i>
+                Ver Catálogo Completo
+            </a>
         </div>
-        <!-- Banner principal o iframe 3D -->
-        <div class="hero-3d" th:if="${config['BANNER_1_URL'] == null}">
+        <!-- Iframe 3D siempre visible -->
+        <div class="hero-3d">
             <iframe src="https://my.spline.design/nintendoswitchcopy-2yhH5E9ykmD7XxrXzMr3cOYc/" frameborder="0"
-                width="100%" height="100%"></iframe>
-        </div>
-        <div class="hero-image" th:if="${config['BANNER_1_URL'] != null}">
-            <img th:src="@{${config['BANNER_1_URL']}}" alt="Banner Principal" style="width: 100%; height: auto; border-radius: 10px;">
+                width="100%" height="100%" loading="lazy"></iframe>
         </div>
     </section>
 
@@ -78,10 +126,49 @@
                             th:text="${producto.precioBase} + ' S/'"></span>
                     </div>
                     <a th:href="@{'/producto/' + ${producto.id}}" class="btn-outline-gamer">Ver Detalle</a>
+                    <button type="button" class="btn-gamer add-to-cart"
+                        th:attr="data-product-id=${producto.id}">Añadir</button>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- ✅ Botón PlayStation Flotante - Redes Sociales -->
+    <div class="playstation-container">
+        <div class="playstation-input">
+            <!-- CROSS (X) - Facebook -->
+            <div id="cross-input">
+                <div id="cross-title">FACEBOOK</div>
+                <button id="cross" type="button" th:data-url="${config['facebook_url']}" aria-label="Facebook">
+                    <p>x</p>
+                </button>
+            </div>
+
+            <!-- CIRCLE (O) - Instagram -->
+            <div id="circle-input">
+                <div id="circle-title">INSTAGRAM</div>
+                <button id="circle" type="button" th:data-url="${config['instagram_url']}" aria-label="Instagram">
+                    <div></div>
+                </button>
+            </div>
+
+            <!-- SQUARE - TikTok -->
+            <div id="square-input">
+                <div id="square-title">TIKTOK</div>
+                <button id="square" type="button" th:data-url="${config['tiktok_url']}" aria-label="TikTok">
+                    <div></div>
+                </button>
+            </div>
+
+            <!-- TRIANGLE - Discord -->
+            <div id="triangle-input">
+                <div id="triangle-title">DISCORD</div>
+                <button id="triangle" type="button" th:data-url="${config['discord_url']}" aria-label="Discord">
+                    <p>△</p>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ✅ Footer con información de contacto desde configuración -->
     <footer class="footer-gamer">
@@ -89,42 +176,45 @@
             <div class="footer-content">
                 <!-- Información de empresa -->
                 <div class="footer-section">
-                    <h4 class="footer-title" th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Ecommerce'}">Ecommerce</h4>
-                    <p th:if="${config['EMPRESA_DIRECCION'] != null}" th:text="${config['EMPRESA_DIRECCION']}"></p>
-                    <p th:if="${config['EMPRESA_RUC'] != null}">RUC: <span th:text="${config['EMPRESA_RUC']}"></span></p>
+                    <h4 class="footer-title"
+                        th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}">Ecommerce
+                    </h4>
+                    <p th:if="${config['direccion'] != null}" th:text="${config['direccion']}"></p>
                 </div>
 
                 <!-- Contacto -->
-                <div class="footer-section" th:if="${config['CONTACTO_TELEFONO'] != null || config['CONTACTO_EMAIL'] != null}">
+                <div class="footer-section"
+                    th:if="${config['telefono'] != null || config['email'] != null || config['whatsapp'] != null}">
                     <h4 class="footer-title">Contacto</h4>
-                    <p th:if="${config['CONTACTO_TELEFONO'] != null}">
-                        📞 <span th:text="${config['CONTACTO_TELEFONO']}"></span>
+                    <p th:if="${config['telefono'] != null}">
+                        📞 <span th:text="${config['telefono']}"></span>
                     </p>
-                    <p th:if="${config['CONTACTO_EMAIL'] != null}">
-                        ✉️ <span th:text="${config['CONTACTO_EMAIL']}"></span>
+                    <p th:if="${config['email'] != null}">
+                        ✉️ <span th:text="${config['email']}"></span>
                     </p>
-                    <p th:if="${config['CONTACTO_WHATSAPP'] != null}">
-                        💬 WhatsApp: <a th:href="'https://wa.me/' + ${config['CONTACTO_WHATSAPP']}"
-                                        target="_blank"
-                                        style="color: #25D366;"
-                                        th:text="${config['CONTACTO_WHATSAPP']}"></a>
+                    <p th:if="${config['whatsapp'] != null}">
+                        💬 WhatsApp: <a th:href="'https://wa.me/' + ${config['whatsapp']}" target="_blank"
+                            style="color: #25D366;" th:text="${config['whatsapp']}"></a>
                     </p>
                 </div>
 
                 <!-- Horarios -->
-                <div class="footer-section" th:if="${config['EMPRESA_HORARIOS'] != null}">
+                <div class="footer-section" th:if="${config['horario_atencion'] != null}">
                     <h4 class="footer-title">Horarios de Atención</h4>
-                    <p th:text="${config['EMPRESA_HORARIOS']}"></p>
+                    <p th:text="${config['horario_atencion']}"></p>
                 </div>
             </div>
         </div>
         <div class="footer-bottom">
             <p>&copy; <span th:text="${#temporals.year(#temporals.createNow())}">2025</span>
-               <span th:text="${config['EMPRESA_NOMBRE'] != null ? config['EMPRESA_NOMBRE'] : 'Ecommerce'}"></span> -
-               Todos los derechos reservados
+                <span th:text="${config['nombre_empresa'] != null ? config['nombre_empresa'] : 'Ecommerce'}"></span> -
+                Todos los derechos reservados
             </p>
         </div>
     </footer>
+
+    <!-- JavaScript para botón PlayStation -->
+    <script src="/js/web-gamer.js"></script>
 </body>
 
 </html>

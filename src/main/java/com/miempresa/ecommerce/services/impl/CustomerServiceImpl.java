@@ -355,4 +355,39 @@ public class CustomerServiceImpl implements CustomerService {
     public long contarActivos() {
         return customerRepository.countByActivoTrue();
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Customer obtenerOCrearDesdeWeb(String documento, String nombres, String apellidos,
+            String telefono, String email) {
+        log.info("Obteniendo o creando cliente desde web: documento={}", documento);
+
+        // Buscar cliente existente por documento
+        Optional<Customer> existente = buscarPorDocumento(documento);
+        if (existente.isPresent()) {
+            log.info("Cliente encontrado en BD: {}", existente.get().getNombreCompleto());
+            return existente.get();
+        }
+
+        // Crear nuevo cliente con los datos proporcionados
+        Customer nuevoCliente = Customer.builder()
+                .tipoDocumento(documento.length() == 8 ? TipoDocumento.DNI : TipoDocumento.RUC)
+                .numeroDocumento(documento)
+                .nombres(nombres)
+                .apellidoPaterno(apellidos != null && apellidos.contains(" ")
+                        ? apellidos.split(" ")[0]
+                        : apellidos)
+                .apellidoMaterno(apellidos != null && apellidos.contains(" ")
+                        ? apellidos.substring(apellidos.indexOf(" ") + 1)
+                        : "")
+                .telefono(telefono)
+                .email(email)
+                .activo(true)
+                .build();
+
+        Customer clienteGuardado = customerRepository.save(nuevoCliente);
+        log.info("Nuevo cliente creado desde web: {}", clienteGuardado.getNombreCompleto());
+
+        return clienteGuardado;
+    }
 }

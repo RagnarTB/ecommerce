@@ -285,8 +285,15 @@
             let cuotasVencidas = 0;
 
             $('tbody tr').each(function () {
-                const montoPendiente = parseFloat($(this).find('td:eq(4) span').text().replace(',', ''));
-                totalDeuda += montoPendiente;
+                // Obtener el texto y limpiar formato: remover comas de miles y convertir coma decimal a punto
+                const montoText = $(this).find('td:eq(4) span').text().trim();
+                // Si el formato es europeo (123,45) o americano con miles (1,234.56)
+                // Primero quitamos espacios, luego reemplazamos coma decimal por punto si es el último separador
+                const montoPendiente = parseFloat(montoText.replace(/\s/g, '').replace(/\./g, '').replace(',', '.'));
+
+                if (!isNaN(montoPendiente)) {
+                    totalDeuda += montoPendiente;
+                }
 
                 if ($(this).find('.badge-danger:contains("Con Vencidas")').length > 0) {
                     cuotasVencidas++;
